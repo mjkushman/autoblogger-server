@@ -6,9 +6,8 @@ require("dotenv").config();
 require("colors");
 
 const SECRET_KEY = process.env.SECRET_KEY || "secret-dev";
-const OPEN_AI_KEY = "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";
-
 const PORT = +process.env.PORT || 3001;
+const OPEN_AI_KEY = process.env.OPEN_AI_KEY;
 
 // Use dev database, testing database, or via env var, production database
 function getDatabaseUri() {
@@ -18,12 +17,12 @@ function getDatabaseUri() {
 }
 
 // Speed up bcrypt during tests, since the algorithm safety isn't being tested
-//
-// WJB: Evaluate in 2021 if this should be increased to 13 for non-test use
+
 const BCRYPT_WORK_FACTOR = process.env.NODE_ENV === "test" ? 1 : 12;
 
 console.log("Autoblogger Config:".green);
 console.log("SECRET_KEY:".yellow, SECRET_KEY);
+console.log("OPEN_AI_KEY:".yellow, OPEN_AI_KEY);
 console.log("PORT:".yellow, PORT.toString());
 console.log("BCRYPT_WORK_FACTOR".yellow, BCRYPT_WORK_FACTOR);
 console.log("Database:".yellow, getDatabaseUri());
