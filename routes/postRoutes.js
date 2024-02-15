@@ -2,13 +2,11 @@
 
 // Routes for the blog
 
-const Post = require('../models/post') // import blog model from models folder
+const Post = require('../models/post') // import post model from models folder
+const Comment = require('../models/comment') // import comment model from models folder
 const express = require('express')
 
 const router = express.Router({ mergeParams: true });
-
-
-
 
 
 /** GET / return all blog articles
@@ -60,17 +58,27 @@ router.post('/', async function (req,res,next) {
 
 /** POST / Adds a comment to a blog post
  * req.body requires userId and body
- * 
+ *  URL like
+ * .com/posts/:id/comments 
+ * .com/posts/3/comments
  */
 
 router.post('/:id/comments', async function (req,res,next) {
     
     try {
         const postId = req.params.id
-        const result = await Post.addComment(postId, req.body)
+        const newComment = await Comment.addComment(postId, req.body)
 
-        console.log(result)
-        return res.status(201).json({result})
+
+        // TODO: Trigger AI responding to the comment
+        // 1. first, get the post content
+        // 1. then, generate AI respone
+        // 2. then, 
+        const aiReply = await Comment.addAiReply(postId)
+
+
+        console.log(newComment)
+        return res.status(201).json({userComment:newComment, aiReply:aiReply})
     } catch (error) {
         return next(error)
     }

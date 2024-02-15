@@ -5,6 +5,7 @@
 const express = require("express");
 const cors = require("cors");
 
+
 const { NotFoundError } = require("./expressError");
 
 const postRoutes = require("./routes/postRoutes");
@@ -27,6 +28,12 @@ app.use(morgan("tiny"));
 // app.use("/companies", companiesRoutes);
 app.use("/users", usersRoutes);
 app.use("/posts", postRoutes);
+
+
+
+
+
+
 
 
 /** Handle 404 errors -- this matches everything */

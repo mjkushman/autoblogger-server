@@ -2,12 +2,12 @@
 
 /** Shared config for application; can be required many places. */
 
-require("dotenv").config();
 require("colors");
 
 const SECRET_KEY = process.env.SECRET_KEY || "secret-dev";
 const PORT = +process.env.PORT || 3001;
 const OPEN_AI_KEY = process.env.OPEN_AI_KEY;
+const NODE_ENV = process.env.NODE_ENV;
 
 // Use dev database, testing database, or via env var, production database
 function getDatabaseUri() {
@@ -21,8 +21,9 @@ function getDatabaseUri() {
 const BCRYPT_WORK_FACTOR = process.env.NODE_ENV === "test" ? 1 : 12;
 
 console.log("Autoblogger Config:".green);
-console.log("SECRET_KEY:".yellow, SECRET_KEY);
-console.log("OPEN_AI_KEY:".yellow, OPEN_AI_KEY);
+console.log("NODE_ENV:".yellow, NODE_ENV);
+console.log("SECRET_KEY:".red, SECRET_KEY);
+console.log("OPEN_AI_KEY:".red, OPEN_AI_KEY);
 console.log("PORT:".yellow, PORT.toString());
 console.log("BCRYPT_WORK_FACTOR".yellow, BCRYPT_WORK_FACTOR);
 console.log("Database:".yellow, getDatabaseUri());
