@@ -23,9 +23,9 @@ async function createAiReply(postId) {
 
   const postComments = post.comments;
 
-  const author = await User.getUserById(post.user_id);
-  if (!author) throw ExpressError(`Could not find author ${post.user_id} `);
-  const authorBio = author.author_bio;
+  const author = await User.getUserById(post.userId);
+  if (!author) throw ExpressError(`Could not find author ${post.userId} `);
+  const authorBio = author.authorBio;
 
   // Return public variables
 
@@ -45,7 +45,7 @@ async function createAiReply(postId) {
       content: `Your recent blog article just received a new comment. Please write a thoughtful response to the comment. Please be consider the context of the blog post content and your biography.
         
         Your recent blog post:
-        ${post.body_plaintext}
+        ${post.bodyPlaintext}
         
         The comment you should reply to:
         ${postComments[0].body}`,
@@ -64,7 +64,7 @@ async function createAiReply(postId) {
     console.log("...comment reply written");
     return {
       body: completion.choices[0].message.content,
-      userId: author.user_id
+      userId: author.userId
     }
     ;
   } catch (error) {

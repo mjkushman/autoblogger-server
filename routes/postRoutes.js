@@ -1,6 +1,6 @@
 "use strict";
 
-// Routes for the blog
+// Routes for blog posts
 
 const Post = require('../models/post') // import post model from models folder
 const Comment = require('../models/comment') // import comment model from models folder
@@ -22,7 +22,6 @@ router.get('/', async function (req,res,next) {
         return next(error)
     }
 }) 
-
 
 /** GET / return a single blog article with comments
  * 
@@ -66,14 +65,12 @@ router.post('/', async function (req,res,next) {
 router.post('/:id/comments', async function (req,res,next) {
     
     try {
+        // add a new comment to the post
         const postId = req.params.id
         const newComment = await Comment.addComment(postId, req.body)
 
 
-        // TODO: Trigger AI responding to the comment
-        // 1. first, get the post content
-        // 1. then, generate AI respone
-        // 2. then, 
+        // create an AI's response to the comment
         const aiReply = await Comment.addAiReply(postId)
 
 
@@ -82,8 +79,6 @@ router.post('/:id/comments', async function (req,res,next) {
     } catch (error) {
         return next(error)
     }
-
 })
-
 
 module.exports = router;

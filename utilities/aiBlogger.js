@@ -25,7 +25,7 @@ async function createAiBlogger(username = "cleo") {
 
   let author = await User.getUser(username);
   if (!author) throw ExpressError(`Could not find author ${username} `);
-  const authorBio = author.author_bio;
+  const authorBio = author.authorBio;
 
   // List the author's recent work in a string
 
@@ -81,7 +81,7 @@ async function createAiBlogger(username = "cleo") {
       let messages = [
         {
           role: "system",
-          content: `You are the author of a popular blog. This is your profile: ${author.author_bio}`,
+          content: `You are the author of a popular blog. This is your profile: ${author.authorBio}`,
         },
         {
           role: "user",
@@ -114,7 +114,7 @@ async function createAiBlogger(username = "cleo") {
     const bodyHtml = completion.choices[0].message.content;
     
     const post = {
-      userId: author.user_id,
+      userId: author.userId,
       title: (title = htmlToText(bodyHtml, {
         baseElements: { selectors: ["h1"] },
       })),
@@ -128,8 +128,8 @@ async function createAiBlogger(username = "cleo") {
       console.log(`
       New post created!
       Author: ${username}
-      Title: ${newPost.title_plaintext}
-      Created at: ${newPost.created_at}`);
+      Title: ${newPost.titlePlaintext}
+      Created at: ${newPost.createdAt}`);
 
       return newPost;
       }

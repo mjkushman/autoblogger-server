@@ -1,9 +1,8 @@
-
-
 "use strict";
 
+const { BCRYPT_WORK_FACTOR } = require("../config");
 const db = require("../db");
-// const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 // const { sqlForPartialUpdate } = require("../helpers/sql");
 const {
   NotFoundError,
@@ -11,107 +10,211 @@ const {
   UnauthorizedError,
 } = require("../expressError");
 
-// const { BCRYPT_WORK_FACTOR } = require("../config.js");
-
-
 class User {
-
-/** Returns a list of all users */
+  /** Returns a list of all users */
 
   static async getAllUsers() {
-    
     const result = await db.query(`
-    SELECT user_id, username, first_name, last_name, email, author_bio, is_admin
+    SELECT user_id AS "userId", username, first_name AS "firstName", last_name AS "firstName", email, author_bio AS "authorBio", is_admin AS "isAdmin"
     FROM users
     ORDER BY username`);
 
-    return result.rows
+    return result.rows;
   }
 
-  /** Returns a single user along with their post history and comment history 
-   * 
-   * 
-   * 
-  */
+  /** Returns a single user along with their post history and comment history
+   *
+   *
+   *
+   */
 
   static async getUser(username) {
-    
-    const userResponse = await db.query(` 
-      SELECT u.user_id, 
+    const userResponse = await db.query(
+      ` 
+      SELECT u.user_id AS "userId", 
       username, 
-      first_name, 
-      last_name, 
+      first_name AS "firstName", 
+      last_name AS "lastName", 
       email,
-      author_bio, 
-      is_admin
+      author_bio AS "authorBio", 
+      is_admin AS "authorBio"
       FROM users u
-      WHERE username =$1`, [username]);
+      WHERE username =$1`,
+      [username]
+    );
 
-    if(!userResponse.rows[0]) throw new NotFoundError(`Could not find: ${username}`)
-    const user = userResponse.rows[0]
+    if (!userResponse.rows[0])
+      throw new NotFoundError(`Could not find: ${username}`);
+    const user = userResponse.rows[0];
 
     // get the user's post titles and ids. Not the whole post.
-    const userPostResponse = await db.query(`
-    SELECT post_id, created_at, title_plaintext
+    const userPostResponse = await db.query(
+      `
+    SELECT post_id AS "postId", created_at AS "createdAt", title_plaintext AS "titlePlaintext"
     FROM posts
     WHERE posts.user_id = $1
-    ORDER BY created_at DESC`, [user.user_id])
-    const userPosts = userPostResponse.rows
-    
+    ORDER BY created_at DESC`,
+      [user.userId]
+    );
+    const userPosts = userPostResponse.rows;
+
     // get the user's comments
-    const userCommentResponse = await db.query(`
-    SELECT comment_id, user_id, post_id, created_at, body
+    const userCommentResponse = await db.query(
+      `
+    SELECT comment_id AS "commentId", user_id AS "userId", post_id AS "postId", created_at AS "createdAt", body
     FROM comments
-    WHERE comments.user_id = $1`, [user.user_id])
-    const userComments = userCommentResponse.rows
+    WHERE comments.user_id = $1`,
+      [user.userId]
+    );
+    const userComments = userCommentResponse.rows;
 
     // append posts and comments to user
-    user.posts = userPosts
-    user.comments = userComments
-  
-    return user
+    user.posts = userPosts;
+    user.comments = userComments;
+
+    return user;
   }
 
   static async getUserById(userId) {
-    
-    const userResponse = await db.query(` 
-      SELECT u.user_id, 
+    const userResponse = await db.query(
+      ` 
+      SELECT u.user_id AS "userId", 
       username, 
-      first_name, 
-      last_name, 
+      first_name AS "firstName", 
+      last_name AS "lastName", 
       email,
-      author_bio, 
-      is_admin
+      author_bio AS "authorBio", 
+      is_admin AS "authorBio"
       FROM users u
-      WHERE user_id =$1`, [userId]);
+      WHERE user_id =$1`,
+      [userId]
+    );
 
-    if(!userResponse.rows[0]) throw new NotFoundError(`Could not find: ${userId}`)
-    const user = userResponse.rows[0]
+    if (!userResponse.rows[0])
+      throw new NotFoundError(`Could not find: ${userId}`);
+    const user = userResponse.rows[0];
 
     // get the user's post titles and ids. Not the whole post.
-    const userPostResponse = await db.query(`
-    SELECT post_id, created_at, title_plaintext
+    const userPostResponse = await db.query(
+      `
+    SELECT post_id AS "postId", created_at AS "createdAt", title_plaintext AS "titlePlaintext"
     FROM posts
     WHERE posts.user_id = $1
-    ORDER BY created_at DESC`, [userId])
-    const userPosts = userPostResponse.rows
-    
+    ORDER BY created_at DESC`,
+      [userId]
+    );
+    const userPosts = userPostResponse.rows;
+
     // get the user's comments
-    const userCommentResponse = await db.query(`
-    SELECT comment_id, user_id, post_id, created_at, body
+    const userCommentResponse = await db.query(
+      `
+    SELECT comment_id AS "commentId", user_id AS "userId", post_id AS "postId", created_at AS "createdAt", body
     FROM comments
-    WHERE comments.user_id = $1`, [userId])
-    const userComments = userCommentResponse.rows
+    WHERE comments.user_id = $1`,
+      [userId]
+    );
+    const userComments = userCommentResponse.rows;
 
     // append posts and comments to user
-    user.posts = userPosts
-    user.comments = userComments
-  
-    return user
+    user.posts = userPosts;
+    user.comments = userComments;
+
+    return user;
   }
 
+  // Register a new user
+  static async register({
+    username,
+    password,
+    firstName,
+    lastName,
+    email,
+    authorBio,
+    isAdmin = false,
+  }) {
+    console.log("register method in model");
+    // first check for username duplicates
+    const duplicateCheck = await db.query(
+      `SELECT username
+      FROM users
+      WHERE username =$1`,
+      [username]
+    );
+    if (duplicateCheck.rows[0])
+      throw new BadRequestError(`Duplicate username: ${username}`);
+
+    // hash the password for storage
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
+
+    console.log("password:", password);
+    console.log("hashed password:", hashedPassword);
+
+    const result = await db.query(
+      `INSERT INTO users 
+        (username, password, first_name, last_name, email, author_bio, is_admin)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING username,
+         first_name AS "firstName", last_name AS "last_name", author_bio AS "authorBio",
+          user_id AS "userId",
+           created_at AS "createdAt", 
+           is_admin AS "isAdmin"`,
+      [username, hashedPassword, firstName, lastName, email, authorBio, isAdmin]
+    );
+    const user = result.rows[0];
+    return user;
+  }
+
+  // Login a user
+  static async authenticate({ username, password }) {
+    // first, find the user
+    const result = await db.query(
+      `SELECT username, password,
+       first_name AS "firstName", last_name AS "lastName", email, author_bio AS "authorBio", is_admin AS "isAdmin"
+      FROM users
+      WHERE username =$1`,
+      username
+    );
+    const user = result.rows[0];
+
+    if (user) {
+      const isValid = await bcrypt.compare(password, user.password);
+      if (isValid == true) {
+        delete user.password; // be sure to delete this hashed password password before returning it.
+        return user;
+      }
+    }
+  }
+
+  // 
+  /** PATCH route {user} => {user}
+   *  Update a user's information
+   * 
+   */
+  static async updateUser(userId, updateCols, updateVals) {
+
+    let userIdIndex = "$" + (updateVals.length +1)
+
+    const result = await db.query(
+      `UPDATE users
+      SET ${updateCols}
+      WHERE user_id = ${userIdIndex}
+      RETURNING 
+        user_id AS "userId",
+        username,
+        first_name AS "firstName",
+        last_name AS "lastName",
+        email,
+        author_bio AS "authorBio"`,[...updateVals, userId]
+    )
+
+    // console.log('RESULT',result)
+    return result.rows[0]
+  }
 
 }
 
-
 module.exports = User;
+
+
+// want to have a range of columns to update
+// and values for those columns 

@@ -1,0 +1,64 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "Register User",
+    "required": [
+        "username",
+        "password",
+        "email"
+    ],
+    "properties": {
+        "username": {
+            "type": "string",
+            "title": "The username Schema",
+            "examples": [
+                "mike7", "some_username"
+            ]
+        },
+        "password": {
+            "type": "string",
+            "title": "The password Schema",
+            "examples": [
+                "123"
+            ]
+        },
+        "firstName": {
+            "type": "string",
+            "title": "The firstName Schema",
+            "examples": [
+                "mike", "Mike"
+            ]
+        },
+        "lastName": {
+            "type": "string",
+            "title": "The lastName Schema",
+            "examples": [
+                "kush", "Kushman"
+            ]
+        },
+        "email": {
+            "type": "string",
+            "title": "The email Schema",
+            "examples": [
+                "mike@gmail.com"
+            ]
+        },
+        "authorBio": {
+            "type": "string",
+            "title": "The authorBio Schema",
+            "examples": [
+                "Tall and handsome"
+            ]
+        }
+    },
+    "examples": [{
+        "username": "mike7",
+        "password": "123",
+        "firstName": "mike",
+        "lastName": "kush",
+        "email": "mike@gmail.com",
+        "authorBio": "Tall and handsome"
+    }],
+    "additionalProperties": false
+}

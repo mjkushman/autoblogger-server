@@ -29,9 +29,9 @@ class Comment {
   }
 
   static async addAiReply(postId) {
-    // get AI reply
+    // generate a reply by AI
     const {body, userId} = await createAiReply(postId)
-    
+    // INSERT the reply to database
     const result = await db.query(
       `
       INSERT INTO comments (user_id, post_id, body) 
@@ -39,7 +39,7 @@ class Comment {
       RETURNING comment_id, created_at, body`,
       [userId, postId, body]
     );
-
+    // return the reply to route
     const aiReply = result.rows[0];
     return aiReply;
   }

@@ -34,7 +34,7 @@ class Post {
   static async getSinglePost(postId) {
     const postResult = await db.query(
       `
-    SELECT post_id, user_id, created_at, title_plaintext, body_plaintext, body_html 
+    SELECT post_id, user_id AS "userId", created_at AS "createdAt", title_plaintext AS "titlePlaintext", body_plaintext AS "bodyPlaintext", body_html AS "bodyHtml"
     FROM posts
     WHERE post_id =$1`,
       [postId]
@@ -76,7 +76,7 @@ class Post {
       INSERT INTO posts
       (user_id, title_plaintext, body_plaintext, body_html)
       VALUES ($1, $2, $3, $4)
-      RETURNING post_id, user_id, created_at, body_html, title_plaintext, body_plaintext`,
+      RETURNING post_id AS "postId", user_id AS "userId", created_at AS "createdAt", body_html AS "bodyHtml", title_plaintext AS "titlePlaintext", body_plaintext AS "bodyPlaintext"`,
         [userId, title, bodyPlaintext, bodyHtml]
       );
 
