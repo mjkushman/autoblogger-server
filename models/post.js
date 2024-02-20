@@ -14,11 +14,12 @@ class Post {
    */
   static async getAllPosts() {
     const result = await db.query(`
-    SELECT p.post_id, p.user_id, p.created_at, p.title_plaintext, p.body_plaintext, p.body_html,
-    COUNT(comment_id) as num_comments 
+    SELECT p.post_id AS "postId", p.user_id AS "userId", p.created_at AS "createdAt", p.title_plaintext AS "titlePlaintext", p.body_plaintext AS "bodyPlaintext", p.body_html AS "bodyHtml", u.username ,
+    COUNT(comment_id) AS "numComments"
     FROM posts p
-    JOIN comments c ON p.post_id = c.post_id
-    GROUP BY p.post_id`);
+    LEFT JOIN comments c ON p.post_id = c.post_id
+    LEFT JOIN users u ON p.user_id = u.user_id
+    GROUP BY p.post_id, username`);
     return result.rows;
   }
 
@@ -33,18 +34,35 @@ class Post {
 
   static async getSinglePost(postId) {
     const postResult = await db.query(
+    
       `
-    SELECT post_id, user_id AS "userId", created_at AS "createdAt", title_plaintext AS "titlePlaintext", body_plaintext AS "bodyPlaintext", body_html AS "bodyHtml"
-    FROM posts
-    WHERE post_id =$1`,
-      [postId]
+      SELECT p.post_id AS "postId", p.user_id AS "userId", p.created_at AS "createdAt", p.title_plaintext AS "titlePlaintext", p.body_plaintext AS "bodyPlaintext", p.body_html AS "bodyHtml", COUNT(c.comment_id) AS "numComments"
+      FROM posts p
+      LEFT JOIN comments c ON p.post_id = c.post_id
+      WHERE p.post_id =$1
+      GROUP BY p.post_id`,
+        [postId]
+    
+
+      // `
+    // SELECT p.post_id, p.user_id AS "userId", p.created_at AS "createdAt", p.title_plaintext AS "titlePlaintext", p.body_plaintext AS "bodyPlaintext", p.body_html AS "bodyHtml", array_agg(c.comment_id) AS "commentId"
+    // FROM posts p
+    // LEFT JOIN comments c ON p.post_id = c.post_id
+    // WHERE p.post_id =$1
+    // GROUP BY p.post_id`,
+    //   [postId]
     );
+
+
+
 
     const post = postResult.rows[0];
 
     if (!post)
       throw new NotFoundError(`That post with id: ${postId} doesn't exist.`);
 
+
+      // THIS BLOCK ADDS ALL THE COMMENTS TO THE RESPONSE
     const commentsResult = await db.query(
       `
     SELECT c.comment_id, c.user_id, c.created_at, c.body, u.first_name, u.last_name, u.username
@@ -54,9 +72,9 @@ class Post {
       [postId]
     );
 
-    post.comments = commentsResult.rows;
+    const comments = commentsResult.rows;
 
-    return post;
+    return {post, comments};
   }
 
   /** POST

@@ -30,7 +30,7 @@ const max = async () => {
 
 // Schedule the autoblogger
 
-// COMMENT THIS OUT UNLESS I WANT TO START BLOGGING
+// UNCOMMENT THIS TO START AUTO BLOGGING
 
 // cron.schedule('*/1 * * * *', async () => {
 //   console.log('Running AI blogger')

@@ -13,14 +13,16 @@ const { updateUserSql } = require('../utilities/sqlMapper');
 
 
 /** GET / return all users
- * 
+ *  if query param "authors=true" is passed, then only return authors
  */
 
 router.get('/', async function (req,res,next) {
 
     try {
-        const result = await User.getAllUsers();
-        return res.json(result)
+        const authors = req.query.authors =='true'
+        console.log('authors in req',authors)
+        const users = await User.getAllUsers(authors);
+        return res.json({users})
     } catch (error) {
         return next(error)
     }
@@ -33,8 +35,8 @@ router.get('/', async function (req,res,next) {
 
 router.get('/:username', async function (req,res,next) {
     try {
-        const result = await User.getUser(req.params.username);
-        return res.json(result)
+        const user = await User.getUser(req.params.username);
+        return res.json({user})
     } catch (error) {
         return next(error)
     }
@@ -56,17 +58,15 @@ router.patch('/:id', async function (req,res,next) {
             throw new BadRequestError(errors)
         }
         const userId = req.params.id
-        const user = await User.getUserById(userId)
-
         
-        console.log('patch received:',req.body)
+        // console.log('patch received:',req.body)
 
         // get the columns to update and their values
         let {updateCols, updateVals} = updateUserSql(req.body)
 
-        const result = await User.updateUser(userId, updateCols, updateVals)
+        const user = await User.updateUser(userId, updateCols, updateVals)
 
-        return res.status(200).json({result})
+        return res.status(200).json({user})
 
     } catch (error) {
         return next(error)   

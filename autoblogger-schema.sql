@@ -9,6 +9,8 @@ CREATE TABLE users (
   author_bio TEXT,
   is_admin BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  image_url TEXT,
+  is_author BOOLEAN DEFAULT FALSE,
   PRIMARY KEY (user_id)
 );
 
@@ -18,7 +20,8 @@ CREATE TABLE posts (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   title_plaintext TEXT,
   body_plaintext TEXT,
-  body_html TEXT
+  body_html TEXT,
+  image_url TEXT
 );
 
 CREATE TABLE tags (

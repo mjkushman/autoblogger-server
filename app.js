@@ -5,16 +5,11 @@
 const express = require("express");
 const cors = require("cors");
 
-
 const { NotFoundError } = require("./expressError");
-
 const postRoutes = require("./routes/postRoutes");
-
-// const { authenticateJWT } = require("./middleware/auth");
+const { verifyJWT } = require("./middleware/authorizations");
 const authRoutes = require("./routes/authRoutes");
-
 const usersRoutes = require("./routes/userRoutes");
-
 const morgan = require("morgan");
 
 const app = express();
@@ -22,14 +17,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan("tiny"));
-// app.use(authenticateJWT);
+app.use(verifyJWT); // stores decoded token on res.locals.user, if one is provided
 
 app.use("/auth", authRoutes);
 // app.use("/companies", companiesRoutes);
 app.use("/users", usersRoutes);
 app.use("/posts", postRoutes);
-
-
 
 
 

@@ -4,9 +4,13 @@
 
 const Post = require('../models/post') // import post model from models folder
 const Comment = require('../models/comment') // import comment model from models folder
+const {verifyAuth, verifyLoggedIn} = require('../middleware/authorizations')
 const express = require('express')
 
 const router = express.Router({ mergeParams: true });
+
+
+
 
 
 /** GET / return all blog articles
@@ -16,8 +20,8 @@ const router = express.Router({ mergeParams: true });
 router.get('/', async function (req,res,next) {
 
     try {
-        const result = await Post.getAllPosts();
-        return res.json(result)
+        const posts = await Post.getAllPosts();
+        return res.json({posts})
     } catch (error) {
         return next(error)
     }
@@ -30,7 +34,7 @@ router.get('/', async function (req,res,next) {
 router.get('/:id', async function (req,res,next) {
     try {
         const result = await Post.getSinglePost(req.params.id);
-        return res.json(result)
+        return res.json({post:result.post, comments:result.comments})
     } catch (error) {
         return next(error)
     }
@@ -45,37 +49,62 @@ router.get('/:id', async function (req,res,next) {
 router.post('/', async function (req,res,next) {
     try {
         // const {title, bodyPlaintext, bodyHtml} = req.body
-        const result = await Post.createNewPost(req.body)
+        const post = await Post.createNewPost(req.body)
 
         console.log(result)
-        return res.status(201).json({result})
+        return res.status(201).json({post})
     } catch (error) {
         return next(error)
     }
 
 })
 
-/** POST / Adds a comment to a blog post
+/** GET /:id/comments Gets comments for a post
+ * 
+ *  URL like
+ * .com/posts/:id/comments 
+ * .com/posts/3/comments
+ */
+
+router.get('/:id/comments', async function(req,res,next) {
+    try {
+        const postId = req.params.id
+        const {comments, numComments} = await Comment.getComments(postId)
+        return res.status(200).json({numComments, comments})
+    } catch (error) {
+        return next(error)
+    }
+}) 
+
+
+
+/** POST /:id/comments Adds a comment to a blog post
  * req.body requires userId and body
  *  URL like
  * .com/posts/:id/comments 
  * .com/posts/3/comments
  */
 
-router.post('/:id/comments', async function (req,res,next) {
+router.post('/:id/comments', verifyLoggedIn, async function (req,res,next) {
     
     try {
         // add a new comment to the post
+        console.log(res.locals.user)
         const postId = req.params.id
-        const newComment = await Comment.addComment(postId, req.body)
+        const comment = await Comment.addComment(postId, req.body)
 
 
         // create an AI's response to the comment
-        const aiReply = await Comment.addAiReply(postId)
+        // THIS NEEDS TO HAPPEN ELSEWHERE. USER SHOULD NOT NEED TO WAIT FOR AI REPLY TO SEE THEY'RE COMMENT
+        // can I just remove the await part?
+        // const aiReply = await Comment.addAiReply(postId)
+
+        // UNCOMMENT TO LET AI REPLY TO POSTS
+        // Comment.addAiReply(postId)
 
 
-        console.log(newComment)
-        return res.status(201).json({userComment:newComment, aiReply:aiReply})
+        // console.log(newComment)
+        return res.status(201).json({comment})
     } catch (error) {
         return next(error)
     }

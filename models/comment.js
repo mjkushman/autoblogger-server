@@ -15,6 +15,28 @@ class Comment {
    *  Requires userId, postId, and body
    */
 
+  
+  static async getComments(postId) {
+    const commentsRes = await db.query(
+      `SELECT c.comment_id AS "commentId", c.user_id AS "userId", c.created_at AS "userId", c.body, u.username
+      FROM comments c
+      LEFT JOIN users u ON c.user_id = u.user_id
+      WHERE c.post_id = $1`,[postId]
+    )
+    const numCommentsRes = await db.query(
+      `SELECT COUNT(comment_id) AS "numComments"
+      FROM comments
+      WHERE post_id = $1
+      GROUP BY post_id `,[postId]
+    )
+    const comments = commentsRes.rows
+    const numComments = numCommentsRes.rows[0]
+    return {comments, numComments}
+  }
+  
+  
+  
+  
   static async addComment(postId, { userId, body }) {
     const result = await db.query(
       `

@@ -13,14 +13,17 @@ const {
 class User {
   /** Returns a list of all users */
 
-  static async getAllUsers() {
-    const result = await db.query(`
+  static async getAllUsers(authors=false) {
+    const res = await db.query(`
     SELECT user_id AS "userId", username, first_name AS "firstName", last_name AS "firstName", email, author_bio AS "authorBio", is_admin AS "isAdmin"
     FROM users
+    ${authors? "WHERE is_author = true": ''}
     ORDER BY username`);
 
-    return result.rows;
+    return res.rows
   }
+
+
 
   /** Returns a single user along with their post history and comment history
    *
@@ -43,6 +46,7 @@ class User {
       [username]
     );
 
+    
     if (!userResponse.rows[0])
       throw new NotFoundError(`Could not find: ${username}`);
     const user = userResponse.rows[0];
@@ -50,10 +54,10 @@ class User {
     // get the user's post titles and ids. Not the whole post.
     const userPostResponse = await db.query(
       `
-    SELECT post_id AS "postId", created_at AS "createdAt", title_plaintext AS "titlePlaintext"
-    FROM posts
-    WHERE posts.user_id = $1
-    ORDER BY created_at DESC`,
+      SELECT post_id AS "postId", created_at AS "createdAt", title_plaintext AS "titlePlaintext"
+      FROM posts
+      WHERE posts.user_id = $1
+      ORDER BY created_at DESC`,
       [user.userId]
     );
     const userPosts = userPostResponse.rows;
@@ -172,27 +176,28 @@ class User {
        first_name AS "firstName", last_name AS "lastName", email, author_bio AS "authorBio", is_admin AS "isAdmin"
       FROM users
       WHERE username =$1`,
-      username
+      [username]
     );
     const user = result.rows[0];
 
     if (user) {
       const isValid = await bcrypt.compare(password, user.password);
       if (isValid == true) {
-        delete user.password; // be sure to delete this hashed password password before returning it.
+        delete user.password; // be sure to delete this hashed password password before returning the user.
         return user;
       }
     }
+    // if the password is not correct, throw an Unauthorized error
+    throw new UnauthorizedError("Invalid username/password");
   }
 
-  // 
+  //
   /** PATCH route {user} => {user}
    *  Update a user's information
-   * 
+   *
    */
   static async updateUser(userId, updateCols, updateVals) {
-
-    let userIdIndex = "$" + (updateVals.length +1)
+    let userIdIndex = "$" + (updateVals.length + 1);
 
     const result = await db.query(
       `UPDATE users
@@ -204,17 +209,16 @@ class User {
         first_name AS "firstName",
         last_name AS "lastName",
         email,
-        author_bio AS "authorBio"`,[...updateVals, userId]
-    )
+        author_bio AS "authorBio"`,
+      [...updateVals, userId]
+    );
 
     // console.log('RESULT',result)
-    return result.rows[0]
+    return result.rows[0];
   }
-
 }
 
 module.exports = User;
 
-
 // want to have a range of columns to update
-// and values for those columns 
+// and values for those columns
