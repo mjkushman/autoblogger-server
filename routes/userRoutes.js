@@ -44,6 +44,7 @@ router.get('/:username', async function (req,res,next) {
 
 
 
+
 /** PATCH / Update information about a user
  * User may udpate themselves. Admin may update anyone
  * Correct password required for any update

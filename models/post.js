@@ -6,6 +6,7 @@ const {
   NotFoundError,
   ExpressError,
 } = require("../expressError");
+const slug = require('slug')
 
 class Post {
   /** GET
@@ -88,17 +89,28 @@ class Post {
    **/
 
   static async createNewPost({ userId, title, bodyPlaintext, bodyHtml }) {
+    // Uses 2 statements. The first creates a post. The second updates the newly created post with a slug
+    // slug = slugified title + post id
+    const urlSlug = slug(title)
+    
     try {
-      const result = await db.query(
+      const insertRes = await db.query(
         `
       INSERT INTO posts
       (user_id, title_plaintext, body_plaintext, body_html)
       VALUES ($1, $2, $3, $4)
-      RETURNING post_id AS "postId", user_id AS "userId", created_at AS "createdAt", body_html AS "bodyHtml", title_plaintext AS "titlePlaintext", body_plaintext AS "bodyPlaintext"`,
+      RETURNING post_id AS "postId"`,
         [userId, title, bodyPlaintext, bodyHtml]
       );
-
-      const newPost = result.rows[0];
+      
+      let postId = insertRes.rows[0].postId
+      const updateRes = await db.query(
+        `UPDATE posts 
+        SET slug = $1
+        WHERE post_id = $2
+        RETURNING post_id AS "postId", user_id AS "userId", created_at AS "createdAt", body_html AS "bodyHtml", title_plaintext AS "titlePlaintext", body_plaintext AS "bodyPlaintext", slug`,[urlSlug+'-'+postId, postId]
+      )
+      const newPost = updateRes.rows[0];
       return newPost;
     } catch (error) {
       return new ExpressError(error);

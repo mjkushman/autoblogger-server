@@ -19,9 +19,11 @@ CREATE TABLE posts (
   user_id uuid REFERENCES users(user_id) ON DELETE SET NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   title_plaintext TEXT,
+  title_html TEXT,
   body_plaintext TEXT,
   body_html TEXT,
-  image_url TEXT
+  image_url TEXT,
+  slug TEXT
 );
 
 CREATE TABLE tags (

@@ -18,7 +18,7 @@ class Comment {
   
   static async getComments(postId) {
     const commentsRes = await db.query(
-      `SELECT c.comment_id AS "commentId", c.user_id AS "userId", c.created_at AS "userId", c.body, u.username
+      `SELECT c.comment_id AS "commentId", c.user_id AS "userId", c.created_at AS "createdAt", c.body, u.username
       FROM comments c
       LEFT JOIN users u ON c.user_id = u.user_id
       WHERE c.post_id = $1`,[postId]

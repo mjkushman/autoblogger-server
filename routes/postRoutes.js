@@ -51,7 +51,7 @@ router.post('/', async function (req,res,next) {
         // const {title, bodyPlaintext, bodyHtml} = req.body
         const post = await Post.createNewPost(req.body)
 
-        console.log(result)
+        // console.log(post)
         return res.status(201).json({post})
     } catch (error) {
         return next(error)

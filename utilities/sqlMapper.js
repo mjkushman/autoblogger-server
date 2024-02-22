@@ -14,7 +14,8 @@ const updateUserSql = (requestBody) => {
     "lastName":"last_name",
     "userId":"user_id",
     "userID":"user_id",
-    "authorBio":"author_bio"}
+    "authorBio":"author_bio",
+    "isAuthor": "is_author"}
     
     let updateVals = Object.values(requestBody)
 

@@ -39,6 +39,13 @@
             "examples": [
                 "Tall and handsome"
             ]
+        },
+        "isAuthor": {
+            "type": "boolean",
+            "title": "The isAuthor Schema",
+            "examples": [
+                true, false
+            ]
         }
     },
     "examples": [{
@@ -46,7 +53,8 @@
         "firstName": "mike",
         "lastName": "kush",
         "email": "mike@gmail.com",
-        "authorBio": "Tall and handsome"
+        "authorBio": "Tall and handsome",
+        "isAuthor": true
     }],
     "additionalProperties": false
 }

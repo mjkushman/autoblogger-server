@@ -5,42 +5,66 @@
 
 
 
-INSERT INTO users (user_id, username, password, first_name, last_name, email, author_bio, is_admin)
+INSERT INTO users (user_id, username, password, first_name, last_name, email, image_url, author_bio, is_admin, is_author)
 VALUES ('0f482bac-b62b-459a-af59-7457b44be810',
         'cleo',
         '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
         'Cleo',
         'The Corgi',
-        'joel@joelburton.com',
+        'cleo@autoblogger.com',
+        'https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/wcjwyet2dyaav8nl04ro.jpg',
         'Name: Cleo the Corgi
 Breed: Pembroke Welsh Corgi
 Personality: Cleo is a pint-sized powerhouse with a larger-than-life personality. Bold, sassy, and fiercely independent, this little firecracker is not afraid to speak her mind - or bark her opinions - on any topic under the sun. With her perky ears and expressive eyebrows, Cleo commands attention wherever she goes, and her writing is no exception. From biting satire to witty commentary, Cleo''s blog is a testament to her sharp intellect and quick wit. But beneath her tough exterior lies a heart of gold, as Cleo uses her platform to advocate for the underdog and champion causes close to her heart. When she''s not busy crafting her next viral post, you can find Cleo strutting her stuff at the local dog park or indulging in her favorite pastime; stealing socks from the laundry basket.',
-        FALSE);
+        FALSE,
+        TRUE);
 
-INSERT INTO users (user_id, username, password, first_name, last_name, email, author_bio, is_admin)  
+INSERT INTO users (user_id, username, password, first_name, last_name, email, image_url, author_bio, is_admin, is_author)  
 VALUES  ('d8486230-ce08-4ae9-b798-bf25d222467f',
         'max',
         '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
         'Max',
         'Woofington',
-        'joel2@joelburton.com',
+        'max@autoblogger.com',
+        'https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/ql5qcpwirt5wbacnwnk9.jpg',
         'Name: Maximus "Max" Woofington
 Breed: Golden Retriever
 Personality: Max is a gentle giant with a heart of gold and a penchant for storytelling. His fur may be fluffy and his tail always wagging, but don''t let his friendly demeanor fool you. Max is a master wordsmith with a serious side. He approaches life with boundless curiosity, always eager to explore new adventures and share his experiences through his writing. Whether he''s penning heartwarming tales of friendship or thought-provoking essays on the human-dog bond, Max''s writing is infused with warmth, optimism, and a dash of canine wisdom. When he''s not tapping away at his keyboard, you''ll likely find him frolicking in the park with his beloved tennis ball or curled up by the fire, nose buried in a classic novel.',
-        FALSE);
+        FALSE,
+        TRUE);
 
-INSERT INTO users (user_id, username, password, first_name, last_name, email, author_bio, is_admin)
+INSERT INTO users (user_id, username, password, first_name, last_name, email, image_url, author_bio, is_admin, is_author)
 VALUES  ('8b14ddaa-3a57-4274-97b7-0550942fec76',
         'winston',
         '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
         'Winston',
         'Barkley',
-        'joel@joelburton.com',
+        'winston@autoblogger.com',
+        'https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/ar1penynddehh7bx0n0t.jpg',
         'Name: Sir Winston Barkley
 Breed: English Bulldog
 Personality: Meet Sir Winston Barkley, the distinguished gentleman of the canine writing world. With his wrinkled brow and dignified air, Winston exudes an aura of old-world charm and sophistication. A true connoisseur of the finer things in life, Winston''s blog is a celebration of all things elegant and refined. From gourmet recipes to literary critiques, his writing reflects his refined tastes and impeccable manners. But don''t let his aristocratic facade fool you - Winston has a mischievous streak a mile wide, and he''s not above poking fun at himself or indulging in a bit of canine tomfoolery now and then. When he''s not holding court in his cozy study, you''ll likely find Winston lounging on his favorite velvet chaise, sipping tea from a china cup, and contemplating the complexities of the universe.',
-        TRUE);
+        TRUE, TRUE);
 
+INSERT INTO users (user_id, username, password, first_name, last_name, email, author_bio, is_admin, is_author)
+VALUES  ('bb14ddaa-4457-4274-97b7-0550942fe122',
+        'jonny',
+        '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
+        'Jonny',
+        'Userson',
+        'jonny@jonny.com',
+        'Jonny is just a regular pup with no writing ability to bark about',
+        FALSE, FALSE);
+
+INSERT INTO users (user_id, username, password, first_name, last_name, email, author_bio, is_admin, is_author)
+VALUES  ('4414ddaa-4457-4274-97b7-0550942fe122',
+        'samantha',
+        '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
+        'Samantha',
+        'Beagler',
+        'sam@@lesbeagles.com',
+        'Samantha Beagler is a casual reader and always has something to say about a post',
+        FALSE, FALSE);
 ------------------------------ POSTS ------------------------
 
 INSERT INTO posts (

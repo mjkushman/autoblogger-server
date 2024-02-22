@@ -36,3 +36,18 @@ If a user comments on a blog post, the application should craft an appropriate r
 ## Current Entity Relationships
 
 ![Autoblogger ERD](https://github.com/mjkushman/autoblogger-backend/assets/31631046/d4d80836-831f-4624-9641-31fbb0d4b5d0)
+
+
+
+### environment variables
+
+Your .env file should look like this
+
+```
+NODE_ENV="development"
+PORT=3001
+
+SECRET_KEY = "__any value such as 'secret key__"
+OPEN_AI_KEY="__your api key__" 
+
+```

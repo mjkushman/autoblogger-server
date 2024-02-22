@@ -11,11 +11,14 @@ const {
 } = require("../expressError");
 
 class User {
-  /** Returns a list of all users */
+  /** Returns a list of all users
+   * Doubles as a search for authors only if authors=true is passed 
+   * 
+   */
 
   static async getAllUsers(authors=false) {
     const res = await db.query(`
-    SELECT user_id AS "userId", username, first_name AS "firstName", last_name AS "firstName", email, author_bio AS "authorBio", is_admin AS "isAdmin"
+    SELECT user_id AS "userId", username, is_author AS "isAuthor", first_name AS "firstName", last_name AS "lastName", email, author_bio AS "authorBio", is_admin AS "isAdmin", image_url AS "imageUrl"
     FROM users
     ${authors? "WHERE is_author = true": ''}
     ORDER BY username`);
@@ -36,11 +39,13 @@ class User {
       ` 
       SELECT u.user_id AS "userId", 
       username, 
+      is_author AS "isAuthor", 
       first_name AS "firstName", 
-      last_name AS "lastName", 
+      last_name AS "lastName",
       email,
       author_bio AS "authorBio", 
-      is_admin AS "authorBio"
+      is_admin AS "authorBio",
+      image_url AS "imageUrl"
       FROM users u
       WHERE username =$1`,
       [username]
@@ -206,6 +211,7 @@ class User {
       RETURNING 
         user_id AS "userId",
         username,
+        is_author AS "isAuthor",
         first_name AS "firstName",
         last_name AS "lastName",
         email,
