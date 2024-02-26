@@ -95,12 +95,9 @@ router.post('/:id/comments', verifyLoggedIn, async function (req,res,next) {
 
 
         // create an AI's response to the comment
-        // THIS NEEDS TO HAPPEN ELSEWHERE. USER SHOULD NOT NEED TO WAIT FOR AI REPLY TO SEE THEY'RE COMMENT
-        // can I just remove the await part?
-        // const aiReply = await Comment.addAiReply(postId)
 
-        // UNCOMMENT TO LET AI REPLY TO POSTS
-        // Comment.addAiReply(postId)
+        // UNCOMMENT THE NEXT LINE TO LET AI REPLY TO POSTS
+        Comment.addAiReply(postId)
 
 
         // console.log(newComment)

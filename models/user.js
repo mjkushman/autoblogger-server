@@ -18,7 +18,16 @@ class User {
 
   static async getAllUsers(authors=false) {
     const res = await db.query(`
-    SELECT user_id AS "userId", username, is_author AS "isAuthor", first_name AS "firstName", last_name AS "lastName", email, author_bio AS "authorBio", is_admin AS "isAdmin", image_url AS "imageUrl"
+    SELECT 
+      user_id AS "userId", 
+      username, 
+      is_author AS "isAuthor", 
+      first_name AS "firstName", 
+      last_name AS "lastName", 
+      email, 
+      author_bio AS "authorBio", 
+      is_admin AS "isAdmin", 
+      image_url AS "imageUrl"
     FROM users
     ${authors? "WHERE is_author = true": ''}
     ORDER BY username`);
@@ -34,23 +43,27 @@ class User {
    *
    */
 
-  static async getUser(username) {
+  static async getUser(idType,idValue) {
+    // id is optional. If id is passed, then id is used instead of username
+    // 
+
     const userResponse = await db.query(
-      ` 
-      SELECT u.user_id AS "userId", 
+      `SELECT 
+      user_id AS "userId", 
       username, 
       is_author AS "isAuthor", 
       first_name AS "firstName", 
       last_name AS "lastName",
       email,
       author_bio AS "authorBio", 
-      is_admin AS "authorBio",
+      is_admin AS "isAdmin",
       image_url AS "imageUrl"
-      FROM users u
-      WHERE username =$1`,
-      [username]
+      FROM users
+      WHERE ${idType} = $1`,
+      [idValue]
     );
 
+    console.log('userResponse, user model',userResponse)
     
     if (!userResponse.rows[0])
       throw new NotFoundError(`Could not find: ${username}`);
@@ -84,52 +97,6 @@ class User {
     return user;
   }
 
-  static async getUserById(userId) {
-    const userResponse = await db.query(
-      ` 
-      SELECT u.user_id AS "userId", 
-      username, 
-      first_name AS "firstName", 
-      last_name AS "lastName", 
-      email,
-      author_bio AS "authorBio", 
-      is_admin AS "authorBio"
-      FROM users u
-      WHERE user_id =$1`,
-      [userId]
-    );
-
-    if (!userResponse.rows[0])
-      throw new NotFoundError(`Could not find: ${userId}`);
-    const user = userResponse.rows[0];
-
-    // get the user's post titles and ids. Not the whole post.
-    const userPostResponse = await db.query(
-      `
-    SELECT post_id AS "postId", created_at AS "createdAt", title_plaintext AS "titlePlaintext"
-    FROM posts
-    WHERE posts.user_id = $1
-    ORDER BY created_at DESC`,
-      [userId]
-    );
-    const userPosts = userPostResponse.rows;
-
-    // get the user's comments
-    const userCommentResponse = await db.query(
-      `
-    SELECT comment_id AS "commentId", user_id AS "userId", post_id AS "postId", created_at AS "createdAt", body
-    FROM comments
-    WHERE comments.user_id = $1`,
-      [userId]
-    );
-    const userComments = userCommentResponse.rows;
-
-    // append posts and comments to user
-    user.posts = userPosts;
-    user.comments = userComments;
-
-    return user;
-  }
 
   // Register a new user
   static async register({
@@ -169,6 +136,9 @@ class User {
            is_admin AS "isAdmin"`,
       [username, hashedPassword, firstName, lastName, email, authorBio, isAdmin]
     );
+    
+    // TODO Create a token, authorize this person who just created an account
+    
     const user = result.rows[0];
     return user;
   }
@@ -177,7 +147,7 @@ class User {
   static async authenticate({ username, password }) {
     // first, find the user
     const result = await db.query(
-      `SELECT username, password,
+      `SELECT username, password, user_id AS "userId",
        first_name AS "firstName", last_name AS "lastName", email, author_bio AS "authorBio", is_admin AS "isAdmin"
       FROM users
       WHERE username =$1`,

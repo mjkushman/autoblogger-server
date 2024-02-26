@@ -5,11 +5,11 @@
 
 const Post = require("../models/post");
 const User = require("../models/user");
+const { ExpressError } = require("../expressError");
 
 const { OPEN_AI_KEY } = require("../config");
 
 const OpenAI = require("openai");
-const { ExpressError } = require("../expressError");
 
 const openai = new OpenAI({ apiKey: OPEN_AI_KEY });
 
@@ -18,55 +18,69 @@ async function createAiReply(postId) {
 
   // Based on the postId, retreive the post info and author info
 
-  const post = await Post.getSinglePost(postId);
+  const response = await Post.getSinglePost(postId);
+  const post = response.post;
   if (!post) throw ExpressError(`Could not find post ${postId} `);
 
-  const postComments = post.comments;
+  const postComments = response.comments;
+  // console.log(...postComments);
 
-  const author = await User.getUserById(post.userId);
+  // extract the most recent comment
+  let mostRecentComment = postComments
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .pop().body;
+  // console.log("most recent comment:", mostRecentComment);
+
+  const author = await User.getUser("user_id", post.userId);
   if (!author) throw ExpressError(`Could not find author ${post.userId} `);
-  const authorBio = author.authorBio;
-
-  // Return public variables
-
-  /** Create an outline for a new blog post. Requires recent work listed as a string.
-   */
+  // const authorBio = author.authorBio;
 
   // Build the messages to send
   let messages = [
     {
       role: "system",
-      content: ` You're an author of a popular blog. 
-        This is your author biography: 
-        ${authorBio}`,
+      content: ` Your name is ${author.firstName} and you write for a popular blog. Your personality is described as:
+      "${author.authorBio}"
+      `,
     },
     {
       role: "user",
-      content: `Your recent blog article just received a new comment. Please write a thoughtful response to the comment. Please be consider the context of the blog post content and your biography.
-        
-        Your recent blog post:
-        ${post.bodyPlaintext}
-        
-        The comment you should reply to:
-        ${postComments[0].body}`,
+      content: `You just wrote this recent blog post:
+      "${post.bodyPlaintext}"`,
+    },
+    {
+      role: "user",
+      content: `Your most recent blog post just received the comment below.
+      Speaking in a casual first person voice, how should you respond?
+
+      "${mostRecentComment}"
+      `,
     },
   ];
 
   // Ask the LLM to write the reply
-  console.log("sending:", messages);
+  // console.log("sending:", messages);
   try {
-    console.log("Attempting to write a reply to a comment");
+    console.log(
+      `Attempting to generate an AI reply to comment: ${mostRecentComment}`
+    );
     const completion = await openai.chat.completions.create({
       messages: messages,
       model: "gpt-3.5-turbo",
     });
 
-    console.log("...comment reply written");
+    console.log(`
+    ...finished writing comment reply.
+    Reply: ${completion.choices[0].message.content} 
+    Usage:
+    -${completion.usage.completion_tokens} completion tokens
+    -${completion.usage.prompt_tokens} prompt tokens
+    -${completion.usage.total_tokens} total tokens
+    `);
     return {
       body: completion.choices[0].message.content,
-      userId: author.userId
-    }
-    ;
+      userId: author.userId,
+    };
   } catch (error) {
     console.log("Error writing a comment reply:", error);
   }

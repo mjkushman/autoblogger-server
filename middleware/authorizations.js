@@ -28,6 +28,7 @@ function verifyJWT(req, res, next) {
     if (authHeader) {
       const token = authHeader.replace(/^[Bb]earer /, "").trim();
       res.locals.user = jwt.verify(token, SECRET_KEY);
+      console.log('stored user token to locals')
     }
     return next();
   } catch (error) {
@@ -42,8 +43,8 @@ function verifyJWT(req, res, next) {
  * The function above, verifyJWT, will set res.locals.user if a valid token is provided
  */
 function verifyLoggedIn(req, res, next) {
+    console.log('VERIFY LOGIN',{...res.locals})
     try {
-
       if(res.locals.user == null) throw new UnauthorizedError();
       return next();
     } catch (error) {

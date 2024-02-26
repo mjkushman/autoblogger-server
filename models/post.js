@@ -6,7 +6,8 @@ const {
   NotFoundError,
   ExpressError,
 } = require("../expressError");
-const slug = require('slug')
+const slug = require('slug');
+const {nanoid} = require('nanoid');
 
 class Post {
   /** GET
@@ -15,12 +16,23 @@ class Post {
    */
   static async getAllPosts() {
     const result = await db.query(`
-    SELECT p.post_id AS "postId", p.user_id AS "userId", p.created_at AS "createdAt", p.title_plaintext AS "titlePlaintext", p.body_plaintext AS "bodyPlaintext", p.body_html AS "bodyHtml", u.username ,
+    SELECT 
+    p.post_id AS "postId", 
+    p.user_id AS "userId", 
+    p.created_at AS "createdAt", 
+    p.title_plaintext AS "titlePlaintext",
+    p.title_html AS "titleHtml", 
+    p.body_plaintext AS "bodyPlaintext", 
+    p.body_html AS "bodyHtml",
+    p.image_url AS "postImageUrl",
+    u.username,
+    p.slug,
+    u.image_url AS "authorImageUrl",
     COUNT(comment_id) AS "numComments"
     FROM posts p
     LEFT JOIN comments c ON p.post_id = c.post_id
     LEFT JOIN users u ON p.user_id = u.user_id
-    GROUP BY p.post_id, username`);
+    GROUP BY p.post_id, username, u.image_url`);
     return result.rows;
   }
 
@@ -37,24 +49,25 @@ class Post {
     const postResult = await db.query(
     
       `
-      SELECT p.post_id AS "postId", p.user_id AS "userId", p.created_at AS "createdAt", p.title_plaintext AS "titlePlaintext", p.body_plaintext AS "bodyPlaintext", p.body_html AS "bodyHtml", COUNT(c.comment_id) AS "numComments"
+      SELECT p.post_id AS "postId", 
+      p.user_id AS "userId", 
+      p.created_at AS "createdAt", 
+      p.title_plaintext AS "titlePlaintext",
+      p.title_html AS "titleHtml", 
+      p.body_plaintext AS "bodyPlaintext", 
+      p.body_html AS "bodyHtml", u.username,
+      p.slug,
+      p.image_url AS "postImageUrl", 
+      u.image_url AS "authorImageUrl", 
+      COUNT(c.comment_id) AS "numComments"
       FROM posts p
       LEFT JOIN comments c ON p.post_id = c.post_id
+      LEFT JOIN users u ON p.user_id = u.user_id
       WHERE p.post_id =$1
-      GROUP BY p.post_id`,
+      GROUP BY p.post_id, u.username, u.image_url`,
         [postId]
-    
 
-      // `
-    // SELECT p.post_id, p.user_id AS "userId", p.created_at AS "createdAt", p.title_plaintext AS "titlePlaintext", p.body_plaintext AS "bodyPlaintext", p.body_html AS "bodyHtml", array_agg(c.comment_id) AS "commentId"
-    // FROM posts p
-    // LEFT JOIN comments c ON p.post_id = c.post_id
-    // WHERE p.post_id =$1
-    // GROUP BY p.post_id`,
-    //   [postId]
     );
-
-
 
 
     const post = postResult.rows[0];
@@ -88,27 +101,52 @@ class Post {
    *
    **/
 
-  static async createNewPost({ userId, title, bodyPlaintext, bodyHtml }) {
+  static async createNewPost({ userId, titleHtml, titlePlaintext, bodyHtml, bodyPlaintext,imageUrl }) {
+    
     // Uses 2 statements. The first creates a post. The second updates the newly created post with a slug
-    // slug = slugified title + post id
-    const urlSlug = slug(title)
+    // slug = slugified title + randomly generated nanoid
+    
+    const randomId = nanoid(6)
     
     try {
       const insertRes = await db.query(
         `
       INSERT INTO posts
-      (user_id, title_plaintext, body_plaintext, body_html)
-      VALUES ($1, $2, $3, $4)
+        (user_id, 
+        title_html,
+        title_plaintext, 
+        body_html, 
+        body_plaintext, 
+        image_url)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING post_id AS "postId"`,
-        [userId, title, bodyPlaintext, bodyHtml]
+        [userId, 
+          titleHtml,
+          titlePlaintext, 
+          bodyHtml,
+          bodyPlaintext,
+          imageUrl 
+          ]
       );
       
-      let postId = insertRes.rows[0].postId
+      let postId = insertRes.rows[0].postId // uses the just-created post ID
+      const urlSlug = slug(titlePlaintext) // creates a url-friendly slug
+
       const updateRes = await db.query(
         `UPDATE posts 
         SET slug = $1
         WHERE post_id = $2
-        RETURNING post_id AS "postId", user_id AS "userId", created_at AS "createdAt", body_html AS "bodyHtml", title_plaintext AS "titlePlaintext", body_plaintext AS "bodyPlaintext", slug`,[urlSlug+'-'+postId, postId]
+        RETURNING 
+          post_id AS "postId", 
+          user_id AS "userId", 
+          created_at AS "createdAt", 
+          title_plaintext AS "titlePlaintext", 
+          title_html AS "titleHtml", 
+          body_plaintext AS "bodyPlaintext",
+          body_html AS "bodyHtml", 
+          image_url AS "imageUrl", 
+          slug`,
+          [urlSlug+'-'+randomId, postId]
       )
       const newPost = updateRes.rows[0];
       return newPost;

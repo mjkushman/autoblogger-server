@@ -11,13 +11,15 @@ function createToken(user) {
 
   let payload = {
     username: user.username,
+    userId: user.userId,
     firstName:user.firstName,
     lastName:user.lastName,
     authorBio: user.authorBio,
+    imageUrl: user.imageUrl,
     isAdmin: user.isAdmin || false,
   };
-
-  return jwt.sign(payload, SECRET_KEY, {expiresIn: "3 days"});
+  const signedToken = jwt.sign(payload, SECRET_KEY, {expiresIn: "3 days"})
+  return signedToken;
 }
 
 module.exports = { createToken };

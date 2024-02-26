@@ -20,7 +20,7 @@ app.use(morgan("tiny"));
 app.use(verifyJWT); // stores decoded token on res.locals.user, if one is provided
 
 app.use("/auth", authRoutes);
-// app.use("/companies", companiesRoutes);
+
 app.use("/users", usersRoutes);
 app.use("/posts", postRoutes);
 

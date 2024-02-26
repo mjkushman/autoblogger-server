@@ -15,7 +15,8 @@ const router = express.Router({ mergeParams: true });
 
 
 router.post('/login', async function (req,res,next) {
-try {
+    console.log('PRE AUTH RES LOCALS',{...res.locals})
+    try {
     const validator = jsonschema.validate(req.body, userAuthSchema)
     if(!validator.valid) {
         const errs = validator.errors.map(e => e.stack);
@@ -24,6 +25,7 @@ try {
     const {username, password} = req.body;
     const user = await User.authenticate(req.body);
     const token = createToken(user)
+    
     return res.json({token})
 
 } catch (error) {
@@ -55,7 +57,7 @@ router.post('/register', async function (req,res,next) {
         // needs to return a JWT
         const token = createToken(newUser)
 
-        return res.status(201).json(token)
+        return res.status(201).json({token, newUser})
     } catch (error) {
         return next(error)
     }

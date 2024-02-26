@@ -13,6 +13,7 @@ const { OPEN_AI_KEY } = require("../config");
 const OpenAI = require("openai");
 const { htmlToText } = require("html-to-text");
 const { ExpressError } = require("../expressError");
+const htmlParser = require('./htmlParser')
 
 const openai = new OpenAI({ apiKey: OPEN_AI_KEY });
 
@@ -23,7 +24,7 @@ async function createAiBlogger(username = "cleo") {
 
   // Based on the username, retreive the blogger's information.
 
-  let author = await User.getUser(username);
+  let author = await User.getUser('username',username);
   if (!author) throw ExpressError(`Could not find author ${username} `);
   const authorBio = author.authorBio;
 
@@ -31,7 +32,7 @@ async function createAiBlogger(username = "cleo") {
 
   let recentWork = ``
   const titlesArray = author.posts.map(
-    ({ title_plaintext }) => title_plaintext);
+    ({ titlePlaintext }) => titlePlaintext);
   for (let i=0; i <= (Math.min(16, titlesArray.length)); i++) {
     
     recentWork += `${Number(i) + 1}. "${titlesArray[i]}"\n`;
@@ -92,10 +93,10 @@ async function createAiBlogger(username = "cleo") {
   
   
           INSTRUCTIONS:
-          1. Complete the post with fewer than 500 words.
+          1. Complete the post with fewer than 1000 words.
           2. Format the response in HTML with proper HTML tags.
           3. Include a title in <h1> tags.
-          4. Wrap the entire post in <body> tags.
+          4. Wrap the rest of the post in a <div> tag with id="primary-content".
           5. But do not include any boilerplate HTML`,
         },
       ]
@@ -110,28 +111,30 @@ async function createAiBlogger(username = "cleo") {
       if(!completion) throw new ExpressError('Something went wrong while trying to write the blog post')
 
     // Parse the completion for specific elements
+    
+    const responseHtml = completion.choices[0].message.content;
+    
+    console.log('HTML RESPONSE FROM LLM:',responseHtml)
+    
+    let postData = htmlParser(responseHtml)
 
-    const bodyHtml = completion.choices[0].message.content;
-    
-    const post = {
-      userId: author.userId,
-      title: (title = htmlToText(bodyHtml, {
-        baseElements: { selectors: ["h1"] },
-      })),
-      bodyHtml: bodyHtml,
-      bodyPlaintext: htmlToText(bodyHtml),
-    };
-    
+
     // Add the article to database
-      const newPost = await Post.createNewPost(post);
-
+    try {
+      const newPost = await Post.createNewPost({...postData,userId:author.userId});
       console.log(`
       New post created!
-      Author: ${username}
+      postId: ${newPost.postId}
+      Author: ${newPost.userId}
       Title: ${newPost.titlePlaintext}
       Created at: ${newPost.createdAt}`);
-
+  
       return newPost;
+      
+    } catch (error) {
+      console.log('error creating post:',error)
+    }  
+
       }
 
     };
