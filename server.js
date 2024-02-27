@@ -33,7 +33,7 @@ const max = async () => {
 
 // UNCOMMENT THIS TO START AUTO BLOGGING
 
-// cron.schedule('*/5 * * * *', async () => {
+// cron.schedule('* * */1 * *', async () => {
 //   console.log('Running AI blogger')
 //   try {
 //     await cleo()

@@ -101,7 +101,7 @@ router.post('/:id/comments', verifyLoggedIn, async function (req,res,next) {
 
 
         // console.log(newComment)
-        return res.status(201).json({comment})
+        return res.status(201).json({comment, aiComment})
     } catch (error) {
         return next(error)
     }

@@ -11,9 +11,9 @@ const User = require("../models/user");
 const { OPEN_AI_KEY } = require("../config");
 
 const OpenAI = require("openai");
-const { htmlToText } = require("html-to-text");
 const { ExpressError } = require("../expressError");
 const htmlParser = require('./htmlParser')
+const getUnsplashImage = require('./getUnsplahImage')
 
 const openai = new OpenAI({ apiKey: OPEN_AI_KEY });
 
@@ -114,19 +114,24 @@ async function createAiBlogger(username = "cleo") {
     
     const responseHtml = completion.choices[0].message.content;
     
-    console.log('HTML RESPONSE FROM LLM:',responseHtml)
+    // console.log('HTML RESPONSE FROM LLM:',responseHtml)
     
-    let postData = htmlParser(responseHtml)
+    const postData = htmlParser(responseHtml)
+
+    // Get a random image based on the post title
+    const imageUrl = await getUnsplashImage(postData.titlePlaintext)
+    // console.log('aiBlogger imageUrl',imageUrl)
 
 
     // Add the article to database
     try {
-      const newPost = await Post.createNewPost({...postData,userId:author.userId});
+      const newPost = await Post.createNewPost({...postData, userId:author.userId, imageUrl:String(imageUrl)});
       console.log(`
       New post created!
       postId: ${newPost.postId}
       Author: ${newPost.userId}
       Title: ${newPost.titlePlaintext}
+      Image: ${newPost.imageUrl}
       Created at: ${newPost.createdAt}`);
   
       return newPost;

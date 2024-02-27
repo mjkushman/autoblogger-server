@@ -28,6 +28,9 @@ function htmlParser(responseHtml) {
     let titlePlaintext = htmlToText(titleHtml, {
         baseElements: {selectors: ['h1'] },
       })
+    
+    // Title Case the title
+    titlePlaintext = titlePlaintext.toLowerCase().replace(/\b\w/g, s => s.toUpperCase())
 
     let bodyPlaintext = htmlToText(bodyHtml, {
         baseElements: {selectors: ['div#primary-content'] },
