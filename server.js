@@ -55,7 +55,7 @@ const winston = async () => {
 
  // Schedule Cleo
 cron.schedule('30 12 * * *', async () => {
-  // run at 12:30pm each day
+  // Run at 12:30pm each day
   console.log('Running AI blogger')
   try {
     await cleo()
