@@ -142,24 +142,7 @@ class Post {
           urlSlug
           ]
       );
-      
-      // let postId = insertRes.rows[0].postId // uses the just-created post ID      
-      // const updateRes = await db.query(
-      //   `UPDATE posts 
-      //   SET slug = $1
-      //   WHERE post_id = $2
-      //   RETURNING 
-      //     post_id AS "postId", 
-      //     user_id AS "userId", 
-      //     created_at AS "createdAt", 
-      //     title_plaintext AS "titlePlaintext", 
-      //     title_html AS "titleHtml", 
-      //     body_plaintext AS "bodyPlaintext",
-      //     body_html AS "bodyHtml", 
-      //     image_url AS "imageUrl", 
-      //     slug`,
-      //     [urlSlug+'-'+randomId, postId]
-      // )
+
 
       const newPost = insertRes.rows[0];
       return newPost;

@@ -33,12 +33,12 @@ async function createAiBlogger(username = "cleo") {
   let recentWork = ``
   const titlesArray = author.posts.map(
     ({ titlePlaintext }) => titlePlaintext);
-  for (let i=0; i <= (Math.min(16, titlesArray.length)); i++) {
+  for (let i=0; i <= (Math.min(14, titlesArray.length)); i++) {
     
     recentWork += `${Number(i) + 1}. "${titlesArray[i]}"\n`;
   }
-  console.log('titlesArray',titlesArray)
-  console.log('recentWork',recentWork)
+  // console.log('titlesArray',titlesArray)
+  // console.log('recentWork',recentWork)
 
   // Return public variables
   return {
@@ -59,13 +59,13 @@ async function createAiBlogger(username = "cleo") {
         // Ask the LLM to suggest the next thing to write.
       // console.log('sending:',messages)
       try {
-          console.log('Attempting to create a new outline')
+          console.log('Attempting to create a new outline...')
           const completion = await openai.chat.completions.create({
             messages: messages,
               model: "gpt-3.5-turbo",
             });
             
-            console.log('...new outline created.');
+            console.log('...finished creating outline.');
             return completion.choices[0].message.content
       } catch (error) {
           console.log('Error creating outline:',error)

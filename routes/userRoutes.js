@@ -24,7 +24,7 @@ router.get("/", async function (req, res, next) {
 
   if(id) {
     try {
-        console.log("getting user by user_id");
+        // console.log("getting user by user_id");
         const user = await User.getUser('user_id',id);
       return res.json({ user });
     } catch (error) {
@@ -32,7 +32,7 @@ router.get("/", async function (req, res, next) {
     }
   } else if (username) {
     try {
-        console.log("getting user by username");
+        // console.log("getting user by username");
         const user = await User.getUser('username',username);
       return res.json({ user });
     } catch (error) {
@@ -40,7 +40,7 @@ router.get("/", async function (req, res, next) {
     }
   } else {
     try {
-      console.log("getting all users");
+      // console.log("getting all users");
       const authors = req.query.authors == "true";
       const users = await User.getAllUsers(authors);
       return res.json({ users });

@@ -63,7 +63,7 @@ class User {
       [idValue]
     );
 
-    console.log('userResponse, user model',userResponse)
+    // console.log('userResponse, user model',userResponse)
     
     if (!userResponse.rows[0])
       throw new NotFoundError(`Could not find: ${username}`);
@@ -108,7 +108,6 @@ class User {
     authorBio,
     isAdmin = false,
   }) {
-    console.log("register method in model");
     // first check for username duplicates
     const duplicateCheck = await db.query(
       `SELECT username
@@ -122,8 +121,8 @@ class User {
     // hash the password for storage
     const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
 
-    console.log("password:", password);
-    console.log("hashed password:", hashedPassword);
+    
+    // console.log("hashed password:", hashedPassword);
 
     const result = await db.query(
       `INSERT INTO users 
@@ -137,7 +136,6 @@ class User {
       [username, hashedPassword, firstName, lastName, email, authorBio, isAdmin]
     );
     
-    // TODO Create a token, authorize this person who just created an account
     
     const user = result.rows[0];
     return user;

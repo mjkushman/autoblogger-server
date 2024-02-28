@@ -89,7 +89,7 @@ router.post('/:id/comments', verifyLoggedIn, async function (req,res,next) {
     
     try {
         // add a new comment to the post
-        console.log(res.locals.user)
+    
         const postId = req.params.id
         const comment = await Comment.addComment(postId, req.body)
 

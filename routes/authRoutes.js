@@ -15,7 +15,7 @@ const router = express.Router({ mergeParams: true });
 
 
 router.post('/login', async function (req,res,next) {
-    console.log('PRE AUTH RES LOCALS',{...res.locals})
+    // console.log('PRE AUTH RES LOCALS',{...res.locals})
     try {
     const validator = jsonschema.validate(req.body, userAuthSchema)
     if(!validator.valid) {
@@ -52,7 +52,7 @@ router.post('/register', async function (req,res,next) {
         }
 
         const newUser = await User.register({...req.body, isAdmin:false})
-        console.log(newUser)
+        // console.log(newUser)
 
         // needs to return a JWT
         const token = createToken(newUser)
