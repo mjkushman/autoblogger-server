@@ -68,6 +68,7 @@ VALUES  ('4414ddaa-4457-4274-97b7-0550942fe122',
 ------------------------------ POSTS ------------------------
 
 INSERT INTO posts (
+                post_id,
                 user_id,
                 created_at,
                 title_plaintext,
@@ -78,17 +79,19 @@ INSERT INTO posts (
                 slug
                 )
 VALUES (
+        'aaaaaa',
         '0f482bac-b62b-459a-af59-7457b44be810',
         '2024-02-03 11:12:01',
-        'Thinking of a title can be hard',
+        'Barking Up the Right Tree: How to Advocate for Canine Causes',
         '<h1>Thinking of a title can be hard</h1>',
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur eu venenatis urna. Pellentesque semper velit ut erat malesuada, et facilisis nibh facilisis. Sed auctor mi at ultricies ullamcorper. Curabitur vitae purus elit. Maecenas finibus vitae ligula eu fringilla. Proin sit amet elit sit amet nisl malesuada elementum maximus id lorem. Nunc justo metus, aliquam id pulvinar ut, laoreet vitae augue. Ut a sapien sed nisi suscipit pulvinar. Integer pellentesque blandit efficitur. Vivamus malesuada arcu condimentum nulla commodo, quis aliquet tortor congue. Nam vitae nunc volutpat, fermentum tellus quis, mollis sem. Vivamus at ante molestie, finibus quam et, convallis lacus. Aenean nibh velit, maximus et bibendum sit amet, blandit in justo. Maecenas sed sodales arcu. Phasellus at nulla condimentum, euismod arcu sed, sagittis quam. Aenean vel fermentum felis. Nulla ullamcorper orci est, nec imperdiet magna dignissim sed. Vivamus semper vitae leo vel auctor. Donec nulla velit, sodales eget libero quis, vestibulum tristique ligula. Phasellus sit amet orci ut erat porta viverra ut at velit. Vestibulum rutrum lorem id est venenatis, sit amet ornare est ornare. Nullam ullamcorper justo diam, nec euismod nulla finibus in. Mauris vitae mi id quam elementum ultrices. Phasellus rhoncus gravida nisl eu dictum. Duis vehicula congue justo, vel euismod libero interdum quis. Sed gravida dui auctor arcu rutrum bibendum. Etiam eu augue vitae odio egestas lacinia sit amet at quam. Vivamus scelerisque dui at turpis lobortis, ut blandit neque vulputate. Pellentesque vitae enim eget sem iaculis bibendum. Ut eget fermentum lorem, ac aliquam nulla. Pellentesque iaculis posuere felis id dapibus. Quisque commodo lobortis justo ut dictum.', 
         '<h2>Lorem ipsum dolor</h2> <p><strong>sit amet, consectetur</strong> adipiscing elit. Curabitur eu venenatis urna. Pellentesque semper velit ut erat malesuada, et facilisis nibh facilisis. Sed auctor mi at ultricies ullamcorper. Curabitur vitae purus elit. Maecenas finibus vitae ligula eu fringilla. Proin sit amet elit sit amet nisl malesuada elementum maximus id lorem. Nunc justo metus, aliquam id pulvinar ut, laoreet vitae augue. Ut a sapien sed nisi suscipit pulvinar. Integer pellentesque blandit efficitur. Vivamus malesuada arcu condimentum nulla commodo, quis aliquet tortor congue. Nam vitae nunc volutpat, fermentum tellus quis, mollis sem. Vivamus at ante molestie, finibus quam et, convallis lacus. Aenean nibh velit, maximus et bibendum sit amet, blandit in justo. Maecenas sed sodales arcu. Phasellus at nulla condimentum, euismod arcu sed, sagittis quam. Aenean vel fermentum felis.</p>
         <p>Nulla ullamcorper orci est, nec imperdiet magna dignissim sed. Vivamus semper vitae leo vel auctor. Donec nulla velit, sodales eget libero quis, vestibulum tristique ligula. Phasellus sit amet orci ut erat porta viverra ut at velit. Vestibulum rutrum lorem id est venenatis, sit amet ornare est ornare. Nullam ullamcorper justo diam, nec euismod nulla finibus in. Mauris vitae mi id quam elementum ultrices. Phasellus rhoncus gravida nisl eu dictum. Duis vehicula congue justo, vel euismod libero interdum quis. Sed gravida dui auctor arcu rutrum bibendum. Etiam eu augue vitae odio egestas lacinia sit amet at quam. Vivamus scelerisque dui at turpis lobortis, ut blandit neque vulputate. Pellentesque vitae enim eget sem iaculis bibendum. Ut eget fermentum lorem, ac aliquam nulla. Pellentesque iaculis posuere felis id dapibus. Quisque commodo lobortis justo ut dictum.</p>',
         'https://images.unsplash.com/photo-1664575196851-5318f32c3f43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1Njg0MzB8MHwxfHNlYXJjaHwxfHx3cml0ZXJ8ZW58MHx8fHwxNzA4ODkwNzUzfDA&ixlib=rb-4.0.3&q=80&w=1080',
-        'thinking-of-a-title-can-be-hard-1'),
+        'thinking-of-a-title-can-be-hard'),
        
        (
+        'bbbbbb',
         '0f482bac-b62b-459a-af59-7457b44be810',
         '2024-02-04 15:11:42',
         'Thinking of a second title can be even harder',
@@ -102,11 +105,33 @@ VALUES (
 
 INSERT INTO comments (user_id, post_id, created_at, body)
 
-VALUES ('d8486230-ce08-4ae9-b798-bf25d222467f', 1, '2024-02-03 15:12:01','This is the first comment on post 1'),
-       ('d8486230-ce08-4ae9-b798-bf25d222467f', 1, '2024-02-05 11:15:01','This is the second comment on post 1'),
-       ('d8486230-ce08-4ae9-b798-bf25d222467f', 2, '2024-02-05 15:11:42', 'This is the first comment on post 2'),
-       ('d8486230-ce08-4ae9-b798-bf25d222467f', 2, '2024-02-04 18:11:42','This is the second comment on post 2'),
-       ('d8486230-ce08-4ae9-b798-bf25d222467f', 2, '2024-02-06 11:11:42','This is the third comment on post 2');
+VALUES (
+        'd8486230-ce08-4ae9-b798-bf25d222467f', 
+        'bbbbbb', 
+        '2024-02-03 15:12:01','This is the first comment on post 1'
+        ),
+       (
+        'd8486230-ce08-4ae9-b798-bf25d222467f', 
+        'bbbbbb', 
+        '2024-02-05 11:15:01','This is the second comment on post 1'
+        ),
+       (
+        'd8486230-ce08-4ae9-b798-bf25d222467f', 
+       'bbbbbb', 
+       '2024-02-05 15:11:42', 
+       'This is the first comment on post 2'
+       ),
+       (
+        'd8486230-ce08-4ae9-b798-bf25d222467f', 
+        'aaaaaa', 
+        '2024-02-04 18:11:42','This is the second comment on post 2'
+        ),
+       (
+        'd8486230-ce08-4ae9-b798-bf25d222467f',
+        'aaaaaa', 
+        '2024-02-06 11:11:42',
+        'This is the third comment on post 2'
+        );
 
 
 ------------------------------ TAGS ------------------------
@@ -123,7 +148,7 @@ VALUES ('#data'),
 
 INSERT INTO posts_tags (post_id, tag)
 
-VALUES ('1', '#data'),
-        ('1', '#funny'),
-        ('2', '#engineering'),
-        ('2', '#data');
+VALUES ('aaaaaa', '#data'),
+        ('aaaaaa', '#funny'),
+        ('bbbbbb', '#engineering'),
+        ('bbbbbb', '#data');

@@ -106,37 +106,23 @@ class Post {
     // Uses 2 statements. The first creates a post. The second updates the newly created post with a slug
     // slug = slugified title + randomly generated nanoid
     
-    const randomId = nanoid(6)
-    
+    const postId = nanoid(6) // create 6 character unique id
+    const urlSlug = slug(titlePlaintext) // creates a url-friendly slug
+
     try {
       const insertRes = await db.query(
         `
       INSERT INTO posts
-        (user_id, 
+        (post_id,
+          user_id, 
         title_html,
         title_plaintext, 
         body_html, 
         body_plaintext, 
-        image_url)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING post_id AS "postId"`,
-        [userId, 
-          titleHtml,
-          titlePlaintext, 
-          bodyHtml,
-          bodyPlaintext,
-          imageUrl 
-          ]
-      );
-      
-      let postId = insertRes.rows[0].postId // uses the just-created post ID
-      const urlSlug = slug(titlePlaintext) // creates a url-friendly slug
-
-      const updateRes = await db.query(
-        `UPDATE posts 
-        SET slug = $1
-        WHERE post_id = $2
-        RETURNING 
+        image_url,
+        slug)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING 
           post_id AS "postId", 
           user_id AS "userId", 
           created_at AS "createdAt", 
@@ -146,9 +132,36 @@ class Post {
           body_html AS "bodyHtml", 
           image_url AS "imageUrl", 
           slug`,
-          [urlSlug+'-'+randomId, postId]
-      )
-      const newPost = updateRes.rows[0];
+        [postId,
+          userId, 
+          titleHtml,
+          titlePlaintext, 
+          bodyHtml,
+          bodyPlaintext,
+          imageUrl,
+          urlSlug
+          ]
+      );
+      
+      // let postId = insertRes.rows[0].postId // uses the just-created post ID      
+      // const updateRes = await db.query(
+      //   `UPDATE posts 
+      //   SET slug = $1
+      //   WHERE post_id = $2
+      //   RETURNING 
+      //     post_id AS "postId", 
+      //     user_id AS "userId", 
+      //     created_at AS "createdAt", 
+      //     title_plaintext AS "titlePlaintext", 
+      //     title_html AS "titleHtml", 
+      //     body_plaintext AS "bodyPlaintext",
+      //     body_html AS "bodyHtml", 
+      //     image_url AS "imageUrl", 
+      //     slug`,
+      //     [urlSlug+'-'+randomId, postId]
+      // )
+
+      const newPost = insertRes.rows[0];
       return newPost;
     } catch (error) {
       return new ExpressError(error);

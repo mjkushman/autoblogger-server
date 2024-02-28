@@ -15,7 +15,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE posts (
-  post_id SERIAL PRIMARY KEY ,
+  post_id TEXT PRIMARY KEY ,
   user_id uuid REFERENCES users(user_id) ON DELETE SET NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   title_plaintext TEXT,
@@ -34,7 +34,7 @@ CREATE TABLE comments (
   comment_id SERIAL PRIMARY KEY,
   user_id uuid 
     REFERENCES users(user_id) ON DELETE CASCADE,
-  post_id INTEGER 
+  post_id TEXT 
     REFERENCES posts(post_id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   body TEXT
@@ -43,7 +43,7 @@ CREATE TABLE comments (
 ---------------  unions ---------------
 
 CREATE TABLE posts_comments (
-  post_id INTEGER 
+  post_id TEXT 
     REFERENCES posts(post_id) ON DELETE CASCADE,
   comment_id INTEGER 
     REFERENCES comments(comment_id) ON DELETE CASCADE,
@@ -51,7 +51,7 @@ CREATE TABLE posts_comments (
 );
 
 CREATE TABLE posts_tags (
-  post_id INTEGER 
+  post_id TEXT 
     REFERENCES posts(post_id) ON DELETE CASCADE,
   tag TEXT 
     REFERENCES tags(tag) ON DELETE CASCADE,
