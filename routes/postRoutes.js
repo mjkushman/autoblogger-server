@@ -93,15 +93,12 @@ router.post('/:id/comments', verifyLoggedIn, async function (req,res,next) {
         const postId = req.params.id
         const comment = await Comment.addComment(postId, req.body)
 
-
         // create an AI's response to the comment
-
         // UNCOMMENT THE NEXT LINE TO LET AI REPLY TO POSTS
         Comment.addAiReply(postId)
 
-
         // console.log(newComment)
-        return res.status(201).json({comment, aiComment})
+        return res.status(201).json({comment})
     } catch (error) {
         return next(error)
     }
