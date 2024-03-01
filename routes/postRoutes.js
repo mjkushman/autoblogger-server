@@ -4,7 +4,7 @@
 
 const Post = require('../models/post') // import post model from models folder
 const Comment = require('../models/comment') // import comment model from models folder
-const {verifyAuth, verifyLoggedIn} = require('../middleware/authorizations')
+const {verifyLoggedIn} = require('../middleware/authorizations')
 const express = require('express')
 
 const router = express.Router({ mergeParams: true });

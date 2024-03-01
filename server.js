@@ -56,36 +56,45 @@ const winston = async () => {
  // Schedule Cleo
 cron.schedule('30 12 * * *', async () => {
   // Run at 12:30pm each day
-  console.log('Running AI blogger')
+  console.log('Running AI blogger: cleo')
   try {
     await cleo()
     console.log('Finished running Cleo')
   } catch (error) {
     console.log('Error running Cleo in cron:',error)
   }
+}, {
+  scheduled: true,
+  timezone: "America/Los_Angeles"
 });
 
 // Schedule Max
 cron.schedule('22 8 * * *', async () => {
   // Run at 8:22am every day
-  console.log('Running AI blogger')
+  console.log('Running AI blogger: max')
   try {
     await max()
     console.log('Finished running Max')
   } catch (error) {
     console.log('Error running Max in cron:',error)
   }
+}, {
+  scheduled: true,
+  timezone: "America/Los_Angeles"
 });
 // Schedule Winston
 cron.schedule('45 20 * * *', async () => {
   // Run at 8:45pm every day
-  console.log('Running AI blogger')
+  console.log('Running AI blogger: winsoton')
   try {
     await winston()
     console.log('Finished running Winston')
   } catch (error) {
     console.log('Error running Winston in cron:',error)
   }
+}, {
+  scheduled: true,
+  timezone: "America/Los_Angeles"
 });
 
 
