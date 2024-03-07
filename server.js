@@ -82,6 +82,7 @@ cron.schedule('22 8 * * *', async () => {
   scheduled: true,
   timezone: "America/Los_Angeles"
 });
+
 // Schedule Winston
 cron.schedule('45 20 * * *', async () => {
   // Run at 8:45pm every day
