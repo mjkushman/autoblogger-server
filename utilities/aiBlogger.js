@@ -28,8 +28,18 @@ async function createAiBlogger(username = "cleo") {
   if (!author) throw ExpressError(`Could not find author ${username} `);
   const authorBio = author.authorBio;
 
-  // List the author's recent work in a string
 
+/**
+ * List the author's recent work in a string
+
+ * Should resemble a string like
+ *  "1. Some title
+ *  2. Another title
+ *  3. Yet another ttle
+ *  ...
+ *  14. As many as 14 titles"
+ 
+ */ 
   let recentWork = ``
   const titlesArray = author.posts.map(
     ({ titlePlaintext }) => titlePlaintext);

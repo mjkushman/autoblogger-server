@@ -12,11 +12,11 @@ const {
 
 class User {
   /** Returns a list of all users
-   * Doubles as a search for authors only if authors=true is passed 
-   * 
+   * Doubles as a search for authors only if authors=true is passed
+   *
    */
 
-  static async getAllUsers(authors=false) {
+  static async getAllUsers(authors = false) {
     const res = await db.query(`
     SELECT 
       user_id AS "userId", 
@@ -29,13 +29,11 @@ class User {
       is_admin AS "isAdmin", 
       image_url AS "imageUrl"
     FROM users
-    ${authors? "WHERE is_author = true": ''}
+    ${authors ? "WHERE is_author = true" : ""}
     ORDER BY username`);
 
-    return res.rows
+    return res.rows;
   }
-
-
 
   /** Returns a single user along with their post history and comment history
    *
@@ -43,9 +41,9 @@ class User {
    *
    */
 
-  static async getUser(idType,idValue) {
+  static async getUser(idType, idValue) {
     // id is optional. If id is passed, then id is used instead of username
-    // 
+    //
 
     const userResponse = await db.query(
       `SELECT 
@@ -64,9 +62,9 @@ class User {
     );
 
     // console.log('userResponse, user model',userResponse)
-    
+
     if (!userResponse.rows[0])
-      throw new NotFoundError(`Could not find: ${username}`);
+      throw new NotFoundError(`Could not find: ${idType}: ${idValue}`);
     const user = userResponse.rows[0];
 
     // get the user's post titles and ids. Not the whole post.
@@ -97,7 +95,6 @@ class User {
     return user;
   }
 
-
   // Register a new user
   static async register({
     username,
@@ -121,7 +118,6 @@ class User {
     // hash the password for storage
     const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
 
-    
     // console.log("hashed password:", hashedPassword);
 
     const result = await db.query(
@@ -135,8 +131,7 @@ class User {
            is_admin AS "isAdmin"`,
       [username, hashedPassword, firstName, lastName, email, authorBio, isAdmin]
     );
-    
-    
+
     const user = result.rows[0];
     return user;
   }

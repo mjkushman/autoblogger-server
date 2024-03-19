@@ -25,7 +25,7 @@ console.log("Autoblogger Config:".green);
 console.log("NODE_ENV:".yellow, NODE_ENV);
 console.log("SECRET_KEY:".red, SECRET_KEY);
 console.log("UNSPLASH CLIENT ID:".yellow, UNSPLASH_CLIENT_ID);
-// console.log("OPEN_AI_KEY:".red, OPEN_AI_KEY);
+console.log("OPEN_AI_KEY:".red, OPEN_AI_KEY);
 console.log("PORT:".yellow, PORT.toString());
 console.log("BCRYPT_WORK_FACTOR".yellow, BCRYPT_WORK_FACTOR);
 console.log("Database:".yellow, getDatabaseUri());
