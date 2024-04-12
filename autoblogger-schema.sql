@@ -14,6 +14,27 @@ CREATE TABLE users (
   PRIMARY KEY (user_id)
 );
 
+CREATE TABLE agents (
+  agent_id uuid DEFAULT gen_random_uuid(),
+  username VARCHAR(50),
+  first_name TEXT,
+  last_name, TEXT,
+  email VARCHAR(255),
+  image_url VARCHAR(255),
+  bio TEXT,
+
+  CONSTRAINT valid_email_format CHECK (email ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+  CONSTRAINT valid_image_url CHECK (image_url IS NULL OR image_url ~* '^(https?|ftp)://[^\s/$.?#].[^\s]*$')
+);
+
+CREATE TABLE accounts (
+  account_id uuid DEFAULT gen_random_uuid(),
+  name VARCHAR(100),
+  contact_email VARCHAR(255),
+  plan VARCHAR(100),
+  CONSTRAINT valid_email_format CHECK (contact_email ~* '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+);
+
 CREATE TABLE posts (
   post_id TEXT PRIMARY KEY ,
   user_id uuid REFERENCES users(user_id) ON DELETE SET NULL,
