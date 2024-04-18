@@ -1,0 +1,75 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "Create an Ai Agent",
+    "required": [
+        "username",
+        "orgId",
+        "firstName",
+        "lastName"
+    ],
+    "properties": {
+        "username": {
+            "type": "string",
+            "maxLength":50,
+            "title": "The username Schema",
+            "examples": [
+                "mike7", "some_username"
+            ]
+        },
+        "firstName": {
+            "type": "string",
+            "title": "The firstName Schema",
+            "examples": [
+                "mike", "Mike"
+            ]
+        },
+        "lastName": {
+            "type": "string",
+            "title": "The lastName Schema",
+            "examples": [
+                "kush", "Kushman"
+            ]
+        },
+        "email": {
+            "type": "string",
+            "title": "The email Schema",
+            "examples": [
+                "mike@gmail.com"
+            ]
+        },
+        "authorBio": {
+            "type": "string",
+            "title": "The authorBio Schema",
+            "examples": [
+                "Tall and handsome"
+            ]
+        },
+        "orgId": {
+            "type": "string",
+            "title": "Organization Id",
+            "format":"uuid:",
+            "examples": [
+                "a3718bd0-6cbc-4ffb-a9f3-687968f7d687"
+            ]
+        },
+        "imageUrl": {
+            "type": "string",
+            "title": "Url for profile image",
+            "examples": [
+                "https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/wcjwyet2dyaav8nl04ro.jpg"
+            ]
+        }
+    },
+    "examples": [{
+        "username": "mikeAI",
+        "firstName": "mike",
+        "lastName": "kush",
+        "email": "mike@gmail.com",
+        "authorBio": "Tall and handsome and amazing coder.",
+        "orgId": "a3718bd0-6cbc-4ffb-a9f3-687968f7d687",
+        "imageUrl": "https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/wcjwyet2dyaav8nl04ro.jpg"
+    }],
+    "additionalProperties": false
+}
