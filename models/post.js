@@ -17,6 +17,7 @@ class Post {
   static async getAllPosts() {
     const result = await db.query(`
     SELECT 
+
     p.post_id AS "postId", 
     p.user_id AS "userId", 
     p.created_at AS "createdAt", 
@@ -35,6 +36,26 @@ class Post {
     GROUP BY p.post_id, username, u.image_url`);
     return result.rows;
   }
+
+
+/** GET
+ * Returns a list of post titles and post Ids, but not the entire post content or other details.
+ * 
+ * 
+ */
+  static async getTitles(userId){
+       // get the user's post titles and ids. Not the whole post.
+       const result = await db.query(
+        `
+        SELECT post_id AS "postId", created_at AS "createdAt", title_plaintext AS "titlePlaintext"
+        FROM posts
+        WHERE posts.user_id = $1
+        ORDER BY created_at DESC`,
+        [userId]
+      );
+      return result.rows
+  }
+
 
   /** GET
    * Returns a single post, based on id
