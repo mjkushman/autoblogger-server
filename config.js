@@ -7,6 +7,7 @@ require("colors");
 const SECRET_KEY = process.env.SECRET_KEY || "secret-dev";
 const PORT = +process.env.PORT || 3001;
 const OPEN_AI_KEY = process.env.OPEN_AI_KEY;
+const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
 const UNSPLASH_CLIENT_ID = process.env.UNSPLASH_CLIENT_ID;
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -36,6 +37,7 @@ module.exports = {
   PORT,
   BCRYPT_WORK_FACTOR,
   OPEN_AI_KEY,
+  ANTHROPIC_KEY,
   UNSPLASH_CLIENT_ID,
   getDatabaseUri,
 };
