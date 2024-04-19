@@ -5,6 +5,7 @@ const Agent = require("./agentModel");
 const Post = require("../models/post");
 const { ExpressError } = require("../expressError");
 const LLMService = require('../utilities/llmService')
+const htmlParser = require('../utilities/htmlParser')
 
 class AiAgent extends LLMService{
   // commenting this out because I'm trying another approach.
@@ -70,12 +71,12 @@ class AiAgent extends LLMService{
   // CLASS METHODS
 
   /**
-   * Returns a string formatted list of recent titles
    *   1. "My first article"
    *   2. "Another article I wrote"
    *   ...etc
+   * @returns string formatted list of recent titles
    */
-  async getRecentWork(){
+  async #getRecentWork(){
     let recentWork = ''
     
     try {
@@ -95,10 +96,10 @@ class AiAgent extends LLMService{
   }
 
   /** Asks LLM to decide on a new topic to write about, based on the author's bio and recent work.
-   * @returns String: An outline of the next article to write when calling writeBlogPost
+   * @returns Topic.: An outline of the next article to write when calling writeBlogPost
    */
-  async decideBlogTopic(){
-    console.log(`${this.username} is deciding on a new blog topic.`)
+  async #decideBlogTopic(llm){
+    console.log(`${this.username} is deciding what topic to write about`)
     let recentWork = await this.getRecentWork()
     
     // Prompt construction:
@@ -114,7 +115,9 @@ class AiAgent extends LLMService{
     ]
     
     try {
-      return await super.promptLLM(messages, llm="chatgpt") 
+      const response = await super.promptLLM(messages, llm="chatgpt") 
+      console.log(`${this.username} finished deciding what topic to write about.`)
+      return response
     } catch (error) {
       return new ExpressError(`${this.username} was unable to prompt LLM to decide on a topic.  ${error}`)
     }
@@ -123,35 +126,91 @@ class AiAgent extends LLMService{
 
 
 
-  async writeBlogPost(topic, llm="chatgpt") {
-    // writes a blog post
-    /** 
-     * 1. Input should be a specific topic, if any. If none provided, call decideBlogTopic first
-     * 2. Construct a prompt called "messages"
-     * 3. pass the prompt to llm service
-     * 4. Do additional stuff with the response from llm service
-     * 
-     * 
+  async writeBlogPost(topic, llm="chatgpt", wordLimit) {
+    // 
+    /** Writes a blog post
+     * @topic An outline of the post to be written, which helps the AI write. Optional. If non is provided, the AI will run a utility function to choose a topic.
+     * @param llm the name of the large language model to use. "chatgpt" | "claude" 
+     * @param wordLimit The maximum wordcount in the returned blog post
+     * @returns a blog in string formatted HTML
      */
     
-    // if no topic is provided, decide one
+    // If no topic is provided, decide one
+    console.log(`${this.username} has started writing a blog post`)
     topic = topic || this.decideBlogTopic() 
     
-
-
     // Construct messages
+    let messages = [
+      {
+        role: "system",
+        content: `You are the author of a popular blog. This is your profile: ${this.authorBio}`,
+      },
+      {
+        role: "user",
+        content: `
+        Write a new blog post using the following outline and instructions.
+        OUTLINE:
+        ${topic}
 
+
+        INSTRUCTIONS:
+        1. Complete the post with fewer than ${wordLimit} words.
+        2. Format the response in HTML with proper HTML tags.
+        3. Include a title in <h1> tags.
+        4. Wrap the rest of the post in a <div> tag with id="primary-content".
+        5. But do not include any boilerplate HTML`,
+      },
+    ]
+
+  
+    // Invoke llm
+    console.log(`${this.username} gas started writing a blog post.`)
+    const htmlPost = await super.promptLLM(llm,messages)
+    console.log(`${this.username} finished writing a blog post.`)
+    
+    // Parse and format html resposne from llm
+    let postData = htmlParser(htmlPost)
+    
+    // Get a random image based on the post title
+    const imageUrl = await getUnsplashImage(postData.titlePlaintext)
+    
+    // Save the post to databse
+    postData = {...postData, imageUrl: String(imageUrl), userId:this.agentId}
+    const newPost = await savePost(postData)
+    return newPost
 
     
-    // invoke llm
-    super.promptLLM(llm,messages)
+  }
+  
+  /** Formats the post and saves it to the databse
+   * @param postData Data of the newly sourced post from LLM
+   */
+  async #savePost(postData){
+    
 
+    // Add the article to database
+    try {
+      const newPost = await Post.createNewPost(postData);
+      console.log(`
+      New post created!
+      postId: ${newPost.postId}
+      Author: ${newPost.userId}
+      Title: ${newPost.titlePlaintext}
+      Image: ${newPost.imageUrl}
+      Created at: ${newPost.createdAt}`);
+  
+      return newPost;
+      
+    } catch (error) {
+      console.log('error creating post:',error)
+    }  
 
 
   }
 
+  // TODO: Write a social media post
   writeSocialPost() {
-    // writes a new social post
+    // does something
   }
 
 
