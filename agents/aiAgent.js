@@ -2,9 +2,11 @@
 
 const cron = require("node-cron");
 const Agent = require("./agentModel");
+const Post = require("../models/post");
 const { ExpressError } = require("../expressError");
+const LLMService = require('../utilities/llmService')
 
-class AiAgent {
+class AiAgent extends LLMService{
   // commenting this out because I'm trying another approach.
   // Instead of instantiating with "... new AiAgent(id)" I will instantiate with AiAgent.init(id)
 
@@ -20,6 +22,7 @@ class AiAgent {
     orgId,
     username,
   }) {
+    super()
     this.agentId = agentId;
     this.orgId = orgId;
     this.username = username;
@@ -31,6 +34,12 @@ class AiAgent {
     this.authorBio = authorBio;
     this.imageUrl = imageUrl;
   }
+
+  // CLASS PROPERTIES
+  static AGENTS = new Map();
+
+
+  // STATIC METHODS
 
   // Retrieve the agent's details from databse and set instance properties
   static async init(agentId) {
@@ -46,12 +55,7 @@ class AiAgent {
     }
   }
 
-  // return author info to populate fields below
 
-  // class properties
-  static AGENTS = new Map();
-
-  // static methods
 
   static async enableAll() {
     // retreives all agents and starts the ones that should be started. Use this class method when the server starts up.
@@ -61,10 +65,89 @@ class AiAgent {
     // deactivates all currently running agents
   }
 
-  // instance methods. These act on a single instance
 
-  writeBlogPost() {
+
+  // CLASS METHODS
+
+  /**
+   * Returns a string formatted list of recent titles
+   *   1. "My first article"
+   *   2. "Another article I wrote"
+   *   ...etc
+   */
+  async getRecentWork(){
+    let recentWork = ''
+    
+    try {
+      
+      console.log(`Getting recent work for ${this.username}`)
+      const titlesArray = await Post.getTitles(this.agentId).map(
+        ({ titlePlaintext }) => titlePlaintext )
+       
+      for(let i=0; i<= (Math.min(14, titlesArray.length)); i++) {
+        recentWork += `${Number(i) +1}. "${titlesArray[i]}"\n`
+       }
+       return recentWork
+      
+    } catch (error) {
+      return new ExpressError(`Could not retreive recent work for ${this.username}. ${error}`)
+    }
+  }
+
+  /** Asks LLM to decide on a new topic to write about, based on the author's bio and recent work.
+   * @returns String: An outline of the next article to write when calling writeBlogPost
+   */
+  async decideBlogTopic(){
+    console.log(`${this.username} is deciding on a new blog topic.`)
+    let recentWork = await this.getRecentWork()
+    
+    // Prompt construction:
+    let messages = [
+      { role: "system", content: ` You're an author of a popular blog. 
+      This is your author profile: 
+      ${this.authorBio}
+      
+      These are the recent articles you wrote:\n
+      ${recentWork}
+      ` },
+      { role: "user", content: `Given your author profile and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still written in your voice. Create a brief outline of your next blog post.` }
+    ]
+    
+    try {
+      return await super.promptLLM(messages, llm="chatgpt") 
+    } catch (error) {
+      return new ExpressError(`${this.username} was unable to prompt LLM to decide on a topic.  ${error}`)
+    }
+    
+  }
+
+
+
+  async writeBlogPost(topic, llm="chatgpt") {
     // writes a blog post
+    /** 
+     * 1. Input should be a specific topic, if any. If none provided, call decideBlogTopic first
+     * 2. Construct a prompt called "messages"
+     * 3. pass the prompt to llm service
+     * 4. Do additional stuff with the response from llm service
+     * 
+     * 
+     */
+    
+    // if no topic is provided, decide one
+    topic = topic || this.decideBlogTopic() 
+    
+
+
+    // Construct messages
+
+
+    
+    // invoke llm
+    super.promptLLM(llm,messages)
+
+
+
   }
 
   writeSocialPost() {
