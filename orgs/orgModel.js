@@ -2,36 +2,68 @@
 
 "use strict";
 
-const db = requier('../db')
-const {BadRequestError, NotFoundError, ExpressError} = require('../expressError')
+const db = require("../db");
+const {
+  BadRequestError,
+  NotFoundError,
+  ExpressError,
+} = require("../expressError");
 
-const {nanoid} = require("nanoid")
+const { nanoid } = require("nanoid");
 
 class Org {
+  /** Returns all organizaitons */
 
-    /** Returns all organizaitons */
-    static async getAllOrgs(){
-        const result = db.query(
-            `SELECT org_id AS "orgId",
+  static async getAllOrgs() {
+    try {
+      const result = await db.query(
+        `SELECT org_id AS "orgId",
             name AS "name",
             contact_email AS "contactEmail",
-            plan AS "plan
-            FROM orgs`
-        )
-        return result.rows
+                plan AS "plan"
+                FROM orgs`
+      );
+      return result.rows;
+    } catch (error) {
+      consnole.log("OH SNAP!:", error);
     }
+  }
 
-    /** Returns a single organizaiton */
-    static async getOrg(orgId){
-        
-        const result = db.query(
-            `SELECT org_id AS "orgId",
+  /** Returns a single organizaiton */
+  static async getOrg(orgId) {
+    try {
+      const result = await db.query(
+        `SELECT org_id AS "orgId",
+                name AS "name",
+                contact_email AS "contactEmail",
+                plan AS "plan"
+                FROM orgs
+                WHERE org_id =$1`,
+        [orgId]
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.log("OH SNAP!:", error);
+    }
+  }
+
+  static async createOrg(name,contactEmail,plan){
+    try {
+        const result = await db.query(
+            `INSERT INTO orgs (name, contact_email, plan)
+            VALUES ($1, $2, $3)
+            RETURNING 
+            org_id AS "orgId",
             name AS "name",
-            contact_email AS "contactEmail",
-            plan AS "plan
-            FROM orgs
-            WHERE org_id =$1`, [orgId]
+             contact_email AS "contactEmail",
+             plan AS "plan"`,[name,contactEmail,plan]
         )
         return result.rows[0]
+    } catch (error) {
+        console.log("OH SNAP!:", error);
+        return "somethign went wrong"
     }
+  }
 }
+
+module.exports = Org;
