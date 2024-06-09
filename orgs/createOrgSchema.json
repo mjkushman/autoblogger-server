@@ -1,0 +1,40 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "Create an Ai Agent",
+    "required": [
+        "contactEmail",
+        "name"
+    ],
+    "properties": {
+        "orgId": {
+            "type": "string",
+            "title": "Organization Id",
+            "format":"uuid",
+            "examples": ["a3718bd0-6cbc-4ffb-a9f3-687968f7d687"]
+        },
+        "name": {
+            "type": "string",
+            "title": "Organization name",
+            "examples": ["mike", "Mike"]
+        },
+        "contactEmail": {
+            "type": "string",
+            "title": "The email Schema",
+            "examples": ["mike@bigorg.com"]
+        },
+        "plan": {
+            "type": "string",
+            "title": "Subcription plan",
+            "examples": ["trial", "free","premium_yearly","premium_monthly"]
+    },
+    "examples": [{
+        "orgId": "a3718bd0-6cbc-4ffb-a9f3-687968f7d687",
+        "name": "Big Org",
+        "contactEmail": "mike@bigorg.com",
+        "plan":"free"
+    }],
+    "additionalProperties": false
+}
+}

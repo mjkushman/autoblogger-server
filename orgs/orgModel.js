@@ -29,16 +29,35 @@ class Org {
     }
   }
 
-  /** Returns a single organizaiton */
+  /** Returns a single organizaiton and its agents */
   static async getOrg(orgId) {
     try {
       const result = await db.query(
-        `SELECT org_id AS "orgId",
-                name AS "name",
-                contact_email AS "contactEmail",
-                plan AS "plan"
-                FROM orgs
-                WHERE org_id =$1`,
+        `SELECT o.org_id AS "orgId",
+                o.name AS "name",
+                o.contact_email AS "contactEmail",
+                o.plan AS "plan",
+                
+                CASE
+                    WHEN COUNT(a.agent_id) > 0 THEN
+                        json_agg(json_build_object(
+                        'agentId', a.agent_id,
+                        'orgId', a.org_id,
+                        'username', a.username,
+                        'firstName', a.first_name,
+                        'lastName', a.last_name,
+                        'email', a.email,
+                        'imageUrl', a.image_url,
+                        'authorBio', a.author_bio,
+                        'schedule', a.schedule,
+                        'isEnabled', a.is_enabled
+                    ))
+                    ELSE '[]' END
+                    AS "agents"
+                FROM orgs o
+                LEFT JOIN agents a ON o.org_id = a.org_id
+                WHERE o.org_id =$1
+                GROUP BY o.org_id`,
         [orgId]
       );
       return result.rows[0];
