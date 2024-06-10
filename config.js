@@ -37,6 +37,7 @@ console.log("OPEN_AI_KEY:".red, OPEN_AI_KEY);
 console.log("PORT:".yellow, PORT.toString());
 console.log("BCRYPT_WORK_FACTOR".yellow, BCRYPT_WORK_FACTOR);
 console.log("Database:".yellow, getDatabaseUri());
+console.log("Database User:".yellow, DATABASE_USERNAME);
 console.log("==============================");
 
 
