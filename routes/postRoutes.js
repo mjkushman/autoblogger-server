@@ -2,106 +2,109 @@
 
 // Routes for blog posts
 
-const Post = require('../models/post') // import post model from models folder
-const Comment = require('../models/comment') // import comment model from models folder
-const {verifyLoggedIn} = require('../middleware/authorizations')
-const express = require('express')
+const PostService = require("../models/post"); // import post model from models folder
+const Comment = require("../models/comment"); // import comment model from models folder
+const { verifyLoggedIn } = require("../middleware/authorizations");
+const express = require("express");
 
 const router = express.Router({ mergeParams: true });
 
+module.exports = (config) => {
+  // Middleware to extract orgId
+  router.use((req, res, next) => {
+    req.orgId = req.params.orgId;
+    next();
+  });
 
+  const PostService = require("../services/PostService");
+  const postService = new PostService(config.database.client);
 
-
-
-/** GET / return all blog articles
- * 
- */
-
-router.get('/', async function (req,res,next) {
-
+  /** GET / return all blog posts
+   *
+   */
+  router.get("/", async function (req, res, next) {
+    const {orgId} = req
+    console.log('EXTRACTED ORGID',orgId)
     try {
-        const posts = await Post.getAllPosts();
-        return res.json({posts})
+      const posts = await postService.findAll(orgId);
+      return res.json({ posts });
     } catch (error) {
-        return next(error)
+      return next(error);
     }
-}) 
+  });
 
-/** GET / return a single blog article with comments
- * 
- */
+  /** GET / return a single blog article with comments
+   *
+   */
 
-router.get('/:id', async function (req,res,next) {
+  router.get("/:postId", async function (req, res, next) {
     try {
-        const result = await Post.getSinglePost(req.params.id);
-        return res.json({post:result.post, comments:result.comments})
+      const post = await postService.findOne(req.params.postId);
+      return res.json({ post });
+      // Previously:
+      //   return res.json({ post: result.post, comments: result.comments });
     } catch (error) {
-        return next(error)
+      return next(error);
     }
-}) 
+  });
 
+  /** POST / Create a new blog post.
+   * req.body requires userId, title, bodyHtml, bodyPlaintext
+   *
+   */
 
-/** POST / Create a new blog post. 
- * req.body requires userId, title, bodyHtml, bodyPlaintext
- * 
- */
-
-router.post('/', async function (req,res,next) {
+  router.post("/", async function (req, res, next) {
     try {
-        // const {title, bodyPlaintext, bodyHtml} = req.body
-        const post = await Post.createNewPost(req.body)
+      // const {title, bodyPlaintext, bodyHtml} = req.body
+      const post = await postService.create(req.body);
 
-        // console.log(post)
-        return res.status(201).json({post})
+      console.log(post);
+      return res.status(201).json({ post });
     } catch (error) {
-        return next(error)
+      return next(error);
     }
+  });
 
-})
+  /** GET /:id/comments Gets comments for a post
+   *
+   *  URL like
+   * .com/posts/:id/comments
+   * .com/posts/3/comments
+   */
 
-/** GET /:id/comments Gets comments for a post
- * 
- *  URL like
- * .com/posts/:id/comments 
- * .com/posts/3/comments
- */
-
-router.get('/:id/comments', async function(req,res,next) {
+  router.get("/:id/comments", async function (req, res, next) {
     try {
-        const postId = req.params.id
-        const {comments, numComments} = await Comment.getComments(postId)
-        return res.status(200).json({numComments, comments})
+      const postId = req.params.id;
+      const { comments, numComments } = await Comment.getComments(postId);
+      return res.status(200).json({ numComments, comments });
     } catch (error) {
-        return next(error)
+      return next(error);
     }
-}) 
+  });
 
+  /** POST /:id/comments Adds a comment to a blog post
+   * req.body requires userId and body
+   *  URL like
+   * .com/posts/:id/comments
+   * .com/posts/3/comments
+   */
 
-
-/** POST /:id/comments Adds a comment to a blog post
- * req.body requires userId and body
- *  URL like
- * .com/posts/:id/comments 
- * .com/posts/3/comments
- */
-
-router.post('/:id/comments', verifyLoggedIn, async function (req,res,next) {
-    
+  router.post("/:id/comments", verifyLoggedIn, async function (req, res, next) {
     try {
-        // add a new comment to the post
-    
-        const postId = req.params.id
-        const comment = await Comment.addComment(postId, req.body)
+      // add a new comment to the post
 
-        // create an AI's response to the comment
-        // UNCOMMENT THE NEXT LINE TO LET AI REPLY TO POSTS
-        Comment.addAiReply(postId)
+      const postId = req.params.id;
+      const comment = await Comment.addComment(postId, req.body);
 
-        // console.log(newComment)
-        return res.status(201).json({comment})
+      // create an AI's response to the comment
+      // UNCOMMENT THE NEXT LINE TO LET AI REPLY TO POSTS
+      Comment.addAiReply(postId);
+
+      // console.log(newComment)
+      return res.status(201).json({ comment });
     } catch (error) {
-        return next(error)
+      return next(error);
     }
-})
-
-module.exports = router;
+  });
+  return router;
+};
