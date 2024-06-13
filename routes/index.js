@@ -24,7 +24,7 @@ module.exports = (config) => {
   router.use('/:orgId/users', endUserRoutes(config));
   
   // Posts
-  router.use("/:orgId/posts", postRoutes(config));
+  router.use('/:orgId/posts', postRoutes(config));
 
   return router;
 };
