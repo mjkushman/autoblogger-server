@@ -1,9 +1,11 @@
 const { DataTypes } = require("sequelize");
+const bcrypt = require('bcrypt');
+const { BCRYPT_WORK_FACTOR } = require("../config");
 
 module.exports = (sequelize) => {
   // console.log(sequelize)
-  const endUsers = sequelize.define(
-    "end_users",
+  const EndUser = sequelize.define(
+    "EndUser",
     {
       userId: {
         type: DataTypes.UUID,
@@ -11,7 +13,7 @@ module.exports = (sequelize) => {
         primaryKey: true,
       },
       orgId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING(8),
         references: {
           // This is a reference to another model
           model: "orgs",
@@ -27,7 +29,7 @@ module.exports = (sequelize) => {
         },
         allowNull: false,
       },
-      passwordHash: {
+      password: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -54,6 +56,19 @@ module.exports = (sequelize) => {
       },
     },
     {
+      tableName: "end_users"
+    },
+    {
+      hooks: {
+        beforeCreate: async (record) => {
+          if(record.password) {record.password = await bcrypt.hash(record.password, BCRYPT_WORK_FACTOR)}
+        }
+      },
+      beforeUpdate: async (record) => {
+        if(record.changed('password')) {record.password = await bcrypt.hash(record.password, BCRYPT_WORK_FACTOR)}
+      }
+    },
+    {
       indexes: [
         {
           unique: true,
@@ -63,20 +78,5 @@ module.exports = (sequelize) => {
     }
   );
   // users.sync({force:true})
-  return endUsers;
+  return EndUser;
 };
-
-/**
-PK user_id UUID
-FK org_id UUID
-username varchar
-password_hash text
-first_name varchar
-last_name varchar
-email varchar
-role enum
-created_at timestamp
-image_url text
-role enum
-author_bio text
- */

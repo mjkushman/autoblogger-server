@@ -1,6 +1,6 @@
 // import the org model
 
-const { Posts } = require("../models");
+const { Post } = require("../models");
 
 class PostService {
   /** GET all posts */
@@ -12,14 +12,14 @@ class PostService {
   async findOne(postId) {
     console.log("hit Posts findOne  function");
     // TODO: Modify this to return an array of post comments too
-    return await Posts.findByPk(postId, { where: { orgId:orgId } });
+    return await Post.findByPk(postId, { where: { orgId:orgId } });
   }
 
   /** POST creates a new post */
-  async create(payload) {
-    console.log("Posts: Creating from payload:", payload);
+  async create(payload, orgId) {
+    console.log("Posts: Creating from payload and ORGID:", payload, orgId);
 
-    return await Posts.create({});
+    return await Post.create({...payload, orgId });
   }
 }
 module.exports = PostService;

@@ -2,14 +2,13 @@
 
 // Routes for the users
 
-const User = require("../models/user"); // import blog model from models folder
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const userUpdateSchema = require("../schemas/userUpdate.json");
-const { BadRequestError } = require("openai");
+const { BadRequestError } = require("../expressError");
 const jsonschema = require("jsonschema");
-const { updateUserSql } = require("../utilities/sqlMapper");
+// const { updateUserSql } = require("../utilities/sqlMapper");
 
 /** GET / return all users
  *  if query param "authors=true" is passed, then only return authors
@@ -17,81 +16,115 @@ const { updateUserSql } = require("../utilities/sqlMapper");
  *  If no id or username provided, get all users.
  */
 
-router.get("/", async function (req, res, next) {
+
+module.exports = (config) => {
+  const UserService = require("../services/UserService");
+  const userService = new UserService(config.database.client);
   
-  const id = req.query.user_id;
-  const username = req.query.username;
+  router.get("/", async function (req, res, next) {
+    // const id = req.query.user_id;
+    const username = req.query.username;
+    const userId = req.query.userId
 
-  if(id) {
-    try {
-        // console.log("getting user by user_id");
-        const user = await User.getUser('user_id',id);
+    if(userId){
+      const user = await userService.findByUserId(userId);
       return res.json({ user });
-    } catch (error) {
-      return next(error);
     }
-  } else if (username) {
-    try {
-        // console.log("getting user by username");
-        const user = await User.getUser('username',username);
+    if(username){
+      const user = await userService.findByUsername(username);
       return res.json({ user });
-    } catch (error) {
-      return next(error);
     }
-  } else {
-    try {
-      // console.log("getting all users");
-      const authors = req.query.authors == "true";
-      const users = await User.getAllUsers(authors);
-      return res.json({ users });
-    } catch (error) {
-      return next(error);
-    }
-  }
-});
+    const users = await userService.findAll();
+    return res.json({ users });
+    
+  });
 
-/** GET / return a single user and all posts and comments written by that user
- *
- * Logic determines if the identifier is a username or a uuid, then passes along the correct label
- */
 
-// DEPRECATED
 
-router.get("/:identifier", async function (req, res, next) {
-  try {
-    const user = await User.getUser(req.params.username);
-    return res.json({ user });
-  } catch (error) {
-    return next(error);
-  }
-});
+  router.post('/', async function (req, res, next) {
+    const payload = req.body;
+    console.log("PAYLOAD (req.body)", payload);
+    let data = await userService.create(payload);
+    return res.json({ data });
 
-/** PATCH / Update information about a user
- * User may udpate themselves. Admin may update anyone
- * Correct password required for any update
- * All other fields options.
- * Must only update fields that have changes
- */
-router.patch("/:id", async function (req, res, next) {
-  try {
-    const validator = jsonschema.validate(req.body, userUpdateSchema);
-    if (!validator.valid) {
-      const errors = validator.errors.map((e) => e.stack);
-      throw new BadRequestError(errors);
-    }
-    const userId = req.params.id;
 
-    // console.log('patch received:',req.body)
+  })
 
-    // get the columns to update and their values
-    let { updateCols, updateVals } = updateUserSql(req.body);
 
-    const user = await User.updateUser(userId, updateCols, updateVals);
+    // BEFORE SEQUELIZE:
+    // if(id) {
+    //   try {
+    //       // console.log("getting user by user_id");
+    //       const user = await User.getUser('user_id',id);
+    //     return res.json({ user });
+    //   } catch (error) {
+    //     return next(error);
+    //   }
+    // } else if (username) {
+    //   try {
+    //       // console.log("getting user by username");
+    //       const user = await User.getUser('username',username);
+    //     return res.json({ user });
+    //   } catch (error) {
+    //     return next(error);
+    //   }
+    // } else {
+    //   try {
+    //     // console.log("getting all users");
+    //     const authors = req.query.authors == "true";
+    //     const users = await User.getAllUsers(authors);
+    //     return res.json({ users });
+    //   } catch (error) {
+    //     return next(error);
+    //   }
+    // }
+  
 
-    return res.status(200).json({ user });
-  } catch (error) {
-    return next(error);
-  }
-});
+  /** GET / return a single user and all posts and comments written by that user
+   *
+   * Logic determines if the identifier is a username or a uuid, then passes along the correct label
+   */
 
-module.exports = router;
+  // DEPRECATED
+
+  // router.get("/:identifier", async function (req, res, next) {
+  //   try {
+  //     const user = await User.getUser(req.params.username);
+  //     return res.json({ user });
+  //   } catch (error) {
+  //     return next(error);
+  //   }
+  // });
+
+  /** PATCH / Update information about a user
+   * User may udpate themselves. Admin may update anyone
+   * Correct password required for any update
+   * All other fields options.
+   * Must only update fields that have changes
+   */
+
+  // router.patch("/:id", async function (req, res, next) {
+  //   try {
+  //     const validator = jsonschema.validate(req.body, userUpdateSchema);
+  //     if (!validator.valid) {
+  //       const errors = validator.errors.map((e) => e.stack);
+  //       let message = new BadRequestError(errors);
+  //       return res.status(400).json({ message: message, errors: errors });
+  //     }
+  //     const userId = req.params.id;
+
+  //     // console.log('patch received:',req.body)
+
+  //     // get the columns to update and their values
+  //     let { updateCols, updateVals } = updateUserSql(req.body);
+
+  //     const user = await User.updateUser(userId, updateCols, updateVals);
+
+  //     return res.status(200).json({ user });
+  //   } catch (error) {
+  //     return next(error);
+  //   }
+  // });
+
+  return router;
+};

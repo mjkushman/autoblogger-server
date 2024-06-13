@@ -11,20 +11,20 @@ const router = express.Router({ mergeParams: true });
 
 module.exports = (config) => {
   // Middleware to extract orgId
-  router.use((req, res, next) => {
+
+  router.use((req,res,next) => {
     req.orgId = req.params.orgId;
     next();
-  });
+  })
 
   const PostService = require("../services/PostService");
   const postService = new PostService(config.database.client);
 
-  /** GET / return all blog posts
+  /** GET / return all blog posts for a given org
    *
    */
   router.get("/", async function (req, res, next) {
-    const {orgId} = req
-    console.log('EXTRACTED ORGID',orgId)
+    const { orgId } = req;
     try {
       const posts = await postService.findAll(orgId);
       return res.json({ posts });
@@ -36,7 +36,6 @@ module.exports = (config) => {
   /** GET / return a single blog article with comments
    *
    */
-
   router.get("/:postId", async function (req, res, next) {
     try {
       const post = await postService.findOne(req.params.postId);
@@ -54,9 +53,10 @@ module.exports = (config) => {
    */
 
   router.post("/", async function (req, res, next) {
+      const { orgId } = req;
     try {
       // const {title, bodyPlaintext, bodyHtml} = req.body
-      const post = await postService.create(req.body);
+      const post = await postService.create(req.body, orgId);
 
       console.log(post);
       return res.status(201).json({ post });

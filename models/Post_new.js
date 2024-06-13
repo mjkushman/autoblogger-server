@@ -4,8 +4,8 @@ const slug = require('slug');
 
 module.exports = (sequelize) => {
 
-  const posts = sequelize.define("posts",
-    {
+  const Post = sequelize.define("Post", 
+  {
       postId: {
         type: DataTypes.STRING(6),
         defaultValue: nanoid(6),
@@ -51,11 +51,20 @@ module.exports = (sequelize) => {
       },
       slug: {
         type: DataTypes.STRING,
-        // defaultValue: slug(this.titlePlaintext),
-        set(value) {
-          this.setDataValue('slug', slug(this.titlePlaintext))
+      },
+    },
+    {
+      tableName: "posts"
+    }, 
+    {
+      hooks: {
+        beforeCreate: async (record) => {
+          if(record.titlePlaintext) {record.slug = await slug(record.titlePlaintext)}
         }
       },
+      beforeUpdate: async (record) => {
+        if(record.titlePlaintext) {record.slug = await slug(record.titlePlaintext)}
+      }
     },
     {
       validate: {
@@ -65,5 +74,11 @@ module.exports = (sequelize) => {
       }
     }
   );
-  return posts;
+
+  // Associations
+  // Post.associate = (models) => {
+  //   Post.hasMany(models.Comment, {foreignKey: 'postId', as: 'comments'})
+  // }
+
+  return Post;
 };

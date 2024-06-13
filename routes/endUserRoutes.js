@@ -18,8 +18,8 @@ const jsonschema = require("jsonschema");
 
 
 module.exports = (config) => {
+  
   // Middleware to extract orgId
-
   router.use((req,res,next) => {
     req.orgId = req.params.orgId;
     next();
@@ -47,12 +47,12 @@ module.exports = (config) => {
   });
 
 
-
   router.post('/', async function (req, res, next) {
     const payload = req.body;
     const {orgId} = req
-    console.log("PAYLOAD (req.body)", payload);
-    let data = await endUserService.create(orgId,payload);
+    console.log("PAYLOAD (req.body) and ORGID", payload, orgId);
+
+    let data = await endUserService.create(payload, orgId);
     return res.json({ data });
 
 

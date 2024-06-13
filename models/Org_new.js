@@ -1,12 +1,16 @@
 const { DataTypes } = require("sequelize");
+const { nanoid } = require("nanoid");
 
 module.exports = (sequelize) => {
-    // console.log(sequelize)
-    const Orgs = sequelize.define("orgs", {
+  // console.log(sequelize)
+  const Org = sequelize.define(
+    "Org",
+    {
       orgId: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.STRING(8),
+        defaultValue: nanoid(8),
         primaryKey: true,
+        unique: true,
       },
       name: {
         type: DataTypes.STRING,
@@ -24,7 +28,18 @@ module.exports = (sequelize) => {
       accessKey: {
         type: DataTypes.STRING,
       },
-    });
-    return Orgs
-
-}
+    },
+    {
+      tableName: "orgs",
+    }
+  );
+  // Associations
+  Org.associate = (models) => {
+    Org.hasMany(models.User, { foreignKey: "orgId", as: "users" });
+  };
+  Org.associate = (models) => {
+    Org.hasMany(models.EndUser, { foreignKey: "orgId", as: "endUsers" });
+  };
+  // orgs.sync({force:true})
+  return Org;
+};

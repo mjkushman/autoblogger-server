@@ -1,41 +1,37 @@
 // import the org model
 
-const { EndUsers } = require("../models");
+const { EndUser } = require("../models");
 
 class EndUserService {
   /** GET all users */
   async findAll(orgId) {
     console.log("hit findAll Users function");
-    return await EndUsers.findAll({ where: { orgId: orgId } });
+    return await EndUser.findAll({ where: { orgId: orgId } });
   }
   async findByUserId(orgId, userId) {
     console.log("hit findByUserId  function");
-    return await EndUsers.findByPk(userId, { where: { orgId } });
+    return await EndUser.findByPk(userId, { where: { orgId } });
   }
   async findByUsername(orgId, username) {
     console.log("hit findByUsername function");
-    return await EndUsers.findOne({ where: { username, orgId } });
+    return await EndUser.findOne({ where: { username, orgId } });
   }
 
   /** POST creates a new user */
   async create(orgId, payload) {
     console.log("EndUsers: Create");
+    console.log('CREATING ENDUSER:',payload)
 
-    console.log(payload);
-    // TODO: hash the password
-    // let newUser = {...payload,"access_key":"999"}
+    // Add orgId to the payload
 
-    // strip password from the payload
-
-    let user = { ...payload, orgId };
-    const [result, created] = await EndUsers.findOrCreate({
+    const [result, created] = await EndUser.findOrCreate({
       where: { email: payload.email, orgId },
-      defaults: user,
+      defaults: payload,
     });
 
     if (created) {
-      // console.log(result);
-
+      // strip sensitive fields from the return
+      console.log('CREATED USER, BEFORE PRUNING PW:',result)
       const newUser = (({
         username,
         firstName,
@@ -44,16 +40,9 @@ class EndUserService {
         role,
         imageUrl,
         orgId,
-      }) => ({ username, 
-        firstName, 
-        lastName, 
-        email, 
-        role, 
-        imageUrl, 
-        orgId }))(
+      }) => ({ username, firstName, lastName, email, role, imageUrl, orgId }))(
         result
       );
-
       return newUser;
     }
     return "user already exists";
