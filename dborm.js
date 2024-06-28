@@ -1,21 +1,32 @@
-const Sequelize = require("sequelize");
-const { devConfig } = require("./config");
+// const Sequelize = require("sequelize");
+// const { devConfig } = require("./config");
 
+// // console.dir(devConfig);
 
-console.dir(devConfig)
-async function connectToDb() {
-  const sequelize = new Sequelize(devConfig.database.options);
-  try {
-    devConfig.database.client = await sequelize.authenticate()
-    console.log("Connection to database was successful");
-    console.dir(devConfig)
-    return sequelize;
-  } catch (error) {
-    console.log("Unable to connect to database");
-  }
-}
+// const sequelize = new Sequelize(devConfig.database.options);
 
-let dborm = connectToDb();
+// function connectToDb() {
+//   sequelize
+//     .authenticate()
+//     .then(() => {
+//       console.log("Connection to database was successful");
+//     })
+//     .catch((error) => {
+//       console.log("Unable to connect to database", error);
+//       process.exit(1);
+//     });
+//   return sequelize;
+// }
 
+// const postgresClient = connectToDb()
+// // This is just to help me console log the results
+// // console.log('POSTGRES CLIENT:',postgresClient)
 
-module.exports = dborm;
+// devConfig.database.client = postgresClient; 
+// // console.log('DATABASE CONFIG:')
+// // console.dir(devConfig.database);
+
+// const db = connectToDb();
+// // console.dir(devConfig);
+
+// module.exports = db;

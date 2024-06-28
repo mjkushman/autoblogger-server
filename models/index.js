@@ -2,10 +2,10 @@
 const Org = require("./Org_new");
 const User = require("./User_new");
 const Post = require("./Post_new");
-const EndUser = require("./EndUser");
+// const EndUser = require("./User_new");
 const Sequelize = require("sequelize");
 const config = require("../config")["development"];
-const { orgSeed, userSeed, endUserSeed, postSeed } = require("./seedData");
+const { orgSeed, userSeed, postSeed } = require("./seedData");
 
 // Create the sequelize client by connecting to db with config options
 const sequelize = new Sequelize(config.database.options);
@@ -30,8 +30,9 @@ const models = {
   // Add models below:
   Org: require('./Org_new')(sequelize),
   User: require('./User_new')(sequelize),
-  EndUser: require('./EndUser')(sequelize),
-  Post: require('./Post_new')(sequelize)
+  // EndUser: require('./User_new')(sequelize),
+  Post: require('./Post_new')(sequelize),
+  Comment: require('./Comment_new')(sequelize)
   // more models...
 }
 
@@ -45,12 +46,19 @@ const models = {
 // }
 
 console.log('MODELS',models)
+console.log('User Model',models.User.associate)
+
 
 // Call associate methods
 Object.keys(models).forEach((modelName) => {
   console.log('MODEL NAME',modelName)
   if (models[modelName].associate) {
-    models[modelName].associate(models);
+    try {
+      models[modelName].associate(models);
+      console.log(`ASSOCIATED ${modelName}`)
+    } catch (error) {
+      console.log(`Error associating ${models}, ${modelName}`)
+    }
   }
 });
 
@@ -74,11 +82,11 @@ async function seedData() {
       await models.User.bulkCreate(userSeed,{validate:true});
       console.log("Loaded seed data for users.");
     }
-    let existingEndUsers = await models.EndUser.findAll()
-    if (existingEndUsers.length === 0) {
-      await models.EndUser.bulkCreate(endUserSeed);
-      console.log("Loaded seed data for endusers.");
-    }
+    // let existingEndUsers = await models.EndUser.findAll()
+    // if (existingEndUsers.length === 0) {
+    //   await models.EndUser.bulkCreate(endUserSeed);
+    //   console.log("Loaded seed data for endusers.");
+    // }
 
     let existingPosts = await models.Post.findAll()
     if (existingPosts.length === 0) {

@@ -18,33 +18,41 @@ const jsonschema = require("jsonschema");
 
 
 module.exports = (config) => {
+  
+  // Middleware to extract orgId
+  router.use((req,res,next) => {
+    req.orgId = req.params.orgId;
+    next();
+  })
+  
   const UserService = require("../services/UserService");
   const userService = new UserService(config.database.client);
   
   router.get("/", async function (req, res, next) {
     // const id = req.query.user_id;
-    const username = req.query.username;
-    const userId = req.query.userId
+    const {username, userId} = req.query;
+    const {orgId} = req
 
     if(userId){
-      const user = await userService.findByUserId(userId);
+      const user = await userService.findOneByUserId({orgId,userId});
       return res.json({ user });
     }
     if(username){
-      const user = await userService.findByUsername(username);
+      const user = await userService.findByUsername(orgId,username);
       return res.json({ user });
     }
-    const users = await userService.findAll();
+    const users = await userService.findAll({orgId});
     return res.json({ users });
     
   });
 
 
-
   router.post('/', async function (req, res, next) {
     const payload = req.body;
-    console.log("PAYLOAD (req.body)", payload);
-    let data = await userService.create(payload);
+    const {orgId} = req
+    console.log("PAYLOAD (req.body) and ORGID", payload, orgId);
+
+    let data = await userService.create({payload, orgId});
     return res.json({ data });
 
 

@@ -1,20 +1,20 @@
 const orgSeed = [
   {
-    orgId: "11111111",
+    orgId: "111111",
     name: "Org Name 1",
     email: "org1@org1.com",
     plan: "free",
     accessKey: "123",
   },
   {
-    orgId: "22222222",
+    orgId: "222222",
     name: "Org Name 2",
     email: "org2@org2.com",
     plan: "standard",
     accessKey: "123",
   },
   {
-    orgId: "33333333",
+    orgId: "333333",
     name: "Org Name 3",
     email: "org3@org3.com",
     plan: "enterprise",
@@ -25,17 +25,17 @@ const orgSeed = [
 const userSeed = [
   {
     userId: "11111111-1111-1111-1111-111111111111",
-    orgId: "11111111",
+    orgId: "111111",
     email: "user1@gmail.com",
     password:"hashedpassword",
     firstName: "User",
     lastName:"One",
     username:"user1",
-    role:"user"
+    role:"standard"
   },
   {
     userId: "22222222-2222-2222-2222-222222222222",
-    orgId: "22222222",
+    orgId: "222222",
     email: "user2@gmail.com",
     password:"hashedpassword",
     firstName: "User",
@@ -45,7 +45,7 @@ const userSeed = [
   },
   {
     userId: "33333333-3333-3333-3333-333333333333",
-    orgId: "33333333",
+    orgId: "333333",
     email: "user3@gmail.com",
     password:"hashedpassword",
     firstName: "User",
@@ -55,7 +55,7 @@ const userSeed = [
   },
   {
     userId: "44444444-4444-4444-4444-444444444444",
-    orgId: "11111111",
+    orgId: "111111",
     email: "user4@gmail.com",
     password:"hashedpassword",
     firstName: "User",
@@ -65,20 +65,20 @@ const userSeed = [
   },
   {
     userId: "55555555-5555-5555-5555-555555555555",
-    orgId: "11111111",
+    orgId: "111111",
     email: "user5@gmail.com",
     password:"hashedpassword",
     firstName: "User",
     lastName:"Five",
     username:"user5",
-    role:"super_admin"
+    role:"editor"
   },
 ];
 
 const endUserSeed = [
   {
     userId: "11111111-1111-1111-1111-111111111111",
-    orgId: "11111111",
+    orgId: "111111",
     email: "user1@gmail.com",
     password:"hashedpassword",
     firstName: "User",
@@ -88,7 +88,7 @@ const endUserSeed = [
   },
   {
     userId: "22222222-2222-2222-2222-222222222222",
-    orgId: "22222222",
+    orgId: "222222",
     email: "user2@gmail.com",
     password:"hashedpassword",
     firstName: "User",
@@ -98,7 +98,7 @@ const endUserSeed = [
   },
   {
     userId: "33333333-3333-3333-3333-333333333333",
-    orgId: "33333333",
+    orgId: "333333",
     email: "user3@gmail.com",
     password:"hashedpassword",
     firstName: "User",
@@ -108,7 +108,7 @@ const endUserSeed = [
   },
   {
     userId: "44444444-4444-4444-4444-444444444444",
-    orgId: "11111111",
+    orgId: "111111",
     email: "user4@gmail.com",
     password:"hashedpassword",
     firstName: "User",
@@ -118,7 +118,7 @@ const endUserSeed = [
   },
   {
     userId: "55555555-5555-5555-5555-555555555555",
-    orgId: "11111111",
+    orgId: "111111",
     email: "user5@gmail.com",
     password:"hashedpassword",
     firstName: "User",
@@ -131,9 +131,9 @@ const endUserSeed = [
 const postSeed = [
   // made by user:
   {
-    postId:"post01",
+    postId:"post000001",
     userId:"11111111-1111-1111-1111-111111111111",
-    orgId:"11111111",
+    orgId:"111111",
     titlePlaintext:"Post Title 1",
     titleHtml:"<h1>Post Title 1</h1>",
     bodyPlaintext:`Greetings, fellow furry friends and esteemed humans!
@@ -205,8 +205,8 @@ const postSeed = [
   },
   // made by agent:
   {
-    postId:"post02",
-    orgId:"22222222",
+    postId:"post000002",
+    orgId:"222222",
     // agentId:"aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
     userId:"22222222-2222-2222-2222-222222222222",
     titlePlaintext:"Post Title 2",

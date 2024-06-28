@@ -1,30 +1,34 @@
 // import the org model
 
-const { EndUser } = require("../models");
+const { User, Post } = require("../models");
 
-class EndUserService {
+class UserService {
   /** GET all users */
-  async findAll(orgId) {
+  async findAll({orgId}) {
     console.log("hit findAll Users function");
-    return await EndUser.findAll({ where: { orgId: orgId } });
+    return await User.findAll({ where: { orgId } });
   }
-  async findByUserId(orgId, userId) {
-    console.log("hit findByUserId  function");
-    return await EndUser.findByPk(userId, { where: { orgId } });
+  async findOneByUserId({orgId, userId}) {
+    console.log(`hit findOneByUserId function. OrgId: ${orgId}, userId: ${userId}`);
+    return await User.findOne({ 
+      where: { orgId, userId },
+      include: {
+        model: Post}
+     });
   }
   async findByUsername(orgId, username) {
     console.log("hit findByUsername function");
-    return await EndUser.findOne({ where: { username, orgId } });
+    return await User.findOne({ where: { username, orgId } });
   }
 
   /** POST creates a new user */
-  async create(orgId, payload) {
+  async create({orgId, payload}) {
     console.log("EndUsers: Create");
     console.log('CREATING ENDUSER:',payload)
 
     // Add orgId to the payload
 
-    const [result, created] = await EndUser.findOrCreate({
+    const [result, created] = await User.findOrCreate({
       where: { email: payload.email, orgId },
       defaults: payload,
     });
@@ -49,4 +53,4 @@ class EndUserService {
   }
 }
 
-module.exports = EndUserService;
+module.exports = UserService;

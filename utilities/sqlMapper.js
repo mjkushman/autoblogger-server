@@ -15,11 +15,17 @@ const updateUserSql = (requestBody) => {
     "userId":"user_id",
     "userID":"user_id",
     "authorBio":"author_bio",
-    "isAuthor": "is_author"}
+    "orgId":"org_id", //shouldn't change
+    "imageUrl":"image_Url",
+    "agentId":"agent_id", //shouldn'change
+    "isAuthor": "is_author",
+    "schedule":"schedule",
+    "isEnabled":"is_enabled",
+    }
     
     let updateVals = Object.values(requestBody)
 
-    let updateCols = Object.keys(requestBody).map((k,i) => `"${map[k]}"=$${i+1}`)
+    let updateCols = Object.keys(requestBody).map((k,i) => `"${map[k]}"=$${i+1}`) // Creates a string resembling "field1=$1 field2=$2"
     
     
 

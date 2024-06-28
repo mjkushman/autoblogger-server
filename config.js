@@ -49,7 +49,7 @@ module.exports = {
   ANTHROPIC_KEY,
   UNSPLASH_CLIENT_ID,
   getDatabaseUri,
-  devConfig: {
+  development: {
     name,
     version,
     database:{
@@ -62,7 +62,27 @@ module.exports = {
         password: DATABASE_PASSWORD
       },
       client:null
-
-    }
+    },
+    SECRET_KEY,
+    PORT,
+    BCRYPT_WORK_FACTOR,
+    OPEN_AI_KEY,
+    ANTHROPIC_KEY,
+    UNSPLASH_CLIENT_ID,
+  },
+  testing:{
+    name,
+    version,
+    database:{
+      options:{
+        host:'localhost',
+        port:'5432',
+        database: getDatabaseUri(),
+        dialect: 'postgres',
+        username: DATABASE_USERNAME,
+        password: DATABASE_PASSWORD
+      },
+      client:null
+    },
   }
 };

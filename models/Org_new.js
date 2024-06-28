@@ -7,8 +7,8 @@ module.exports = (sequelize) => {
     "Org",
     {
       orgId: {
-        type: DataTypes.STRING(8),
-        defaultValue: nanoid(8),
+        type: DataTypes.STRING(6),
+        defaultValue: nanoid(6),
         primaryKey: true,
         unique: true,
       },
@@ -35,11 +35,7 @@ module.exports = (sequelize) => {
   );
   // Associations
   Org.associate = (models) => {
-    Org.hasMany(models.User, { foreignKey: "orgId", as: "users" });
+    Org.hasMany(models.User, { foreignKey: "orgId"});
   };
-  Org.associate = (models) => {
-    Org.hasMany(models.EndUser, { foreignKey: "orgId", as: "endUsers" });
-  };
-  // orgs.sync({force:true})
   return Org;
 };

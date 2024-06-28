@@ -13,7 +13,7 @@ const { OPEN_AI_KEY } = require("../config");
 const OpenAI = require("openai");
 const { ExpressError } = require("../expressError");
 const htmlParser = require('./htmlParser')
-const getUnsplashImage = require('./getUnsplahImage')
+const getUnsplashImage = require('./getUnsplashImage')
 
 const openai = new OpenAI({ apiKey: OPEN_AI_KEY });
 

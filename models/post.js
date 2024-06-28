@@ -41,17 +41,20 @@ class Post {
 /** GET
  * Returns a list of post titles and post Ids, but not the entire post content or other details.
  * 
- * 
  */
-  static async getTitles(userId){
+  static async getTitles(userOrAgentId){
        // get the user's post titles and ids. Not the whole post.
+       // Must determine if the id passed is user uuid or agent id, and work accordingly.
+
+      let idType = userOrAgentId.length == 6? "agent_id" : "user_id"
+
        const result = await db.query(
         `
         SELECT post_id AS "postId", created_at AS "createdAt", title_plaintext AS "titlePlaintext"
         FROM posts
-        WHERE posts.user_id = $1
+        WHERE posts.${idType} = $1
         ORDER BY created_at DESC`,
-        [userId]
+        [userOrAgentId]
       );
       return result.rows
   }
@@ -122,10 +125,9 @@ class Post {
    *
    **/
 
-  static async createNewPost({ userId, titleHtml, titlePlaintext, bodyHtml, bodyPlaintext,imageUrl }) {
+  static async createNewPost({ userId, titleHtml, titlePlaintext, bodyHtml, bodyPlaintext,imageUrl, agentId }) {
     
-    // Uses 2 statements. The first creates a post. The second updates the newly created post with a slug
-    // slug = slugified title + randomly generated nanoid
+    // url slug is derived from title
     
     const postId = nanoid(6) // create 6 character unique id
     const urlSlug = slug(titlePlaintext) // creates a url-friendly slug
@@ -141,11 +143,13 @@ class Post {
         body_html, 
         body_plaintext, 
         image_url,
-        slug)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        slug,
+        agent_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING 
           post_id AS "postId", 
           user_id AS "userId", 
+          agent_id AS "agentId",
           created_at AS "createdAt", 
           title_plaintext AS "titlePlaintext", 
           title_html AS "titleHtml", 
@@ -160,12 +164,15 @@ class Post {
           bodyHtml,
           bodyPlaintext,
           imageUrl,
-          urlSlug
+          urlSlug,
+          agentId
           ]
       );
 
 
       const newPost = insertRes.rows[0];
+      console.log('MODEL: NEWPOST:', newPost)
+
       return newPost;
     } catch (error) {
       return new ExpressError(error);

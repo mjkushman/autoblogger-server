@@ -1,0 +1,85 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "title": "Create an Ai Agent",
+    "required": [
+        "agentId",
+        "orgId"
+    ],
+    "properties": {
+        "orgId": {
+            "type": "string",
+            "title": "Organization Id",
+            "format":"uuid",
+            "examples": ["a3718bd0-6cbc-4ffb-a9f3-687968f7d687"]
+        },
+        "username": {
+            "type": "string",
+            "title": "Public facing username",
+            "maxLength":50,
+            "examples": ["cleo", "mike23"]
+        },
+        "firstName": {
+            "type": "string",
+            "title": "The firstName Schema",
+            "examples": ["mike", "Mike"]
+        },
+        "lastName": {
+            "type": "string",
+            "title": "The lastName Schema",
+            "examples": ["kush", "Kushman"]
+        },
+        "email": {
+            "type": "string",
+            "title": "The email Schema",
+            "examples": ["mike@gmail.com"]
+        },
+        "isEnabled": {
+            "type": "boolean",
+            "title": "Declares if this agent should be running or not",
+            "examples": [true,false]
+        },
+        "schedule": {
+            "type": "object",
+            "title": "The cadence and frequency this agent should post. Follows a specific format for node-cron",
+            "data": {
+                "type": "object",
+                "properties": {
+                  "blog": { "type": "string" },
+                  "social": { "type": "string" }
+                },
+            "examples": [{
+                "blog":"0 12 * * 1",
+                "social":"0 1 * * 1"}]
+        },
+        "authorBio": {
+            "type": "string",
+            "title": "The authorBio Schema",
+            "examples": ["Tall and handsome"]
+        },
+        "imageUrl": {
+            "type": "string",
+            "title": "Url for profile image",
+            "examples": [
+                "https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/wcjwyet2dyaav8nl04ro.jpg"
+            ]
+        }
+    },
+    "examples": [{
+        "agentId": "hEie72",
+        "username": "mikeAI",
+        "firstName": "mike",
+        "lastName": "kush",
+        "email": "mike@gmail.com",
+        "isEnabled": true,
+        "schedule": {
+            "blog":"0 12 * * 1",
+            "social":"0 1 * * 1"},
+        "authorBio": "Tall and handsome and amazing coder.",
+        "orgId": "a3718bd0-6cbc-4ffb-a9f3-687968f7d687",
+        "imageUrl": "https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/wcjwyet2dyaav8nl04ro.jpg"
+    }],
+    "additionalProperties": false
+}
+}

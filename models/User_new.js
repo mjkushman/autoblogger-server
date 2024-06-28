@@ -1,9 +1,9 @@
 const { DataTypes } = require("sequelize");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const { BCRYPT_WORK_FACTOR } = require("../config");
 
 module.exports = (sequelize) => {
-  
+  // console.log(sequelize)
   const User = sequelize.define(
     "User",
     {
@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
         primaryKey: true,
       },
       orgId: {
-        type: DataTypes.STRING(8),
+        type: DataTypes.STRING(6),
         references: {
           // This is a reference to another model
           model: "orgs",
@@ -43,23 +43,41 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
       },
       role: {
-        type: DataTypes.ENUM("user", "admin", "super_admin"),
+        type: DataTypes.ENUM("user", "standard", "editor", "admin"),
         allowNull: false,
         defaultValue: "user",
       },
+      imageUrl: {
+        type: DataTypes.STRING,
+        validate: {
+          isUrl: true,
+        },
+        defaultValue:
+          "https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/wcjwyet2dyaav8nl04ro.jpg",
+      },
     },
     {
-      tableName: "users"
+      tableName: "users",
     },
     {
       hooks: {
         beforeCreate: async (record) => {
-          if(record.password) {record.password = await bcrypt.hash(record.password, BCRYPT_WORK_FACTOR)}
-        }
+          if (record.password) {
+            record.password = await bcrypt.hash(
+              record.password,
+              BCRYPT_WORK_FACTOR
+            );
+          }
+        },
       },
       beforeUpdate: async (record) => {
-        if(record.changed('password')) {record.password = await bcrypt.hash(record.password, BCRYPT_WORK_FACTOR)}
-      }
+        if (record.changed("password")) {
+          record.password = await bcrypt.hash(
+            record.password,
+            BCRYPT_WORK_FACTOR
+          );
+        }
+      },
     },
     {
       indexes: [
@@ -71,10 +89,14 @@ module.exports = (sequelize) => {
     }
   );
 
-    // Associations
-    User.associate = (models) => {
-      User.hasMany(models.Post, {foreignKey: 'userId', as: 'posts'})
-    }
+  //     // Associations
+  User.associate = (models) => {
+    User.hasMany(models.Post, { foreignKey: "userId"});
+    User.hasMany(models.Comment, { foreignKey: "userId"});
+  };
+  
+  
 
+  // users.sync({force:true})
   return User;
 };

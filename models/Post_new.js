@@ -7,8 +7,8 @@ module.exports = (sequelize) => {
   const Post = sequelize.define("Post", 
   {
       postId: {
-        type: DataTypes.STRING(6),
-        defaultValue: nanoid(6),
+        type: DataTypes.STRING(10),
+        defaultValue: nanoid(10),
         primaryKey: true,
       },
       userId: {
@@ -21,7 +21,7 @@ module.exports = (sequelize) => {
         },
       },
       orgId: {
-        type: DataTypes.STRING(8),
+        type: DataTypes.STRING(6),
         references: {
           // This is a reference to another model
           model: "orgs",
@@ -76,9 +76,12 @@ module.exports = (sequelize) => {
   );
 
   // Associations
-  // Post.associate = (models) => {
-  //   Post.hasMany(models.Comment, {foreignKey: 'postId', as: 'comments'})
-  // }
+  Post.associate = (models) => {
+    Post.belongsTo(models.User) 
+    Post.hasMany(models.Comment, {foreignKey: 'postId'})
+  }
+  
+
 
   return Post;
 };

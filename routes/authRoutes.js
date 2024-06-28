@@ -7,7 +7,7 @@ const express = require('express')
 const jsonschema = require('jsonschema')
 const registerSchema = require('../schemas/userRegister.json');
 const userAuthSchema = require('../schemas/userAuthenticate.json')
-const { BadRequestError } = require('openai');
+const { BadRequestError } = require('../expressError');
 const { createToken } = require('../utilities/jwtoken');
 
 const router = express.Router({ mergeParams: true });
