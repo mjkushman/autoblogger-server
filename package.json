@@ -12,7 +12,9 @@
       "/node_modules/",
       "config.js"
     ],
-    "setupFiles":["dotenv/config"]
+    "setupFiles": [
+      "dotenv/config"
+    ]
   },
   "author": "",
   "license": "ISC",
@@ -30,7 +32,9 @@
     "node-cron": "^3.0.3",
     "openai": "^4.27.0",
     "pg": "^8.11.3",
-    "slug": "^8.2.3"
+    "slug": "^8.2.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "dotenv": "^16.4.3",

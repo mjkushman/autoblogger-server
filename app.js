@@ -4,6 +4,8 @@
 
 const express = require("express");
 const cors = require("cors");
+const swaggerJsdoc = require('swagger-jsdoc')
+const swaggerUi = require('swagger-ui-express')
 
 const { NotFoundError } = require("./expressError");
 const postRoutes = require("./routes/postRoutes");
@@ -26,7 +28,20 @@ app.use("/posts", postRoutes);
 
 
 
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Autobloger API',
+      version: '1.0.0',
+      description: 'API documentation',
+    },
+  },
+  apis: ['./routes/*.js'], // Path to the API docs
+};
 
+const swaggerDocs = swaggerJsdoc(swaggerOptions)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 
 /** Handle 404 errors -- this matches everything */
