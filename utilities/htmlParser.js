@@ -13,12 +13,12 @@
 
 const {htmlToText} = require("html-to-text");
 
-function htmlParser(responseHtml) {
-    let titleExtract = responseHtml.match(/<h1>(.*)<\/h1>/g)
+function htmlParser(llmResponse) {
+    let titleExtract = llmResponse.match(/<h1>(.*)<\/h1>/g)
     // console.log('title extracted:',titleExtract)
     let titleHtml = titleExtract? titleExtract[0]: ''
     
-    let bodyHtmlExtract = responseHtml.match(/<div id="primary-content">([\s\S]*?)<\/div>/)
+    let bodyHtmlExtract = llmResponse.match(/<div id="primary-content">([\s\S]*?)<\/div>/)
     // console.log('body extracted:', bodyHtmlExtract)
     let bodyHtml = bodyHtmlExtract ? bodyHtmlExtract[0] : ''
     
