@@ -1,42 +1,58 @@
 // import the org model
 
+const { ValidationError } = require("sequelize");
 const { User, Post } = require("../models");
 
 class UserService {
   /** GET all users */
-  async findAll({orgId}) {
+  async findAll({ orgId }) {
     console.log("hit findAll Users function");
-    return await User.findAll({ where: { orgId } });
+    if (orgId) return await User.findAll({ where: { orgId } });
+    else return await User.findAll();
   }
-  async findOneByUserId({orgId, userId}) {
-    console.log(`hit findOneByUserId function. OrgId: ${orgId}, userId: ${userId}`);
-    return await User.findOne({ 
-      where: { orgId, userId },
-      include: {
-        model: Post}
-     });
+
+  async findOneByUserId({ orgId, userId }) {
+    console.log(
+      `hit findOneByUserId function. OrgId: ${orgId}, userId: ${userId}`
+    );
+    if (orgId) {
+      return await User.findOne({
+        where: { orgId, userId },
+        include: {
+          model: Post,
+        },
+      });
+    } else {
+      return await User.findOne({
+        where: { userId },
+      });
+    }
   }
-  async findByUsername(orgId, username) {
-    console.log("hit findByUsername function");
-    return await User.findOne({ where: { username, orgId } });
+  async findByUsername({ orgId, username }) {
+    console.log(
+      "hit findByUsername function. username: ",
+      username,
+      "orgId: ",
+      orgId
+    );
+    if (orgId) return await User.findOne({ where: { username, orgId } });
+    else return await User.findOne({ where: { username } });
   }
 
   /** POST creates a new user */
-  async create({orgId, payload}) {
+  async create(payload) {
     console.log("EndUsers: Create");
-    console.log('CREATING ENDUSER:',payload)
+    console.log("CREATING ENDUSER:", payload);
 
-    // Add orgId to the payload
+    const  {email, blogId } = payload
 
-    const [result, created] = await User.findOrCreate({
-      where: { email: payload.email, orgId },
-      defaults: payload,
-    });
-
-    if (created) {
-      // strip sensitive fields from the return
-      console.log('CREATED USER, BEFORE PRUNING PW:',result)
-      const newUser = (({
+    try {
+      const [result, created] = await User.findOrCreate({
+        where: { email, blogId },
+        defaults: payload,
+      });
+      console.log("CREATED USER, BEFORE PRUNING PW:", result, "CREATED? ", created);
+      const user = (({
         username,
         firstName,
         lastName,
@@ -47,9 +63,12 @@ class UserService {
       }) => ({ username, firstName, lastName, email, role, imageUrl, orgId }))(
         result
       );
-      return newUser;
+      
+      return {created, user};
+      
+    } catch (error) {
+      return new ValidationError("user already exists",error) ; // should throw an error here instead 
     }
-    return "user already exists";
   }
 }
 

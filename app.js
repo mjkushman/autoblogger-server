@@ -9,9 +9,9 @@ const swaggerJsdoc = require('swagger-jsdoc')
 const swaggerUi = require('swagger-ui-express')
 
 const { NotFoundError } = require("./expressError");
-const postRoutes = require("./routes/postRoutes");
+const postRoutes = require("./apiRoutes/postRoutes");
 const { verifyJWT } = require("./middleware/authorizations");
-const authRoutes = require("./routes/authRoutes");
+const authRoutes = require("./apiRoutes/authRoutes");
 // const usersRoutes = require("./routes/userRoutes");
 const agentRoutes = require("./agents/agentRoutes");
 // const orgRoutes = require("./orgs/orgRoutes");
@@ -20,7 +20,8 @@ const orgUserRoutes = require("./orgUser/orgUserRoutes");
 
 const app = express();
 
-const routes = require('./routes')
+const apiRoutes = require('./apiRoutes')
+const adminRoutes = require('./adminRoutes')
 
 // refactor starts
 module.exports = (config) => {
@@ -31,7 +32,8 @@ module.exports = (config) => {
   app.use(morgan("tiny"));
   app.use(verifyJWT); // stores decoded token on res.locals.user, if one is provided
   
-  app.use('/', routes(config))
+  app.use('/api/v1/', apiRoutes(config))
+  app.use('/admin/', adminRoutes(config))
   // app.use("/auth", authRoutes);
   // app.use("/agents", agentRoutes);
   // app.use("/orgs", orgRoutes);

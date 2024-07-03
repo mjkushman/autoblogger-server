@@ -1,11 +1,11 @@
 // const { DataTypes } = require("sequelize");
-const Org = require("./Org_new");
-const User = require("./User_new");
-const Post = require("./Post_new");
+// const Org = require("./Org_new");
+// const User = require("./User_new");
+// const Post = require("./Post_new");
 // const EndUser = require("./User_new");
 const Sequelize = require("sequelize");
 const config = require("../config")["development"];
-const { orgSeed, userSeed, postSeed } = require("./seedData");
+const { orgSeed, blogSeed, userSeed, postSeed } = require("./seedData");
 
 // Create the sequelize client by connecting to db with config options
 const sequelize = new Sequelize(config.database.options);
@@ -29,6 +29,7 @@ connectToPostgres();
 const models = {
   // Add models below:
   Org: require('./Org_new')(sequelize),
+  Blog: require('./Blog')(sequelize),
   User: require('./User_new')(sequelize),
   // EndUser: require('./User_new')(sequelize),
   Post: require('./Post_new')(sequelize),
@@ -76,6 +77,11 @@ async function seedData() {
     if (existingOrgs.length === 0) {
       await models.Org.bulkCreate(orgSeed);
       console.log("Loaded seed data for orgs.");
+    }
+    let existingBlogs = await models.Blog.findAll()
+    if (existingBlogs.length === 0) {
+      await models.Blog.bulkCreate(blogSeed);
+      console.log("Loaded seed data for blogs.");
     }
     let existingUsers = await models.User.findAll()
     if (existingUsers.length === 0) {

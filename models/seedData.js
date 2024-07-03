@@ -22,56 +22,79 @@ const orgSeed = [
   },
 ];
 
+const blogSeed = [
+  {
+    blogId: "blog00001",
+    orgId: "111111",
+    title: "My First Blog for org 1",
+  },
+  {
+    blogId: "blog00002",
+    orgId: "111111",
+    title: "My Second Blog for org 1",
+  },
+  {
+    blogId: "blog00003",
+    orgId: "222222",
+    title: "My First Blog for org 2",
+  },
+];
+
 const userSeed = [
   {
     userId: "11111111-1111-1111-1111-111111111111",
     orgId: "111111",
+    blogId: "blog00001",
     email: "user1@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"One",
-    username:"user1",
-    role:"standard"
+    lastName: "One",
+    username: "user1",
+    role: "standard",
   },
   {
     userId: "22222222-2222-2222-2222-222222222222",
     orgId: "222222",
+    blogId: "blog00001",
     email: "user2@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"Two",
-    username:"user2",
-    role:"user"
+    lastName: "Two",
+    username: "user2",
+    role: "user",
   },
   {
     userId: "33333333-3333-3333-3333-333333333333",
     orgId: "333333",
+    blogId: "blog00002",
     email: "user3@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"Three",
-    username:"user3",
-    role:"user"
+    lastName: "Three",
+    username: "user3",
+    role: "user",
   },
   {
     userId: "44444444-4444-4444-4444-444444444444",
     orgId: "111111",
+    blogId: "blog00002",
     email: "user4@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"Four",
-    username:"user4",
-    role:"admin"
+    lastName: "Four",
+    username: "user4",
+    role: "admin",
   },
   {
     userId: "55555555-5555-5555-5555-555555555555",
     orgId: "111111",
+    blogId: "blog00003",
     email: "user5@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"Five",
-    username:"user5",
-    role:"editor"
+    lastName: "Five",
+    username: "user5",
+    role: "editor",
   },
 ];
 
@@ -80,63 +103,63 @@ const endUserSeed = [
     userId: "11111111-1111-1111-1111-111111111111",
     orgId: "111111",
     email: "user1@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"One",
-    username:"user1",
-    role:"user"
+    lastName: "One",
+    username: "user1",
+    role: "user",
   },
   {
     userId: "22222222-2222-2222-2222-222222222222",
     orgId: "222222",
     email: "user2@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"Two",
-    username:"user2",
-    role:"user"
+    lastName: "Two",
+    username: "user2",
+    role: "user",
   },
   {
     userId: "33333333-3333-3333-3333-333333333333",
     orgId: "333333",
     email: "user3@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"Three",
-    username:"user3",
-    role:"user"
+    lastName: "Three",
+    username: "user3",
+    role: "user",
   },
   {
     userId: "44444444-4444-4444-4444-444444444444",
     orgId: "111111",
     email: "user4@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"Four",
-    username:"user4",
-    role:"admin"
+    lastName: "Four",
+    username: "user4",
+    role: "admin",
   },
   {
     userId: "55555555-5555-5555-5555-555555555555",
     orgId: "111111",
     email: "user5@gmail.com",
-    password:"hashedpassword",
+    password: "hashedpassword",
     firstName: "User",
-    lastName:"Five",
-    username:"user5",
-    role:"admin"
+    lastName: "Five",
+    username: "user5",
+    role: "admin",
   },
 ];
 
 const postSeed = [
   // made by user:
   {
-    postId:"post000001",
-    userId:"11111111-1111-1111-1111-111111111111",
-    orgId:"111111",
-    titlePlaintext:"Post Title 1",
-    titleHtml:"<h1>Post Title 1</h1>",
-    bodyPlaintext:`Greetings, fellow furry friends and esteemed humans!
+    postId: "post000001",
+    userId: "11111111-1111-1111-1111-111111111111",
+    blogId: "blog00001",
+    titlePlaintext: "Post Title 1",
+    titleHtml: "<h1>Post Title 1</h1>",
+    bodyPlaintext: `Greetings, fellow furry friends and esteemed humans!
 
     It''s your favorite four-legged firecracker, Cleo the Corgi, here to bark about something close to my heart: advocating for canine causes.
     
@@ -170,7 +193,7 @@ const postSeed = [
     
     Woofs and wags,
     Cleo the Corgi`,
-    bodyHtml:`<div id=\"primary-content\">
+    bodyHtml: `<div id=\"primary-content\">
     <p>Greetings, fellow furry friends and esteemed humans!</p>
     <p>It''s your favorite four-legged firecracker, Cleo the Corgi, here to bark about something close to my heart: advocating for canine causes.</p>
 </header>
@@ -199,19 +222,18 @@ const postSeed = [
     <p>Woofs and wags,</p>
     <p>Cleo the Corgi</p>
 </div >`,
-    imageUrl:`https://images.unsplash.com/photo-1664575196851-5318f32c3f43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1Njg0MzB8MHwxfHNlYXJjaHwxfHx3cml0ZXJ8ZW58MHx8fHwxNzA4ODkwNzUzfDA&ixlib=rb-4.0.3&q=80&w=1080`,
-    slug:"post-title-1"
-
+    imageUrl: `https://images.unsplash.com/photo-1664575196851-5318f32c3f43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1Njg0MzB8MHwxfHNlYXJjaHwxfHx3cml0ZXJ8ZW58MHx8fHwxNzA4ODkwNzUzfDA&ixlib=rb-4.0.3&q=80&w=1080`,
+    slug: "post-title-1",
   },
   // made by agent:
   {
-    postId:"post000002",
-    orgId:"222222",
+    postId: "post000002",
+    blogId: "blog00001",
     // agentId:"aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    userId:"22222222-2222-2222-2222-222222222222",
-    titlePlaintext:"Post Title 2",
-    titleHtml:"<h1>Post Title 2</h1>",
-    bodyPlaintext:`Hey there, paw-some pals and internet enthusiasts!
+    userId: "22222222-2222-2222-2222-222222222222",
+    titlePlaintext: "Post Title 2",
+    titleHtml: "<h1>Post Title 2</h1>",
+    bodyPlaintext: `Hey there, paw-some pals and internet enthusiasts!
 
     It''s your favorite fluffball, Cleo the Corgi, here to spill the kibble on what it takes to go from floof to fame in the wild world of the internet. That''s right, folks, today I''m barking all about my journey from a tiny ball of fur to a bona fide internet sensation.
     
@@ -243,7 +265,7 @@ const postSeed = [
     
     Woofs and wags,
     Cleo the Corgi`,
-    bodyHtml:`<div id=\"primary-content\">
+    bodyHtml: `<div id=\"primary-content\">
     <p>Hey there, paw-some pals and internet enthusiasts!</p>
     <p>It''s your favorite fluffball, Cleo the Corgi, here to spill the kibble on what it takes to go from floof to fame in the wild world of the internet. That''s right, folks, today I''m barking all about my journey from a tiny ball of fur to a bona fide internet sensation.</p>
 </header>
@@ -272,12 +294,9 @@ const postSeed = [
     <p>Woofs and wags,</p>
     <p>Cleo the Corgi</p>
 </div>`,
-    imageUrl:`https://images.unsplash.com/photo-1516371535707-512a1e83bb9a?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max`,
-    slug:"post-title-2"
+    imageUrl: `https://images.unsplash.com/photo-1516371535707-512a1e83bb9a?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max`,
+    slug: "post-title-2",
   },
 ];
 
-
-
-module.exports = {orgSeed, userSeed, endUserSeed, postSeed}
-
+module.exports = { orgSeed, blogSeed, userSeed, endUserSeed, postSeed };

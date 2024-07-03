@@ -1,11 +1,11 @@
 const { DataTypes } = require("sequelize");
-const {nanoid} = require('nanoid')
-const slug = require('slug');
+const { nanoid } = require("nanoid");
+const slug = require("slug");
 
 module.exports = (sequelize) => {
-
-  const Post = sequelize.define("Post", 
-  {
+  const Post = sequelize.define(
+    "Post",
+    {
       postId: {
         type: DataTypes.STRING(10),
         defaultValue: nanoid(10),
@@ -20,17 +20,17 @@ module.exports = (sequelize) => {
           key: "userId",
         },
       },
-      orgId: {
-        type: DataTypes.STRING(6),
+      blogId: {
+        type: DataTypes.STRING(9),
         references: {
           // This is a reference to another model
-          model: "orgs",
+          model: "blogs",
           // This is the column name of the referenced model
-          key: "orgId",
+          key: "blogId",
         },
         allowNull: false,
       },
-      
+
       titlePlaintext: {
         type: DataTypes.STRING,
       },
@@ -54,34 +54,38 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "posts"
-    }, 
-    {
+      tableName: "posts",
       hooks: {
         beforeCreate: async (record) => {
-          if(record.titlePlaintext) {record.slug = await slug(record.titlePlaintext)}
-        }
+          if (record.titlePlaintext) {
+            record.slug = await slug(record.titlePlaintext);
+          }
+        },
       },
       beforeUpdate: async (record) => {
-        if(record.titlePlaintext) {record.slug = await slug(record.titlePlaintext)}
-      }
+        if (record.titlePlaintext) {
+          record.slug = await slug(record.titlePlaintext);
+        }
+      },
     },
     {
       validate: {
         mustHaveUserOrAgentId() {
-          if(!this.agentId && !this.userId) throw new Error ("At least one of userId or agentId must be provided.")
-        }
-      }
+          if (!this.agentId && !this.userId)
+            throw new Error(
+              "At least one of userId or agentId must be provided."
+            );
+        },
+      },
     }
   );
 
   // Associations
   Post.associate = (models) => {
-    Post.belongsTo(models.User) 
-    Post.hasMany(models.Comment, {foreignKey: 'postId'})
-  }
-  
-
+    Post.belongsTo(models.User);
+    Post.belongsTo(models.Blog);
+    Post.hasMany(models.Comment, { foreignKey: "postId" });
+  };
 
   return Post;
 };

@@ -35,6 +35,7 @@ module.exports = (sequelize) => {
   );
   // Associations
   Org.associate = (models) => {
+    Org.hasMany(models.Blog, { foreignKey: "orgId"});
     Org.hasMany(models.User, { foreignKey: "orgId"});
   };
   return Org;

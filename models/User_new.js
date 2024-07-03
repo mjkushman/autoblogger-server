@@ -22,6 +22,16 @@ module.exports = (sequelize) => {
         },
         allowNull: false,
       },
+      blogId: {
+        type: DataTypes.STRING(9),
+        references: {
+          // This is a reference to another model
+          model: "blogs",
+          // This is the column name of the referenced model
+          key: "blogId",
+        },
+        allowNull: false,
+      },
       email: {
         type: DataTypes.STRING,
         validate: {
@@ -58,8 +68,6 @@ module.exports = (sequelize) => {
     },
     {
       tableName: "users",
-    },
-    {
       hooks: {
         beforeCreate: async (record) => {
           if (record.password) {
@@ -83,7 +91,7 @@ module.exports = (sequelize) => {
       indexes: [
         {
           unique: true,
-          fields: ["email", "orgId"], // email can only be in one org at a time
+          fields: ["email", "blogId"], // email can only appear in a given blog once
         },
       ],
     }
@@ -91,11 +99,9 @@ module.exports = (sequelize) => {
 
   //     // Associations
   User.associate = (models) => {
-    User.hasMany(models.Post, { foreignKey: "userId"});
-    User.hasMany(models.Comment, { foreignKey: "userId"});
+    User.hasMany(models.Post, { foreignKey: "userId" });
+    User.hasMany(models.Comment, { foreignKey: "userId" });
   };
-  
-  
 
   // users.sync({force:true})
   return User;
