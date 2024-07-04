@@ -5,18 +5,9 @@
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const swaggerJsdoc = require('swagger-jsdoc')
-const swaggerUi = require('swagger-ui-express')
 
 const { NotFoundError } = require("./expressError");
-const postRoutes = require("./apiRoutes/postRoutes");
 const { verifyJWT } = require("./middleware/authorizations");
-const authRoutes = require("./apiRoutes/authRoutes");
-// const usersRoutes = require("./routes/userRoutes");
-const agentRoutes = require("./agents/agentRoutes");
-// const orgRoutes = require("./orgs/orgRoutes");
-const orgUserRoutes = require("./orgUser/orgUserRoutes");
-
 
 const app = express();
 
@@ -32,17 +23,9 @@ module.exports = (config) => {
   app.use(morgan("tiny"));
   app.use(verifyJWT); // stores decoded token on res.locals.user, if one is provided
   
-  app.use('/api/v1/', apiRoutes(config))
-  app.use('/admin/', adminRoutes(config))
-  // app.use("/auth", authRoutes);
-  // app.use("/agents", agentRoutes);
-  // app.use("/orgs", orgRoutes);
-  // app.use("/orgusers",orgUserRoutes);
-  
-  
-  // app.use("/users", usersRoutes);
-  // app.use("/posts", postRoutes);
-  
+  app.use('/api/v1/', apiRoutes(config)) // sites for api consumers
+  app.use('/admin/', adminRoutes(config)) // routes for administrating biz site
+
   /** Handle 404 errors -- this matches everything */
   app.use(function (req, res, next) {
     return next(new NotFoundError());
