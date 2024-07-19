@@ -2,34 +2,18 @@ const { DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
 const { BCRYPT_WORK_FACTOR } = require("../config");
 
+
 module.exports = (sequelize) => {
-  // console.log(sequelize)
-  const User = sequelize.define(
-    "User",
+  const Account = sequelize.define(
+    "Account",
     {
-      userId: {
+      accountId: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      orgId: {
-        type: DataTypes.STRING(6),
-        references: {
-          // This is a reference to another model
-          model: "orgs",
-          // This is the column name of the referenced model
-          key: "orgId",
-        },
-        allowNull: false,
-      },
-      blogId: {
-        type: DataTypes.STRING(9),
-        references: {
-          // This is a reference to another model
-          model: "blogs",
-          // This is the column name of the referenced model
-          key: "blogId",
-        },
+      host: {
+        type: DataTypes.STRING, // The hostname where the request should come from
         allowNull: true,
       },
       email: {
@@ -39,23 +23,26 @@ module.exports = (sequelize) => {
         },
         allowNull: false,
       },
-      password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
       firstName: {
         type: DataTypes.STRING,
       },
       lastName: {
         type: DataTypes.STRING,
       },
-      username: {
+      password: {
         type: DataTypes.STRING,
-      },
-      role: {
-        type: DataTypes.ENUM("user", "standard", "editor", "admin"),
         allowNull: false,
-        defaultValue: "user",
+      },
+      // blogs: {
+      //   type: DataTypes.ARRAY(DataTypes.STRING)
+      // },
+      apiKey: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      apiKeyIndex: {
+        type: DataTypes.STRING(10),
+        allowNull: false,
       },
       imageUrl: {
         type: DataTypes.STRING,
@@ -67,17 +54,26 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: "users",
+      tableName: "accounts",
       hooks: {
         beforeCreate: async (record) => {
+          // hash password key before saving
           if (record.password) {
             record.password = await bcrypt.hash(
               record.password,
               BCRYPT_WORK_FACTOR
             );
           }
+          // hash api key before saving
+          if (record.apiKey) {
+            record.apiKey = await bcrypt.hash(
+              record.apiKey,
+              BCRYPT_WORK_FACTOR
+            );
+          }
         },
       },
+      // hash password key before updating.
       beforeUpdate: async (record) => {
         if (record.changed("password")) {
           record.password = await bcrypt.hash(
@@ -91,18 +87,16 @@ module.exports = (sequelize) => {
       indexes: [
         {
           unique: true,
-          fields: ["email", "blogId"], // email can only appear in a given blog once
+          fields: ["email"], // email must be unique
         },
       ],
     }
   );
-
-  //     // Associations
-  User.associate = (models) => {
-    User.hasMany(models.Post, { foreignKey: "userId" });
-    User.hasMany(models.Comment, { foreignKey: "userId" });
-  };
+    // Associations
+    Account.associate = (models) => {
+      Account.hasMany(models.Blog, {foreignKey: 'accountId'});
+    };
 
   // users.sync({force:true})
-  return User;
+  return Account;
 };

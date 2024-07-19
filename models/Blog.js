@@ -11,14 +11,14 @@ module.exports = (sequelize) => {
         primaryKey: true,
         unique: true,
       },
-      orgId: {
-        type: DataTypes.STRING(6),
+      accountId: {
+        type: DataTypes.UUID,
         references: {
-          model: "orgs",
-          key: "orgId",
+          model: "accounts",
+          key: "accountId",
         }
       },
-      title: {
+      label: {
         type: DataTypes.STRING,
       },
     },
@@ -33,6 +33,7 @@ module.exports = (sequelize) => {
   );
   // Associations
   Blog.associate = (models) => {
+    Blog.belongsTo(models.Account);
     Blog.hasMany(models.Post, {foreignKey: 'blogId'});
     Blog.hasMany(models.User, {foreignKey: 'blogId'});
   };

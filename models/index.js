@@ -31,9 +31,9 @@ const models = {
   Org: require('./Org_new')(sequelize),
   Blog: require('./Blog')(sequelize),
   User: require('./User_new')(sequelize),
-  // EndUser: require('./User_new')(sequelize),
   Post: require('./Post_new')(sequelize),
-  Comment: require('./Comment_new')(sequelize)
+  Comment: require('./Comment_new')(sequelize),
+  Account: require('./Account')(sequelize)
   // more models...
 }
 

@@ -2,33 +2,36 @@
 // const Models = require("../models/index");
 // const db = require('../dborm')
 
-const {Org} = require("../models");
-
-
+const { Org } = require("../models");
+const crypto = require('crypto')
 class OrgService {
-    
   /** GET all orgs */
-  async findAll() {
-    console.log('hit findAll Orgs function')
-    return await Org.findAll()
+  static async findAll() {
+    console.log("hit findAll Orgs function");
+    return await Org.findAll();
   }
   /** GET ONE org */
-  async findOne(orgId) {
-    console.log('hit findAll Orgs function')
-    return await Org.findOne({where:{orgId}})
+  static async findOne(orgId) {
+    console.log("hit findAll Orgs function");
+    return await Org.findOne({ where: { orgId } });
   }
 
-
+  
   /** POST creates a new org */
-  async create(payload) {
-    console.log('Orgs: Creating from payload:',payload)
+  static async create(payload) {
+    console.log("Orgs: Creating from payload:", payload);
 
-    // TODO: Generate access key. hardcoding for now.
-    let newOrg = {...payload,accessKey:"999"}
 
-    return await Org.create(newOrg)
+    let accessKey = crypto.randomBytes(64).toString('hex')
+    let newOrg = {
+      email: payload.email,
+      name: payload.name,
+      plan: payload.plan,
+      accessKey,
+    };
+
+    return await Org.create(newOrg);
   }
 }
 
-
-module.exports = OrgService
+module.exports = OrgService;

@@ -24,6 +24,7 @@ module.exports = (sequelize) => {
       },
       plan: {
         type: DataTypes.ENUM("free", "standard", "enterprise"),
+        defaultValue: "free"
       },
       accessKey: {
         type: DataTypes.STRING,

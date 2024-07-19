@@ -5,13 +5,13 @@ const { User, Post } = require("../models");
 
 class UserService {
   /** GET all users */
-  async findAll({ orgId }) {
+  static async findAll({ orgId }) {
     console.log("hit findAll Users function");
     if (orgId) return await User.findAll({ where: { orgId } });
     else return await User.findAll();
   }
 
-  async findOneByUserId({ orgId, userId }) {
+  static async findOneByUserId({ orgId, userId }) {
     console.log(
       `hit findOneByUserId function. OrgId: ${orgId}, userId: ${userId}`
     );
@@ -28,7 +28,7 @@ class UserService {
       });
     }
   }
-  async findByUsername({ orgId, username }) {
+  static async findByUsername({ orgId, username }) {
     console.log(
       "hit findByUsername function. username: ",
       username,
@@ -40,34 +40,50 @@ class UserService {
   }
 
   /** POST creates a new user */
-  async create(payload) {
+  static async create(payload) {
     console.log("EndUsers: Create");
     console.log("CREATING ENDUSER:", payload);
 
-    const  {email, blogId } = payload
-
+    const {
+      email,
+      blogId,
+      orgId,
+      firstName,
+      lastName,
+      role,
+      password,
+      username,
+    } = payload;
+    console.log('RECEIVED USER CREATE PAYLOAD: ', payload)
     try {
-      const [result, created] = await User.findOrCreate({
-        where: { email, blogId },
-        defaults: payload,
-      });
-      console.log("CREATED USER, BEFORE PRUNING PW:", result, "CREATED? ", created);
-      const user = (({
-        username,
+      const user = await User.create({
+        email,
+        blogId,
+        orgId,
         firstName,
         lastName,
+        role,
+        password,
+        username,
+      });
+      console.log("CREATED USER, BEFORE PRUNING PW:", user);
+
+      const newUser = (({
+        orgId,
+        blogId,
+        firstName,
+        lastName,
+        username,
         email,
         role,
         imageUrl,
-        orgId,
-      }) => ({ username, firstName, lastName, email, role, imageUrl, orgId }))(
-        result
+      }) => ({ blogId, username, firstName, lastName, email, role, imageUrl, orgId }))(
+        user
       );
-      
-      return {created, user};
-      
+
+      return newUser ;
     } catch (error) {
-      return new ValidationError("user already exists",error) ; // should throw an error here instead 
+      return new ValidationError("user already exists", error); // should throw an error here instead
     }
   }
 }
