@@ -4,13 +4,14 @@ const express = require("express");
 const router = express.Router();
 
 const userRoutes = require("./userRoutes");
-// const endUserRoutes = require("./endUserRoutes");
+
 const postRoutes = require("./postRoutes");
 const commentRoutes = require("./commentRoutes");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const accountRoutes = require("./accountRoutes");
 const blogRoutes = require('./blogRoutes')
+const agentRoutes = require('./agentRoutes')
 const { validateApiKey } = require("../middleware/validateApiKey");
 
 module.exports = (config) => {
@@ -71,7 +72,7 @@ module.exports = (config) => {
   router.use(`/api/${apiVersion}/users`, userRoutes(config)); // Create and manage blog users
   router.use(`/api/${apiVersion}/posts`, postRoutes(config)); // Create and manage blog posts
   router.use(`/api/${apiVersion}/comments`, commentRoutes(config)); // Create and manage comments
-  // router.use(`/api/${apiVersion}/:orgId/agents`, agentRoutes(config)); // Create and manage agents
+  router.use(`/api/${apiVersion}/agents`, agentRoutes(config)); // Create and manage agents
 
   return router;
 };
