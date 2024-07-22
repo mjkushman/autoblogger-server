@@ -1,20 +1,16 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
 const { BCRYPT_WORK_FACTOR } = require("../config");
-
+const IdGenerator = require("../utilities/IdGenerator");
 
 module.exports = (sequelize) => {
   const Account = sequelize.define(
     "Account",
     {
       accountId: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.STRING(40),
+        defaultValue: IdGenerator.accountId(),
         primaryKey: true,
-      },
-      host: {
-        type: DataTypes.STRING, // The hostname where the request should come from
-        allowNull: true,
       },
       email: {
         type: DataTypes.STRING,
@@ -33,9 +29,6 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      // blogs: {
-      //   type: DataTypes.ARRAY(DataTypes.STRING)
-      // },
       apiKey: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -72,18 +65,15 @@ module.exports = (sequelize) => {
             );
           }
         },
+        beforeUpdate: async (record) => {
+          if (record.changed("password")) {
+            record.password = await bcrypt.hash(
+              record.password,
+              BCRYPT_WORK_FACTOR
+            );
+          }
+        },
       },
-      // hash password key before updating.
-      beforeUpdate: async (record) => {
-        if (record.changed("password")) {
-          record.password = await bcrypt.hash(
-            record.password,
-            BCRYPT_WORK_FACTOR
-          );
-        }
-      },
-    },
-    {
       indexes: [
         {
           unique: true,
@@ -92,11 +82,12 @@ module.exports = (sequelize) => {
       ],
     }
   );
-    // Associations
-    Account.associate = (models) => {
-      Account.hasMany(models.Blog, {foreignKey: 'accountId'});
-    };
 
-  // users.sync({force:true})
+  // Associations
+  Account.associate = (models) => {
+    Account.hasMany(models.Blog, { foreignKey: "accountId" });
+    Account.hasMany(models.Agent, { foreignKey: "accountId" });
+  };
+
   return Account;
 };

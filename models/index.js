@@ -1,11 +1,7 @@
-// const { DataTypes } = require("sequelize");
-// const Org = require("./Org_new");
-// const User = require("./User_new");
-// const Post = require("./Post_new");
-// const EndUser = require("./User_new");
+
 const Sequelize = require("sequelize");
 const config = require("../config")["development"];
-const { orgSeed, blogSeed, userSeed, postSeed } = require("./seedData");
+const { accountSeed, blogSeed, userSeed, postSeed, agentSeed } = require("./seedData");
 
 // Create the sequelize client by connecting to db with config options
 const sequelize = new Sequelize(config.database.options);
@@ -28,12 +24,13 @@ connectToPostgres();
 
 const models = {
   // Add models below:
-  Org: require('./Org_new')(sequelize),
+  // Org: require('./Org_new')(sequelize),
+  Account: require('./Account')(sequelize),
   Blog: require('./Blog')(sequelize),
   User: require('./User_new')(sequelize),
+  Agent: require('./Agent')(sequelize),
   Post: require('./Post_new')(sequelize),
   Comment: require('./Comment_new')(sequelize),
-  Account: require('./Account')(sequelize)
   // more models...
 }
 
@@ -47,36 +44,34 @@ const models = {
 // }
 
 console.log('MODELS',models)
-console.log('User Model',models.User.associate)
-
 
 // Call associate methods
 Object.keys(models).forEach((modelName) => {
-  console.log('MODEL NAME',modelName)
+  console.log('Associating...',modelName)
   if (models[modelName].associate) {
     try {
       models[modelName].associate(models);
-      console.log(`ASSOCIATED ${modelName}`)
+      console.log(`Associated ${modelName} successfully.`)
     } catch (error) {
-      console.log(`Error associating ${models}, ${modelName}`)
+      console.log(`ERROR ASSOCIATING, ${modelName}`)
     }
   }
 });
 
 // What are these two lines even for?
-// models.sequelize = sequelize;
-// models.Sequelize = Sequelize;
+models.sequelize = sequelize;
+models.Sequelize = Sequelize;
 
 
 // Add seed data
 async function seedData() {
   await sequelize.sync({ force: true });
   try {
-    let existingOrgs = await models.Org.findAll()
-
-    if (existingOrgs.length === 0) {
-      await models.Org.bulkCreate(orgSeed);
-      console.log("Loaded seed data for orgs.");
+    
+    let existingAccounts = await models.Account.findAll()
+    if (existingAccounts.length === 0) {
+      await models.Account.bulkCreate(accountSeed);
+      console.log("Loaded seed data for accounts.");
     }
     let existingBlogs = await models.Blog.findAll()
     if (existingBlogs.length === 0) {
@@ -88,11 +83,11 @@ async function seedData() {
       await models.User.bulkCreate(userSeed,{validate:true});
       console.log("Loaded seed data for users.");
     }
-    // let existingEndUsers = await models.EndUser.findAll()
-    // if (existingEndUsers.length === 0) {
-    //   await models.EndUser.bulkCreate(endUserSeed);
-    //   console.log("Loaded seed data for endusers.");
-    // }
+    let existingAgents = await models.Agent.findAll()
+    if (existingAgents.length === 0) {
+      await models.Agent.bulkCreate(agentSeed, {validate:true});
+      console.log("Loaded seed data for Agents.");
+    }
 
     let existingPosts = await models.Post.findAll()
     if (existingPosts.length === 0) {

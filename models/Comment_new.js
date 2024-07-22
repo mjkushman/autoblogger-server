@@ -10,7 +10,7 @@ module.exports = (sequelize) => {
         primaryKey: true,
       },
       userId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING,
         references: {
           // This is a reference to another table
           model: "users",
@@ -28,7 +28,7 @@ module.exports = (sequelize) => {
     //     },
     //   },
       postId: {
-        type: DataTypes.STRING(10),
+        type: DataTypes.STRING(),
         references: {
           // This is a reference to another table
           model: "posts",
@@ -36,8 +36,8 @@ module.exports = (sequelize) => {
           key: "postId",
         },
       },
-      orgId: {
-        type: DataTypes.STRING(6),
+      accountId: {
+        type: DataTypes.STRING(),
         references: {
           // This is a reference to another table
           model: "orgs",

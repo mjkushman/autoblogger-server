@@ -6,7 +6,7 @@ const router = express.Router({ mergeParams: true });
 // Receives config from routes/index.js
 module.exports = (config) => {
   const BlogService = require("../services/BlogService");
-  const blogService = new BlogService(config.database.client);
+  // const blogService = new BlogService(config.database.client);
   // ====== END NEW SEQUELIZE SERVICE
 
   /** Get all blogs
@@ -46,7 +46,7 @@ module.exports = (config) => {
    *         description: Internal server error
    */
   router.get("/", async function (req, res, next) {
-    const blogs = await blogService.findAll();
+    const blogs = await BlogService.findAll();
     return res.json({ blogs });
   });
 
@@ -94,7 +94,7 @@ module.exports = (config) => {
    *         description: Internal server error
    */
   router.get("/:blogId", async function (req, res, next) {
-    const blog = await blogService.findOne(req.params.blogId);
+    const blog = await BlogService.findOne(req.params.blogId);
     return res.json({ blog });
   });
 
@@ -158,7 +158,7 @@ module.exports = (config) => {
    */
   router.post("/", async function (req, res, next) {
     // const payload = req.body;
-    let blog = await blogService.create(req.body);
+    let blog = await BlogService.create(req.body);
     return res.json( blog );
 
     // BEFORE SEQUELIZE:

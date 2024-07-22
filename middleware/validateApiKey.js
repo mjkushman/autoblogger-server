@@ -10,6 +10,7 @@ const bcrypt = require("bcrypt");
 module.exports = {
   async validateApiKey(req, res, next) {
     const apiKey = req.headers["X-API-KEY"] || req.headers["x-api-key"];
+    const hostname = req.hostname // host from headers
     const host = req.headers.host // host from headers
   
 
@@ -19,9 +20,10 @@ module.exports = {
         accountId: "11111111-1111-1111-1111-111111111111",
         firstName: 'Max',
         lastName: 'Developer',
-        label: 'Max Blog',
+        label: 'Max Blogger',
         email: 'maxdev@test.com',
-        host: host
+        host: host,
+        hostname: hostname
       }
       console.log('continuing in dev environment', devForDev)
       req.user = devForDev;

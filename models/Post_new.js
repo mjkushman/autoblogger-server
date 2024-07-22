@@ -1,18 +1,19 @@
 const { DataTypes } = require("sequelize");
 const { nanoid } = require("nanoid");
 const slug = require("slug");
+const IdGenerator = require('../utilities/IdGenerator')
 
 module.exports = (sequelize) => {
   const Post = sequelize.define(
     "Post",
     {
       postId: {
-        type: DataTypes.STRING(10),
-        defaultValue: nanoid(10),
+        type: DataTypes.STRING(14),
+        defaultValue: IdGenerator.postId(),
         primaryKey: true,
       },
       userId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING,
         references: {
           // This is a reference to another model
           model: "users",
@@ -21,7 +22,7 @@ module.exports = (sequelize) => {
         },
       },
       blogId: {
-        type: DataTypes.STRING(9),
+        type: DataTypes.STRING(14),
         references: {
           // This is a reference to another model
           model: "blogs",
@@ -30,7 +31,6 @@ module.exports = (sequelize) => {
         },
         allowNull: false,
       },
-
       titlePlaintext: {
         type: DataTypes.STRING,
       },
@@ -58,13 +58,13 @@ module.exports = (sequelize) => {
       hooks: {
         beforeCreate: async (record) => {
           if (record.titlePlaintext) {
-            record.slug = await slug(record.titlePlaintext);
+            record.slug = slug(record.titlePlaintext);
           }
         },
       },
       beforeUpdate: async (record) => {
         if (record.titlePlaintext) {
-          record.slug = await slug(record.titlePlaintext);
+          record.slug = slug(record.titlePlaintext);
         }
       },
     },
@@ -83,7 +83,7 @@ module.exports = (sequelize) => {
   // Associations
   Post.associate = (models) => {
     Post.belongsTo(models.User);
-    Post.belongsTo(models.Blog);
+    Post.belongsTo(models.Blog, { foreignKey: "blogId "});
     Post.hasMany(models.Comment, { foreignKey: "postId" });
   };
 

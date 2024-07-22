@@ -1,13 +1,11 @@
 // import the org model
-// const Models = require("../models/index");
-// const db = require('../dborm')
 
 const { Account, Blog } = require("../models");
 const { ExpressError } = require("../utilities/expressError");
 const crypto = require("crypto");
 const { hash } = require("../utilities/hasher");
 const { cache } = require("../cache");
-const BlogService = require('./BlogService')
+const BlogService = require("./BlogService");
 
 class AccountService {
   /** POST creates a new developer account, blog, and first user */
@@ -26,7 +24,7 @@ class AccountService {
 
     // Generate a unique api key
     const apiKey = crypto.randomBytes(64).toString("hex");
-    const apiKeyIndex = apiKey.substring(0,9)
+    const apiKeyIndex = apiKey.substring(0, 9);
 
     // create the new account
     try {
@@ -46,9 +44,9 @@ class AccountService {
       const newBlog = await BlogService.create({
         accountId: newAccount.accountId,
         label: label,
-      })
+      });
       // get account blogs. Should just be one right now.
-      const blogList = await newAccount.getBlogs()
+      const blogList = await newAccount.getBlogs();
       // store new account in cache
       const account = {
         accountId: newAccount.accountId,
@@ -56,14 +54,14 @@ class AccountService {
         lastName: newAccount.lastName,
         email: newAccount.email,
         apiKey,
-        blogs: await blogList.map(({blogId, label}) => ({blogId, label}))
-      }
-      cache.set(apiKey, account)
+        blogs: await blogList.map(({ blogId, label }) => ({ blogId, label })),
+      };
+      cache.set(apiKey, account);
       // TODO: Send email to developer with their api key await blogList.map(({blogId, label}) => blogId, label)
 
       return {
         status: 201,
-        account
+        account,
       };
     } catch (error) {
       return new ExpressError(error, 500);
@@ -72,14 +70,14 @@ class AccountService {
 
   static async findByApiKeyIndex({ apiKey }) {
     console.log("FINDING BY API KEY INDEX");
-    
-    const apiKeyIndex = apiKey.substring(0,9)
+
+    const apiKeyIndex = apiKey.substring(0, 9);
     const result = await Account.findOne({
       where: {
         apiKeyIndex,
       },
     });
-    if(result){
+    if (result) {
       const { accountId, firstName, lastName, email, label } = result;
       const account = {
         accountId,
@@ -87,11 +85,23 @@ class AccountService {
         lastName,
         email,
         label,
-        apiKey
-      }
+        apiKey,
+      };
       return account;
     }
-    return result
+    return result;
+  }
+
+  static async findAll() {
+    console.log('account service findall')
+    try {
+      console.log('trying')
+      let accounts = await Account.findAll();
+      return accounts 
+    } catch (error) {
+      console.log('catching')
+      return error;
+    }
   }
 }
 
