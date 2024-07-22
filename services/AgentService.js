@@ -63,32 +63,37 @@ class AgentService extends LLMService {
     }
   }
 
-  static async findAll() {
-    console.log("service: finding all agents");
-    try {
-      console.log("trying");
-      let agents = await Agent.findAll();
-      console.log("AGENTS FROM DB", agents);
-      return agents;
-    } catch (error) {
-      console.log("catching");
-      console.log("Error:", error);
-      return error;
-    }
-  }
-  static async create(body) {
+  static async create({body, accountId}) {
     console.log("service: creating a new agent");
     try {
-      console.log("trying");
-
-      return await Agent.create(body);
+      let newAgent = { ...body, accountId };
+      return await Agent.create(newAgent);
     } catch (error) {
-      console.log("catching");
       let errorStack = error.errors.map(({ type, message }) => ({
         type,
         message,
       }));
       return { errors: errorStack };
+    }
+  }
+
+  static async findAll({accountId}) {
+    console.log(`service: finding all agents for accountId: ${accountId}`);
+    try {
+      let agents = await Agent.findAll({ where: { accountId } });
+      return agents;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  static async findOne({ agentId, accountId }) {
+    console.log(`service: finding one agent for accountId: ${accountId}`);
+    try {
+      let agent = await Agent.findOne({ where: { agentId, accountId } });
+      return agent;
+    } catch (error) {
+      return error;
     }
   }
 

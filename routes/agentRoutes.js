@@ -16,38 +16,32 @@ const {
 const AgentService = require("../services/AgentService");
 
 module.exports = (config) => {
-  /** GET returns a list of all agents
+  /** GET returns a list of all agents for an account
    *
    */
   router.get("/", async function (req, res, next) {
     try {
-      console.log('route: finding all agents')
-      const response = await AgentService.findAll();
+      console.log("route: finding all agents");
+      const { accountId } = req.account;
+      const response = await AgentService.findAll({accountId});
       return res.status(200).json(response);
     } catch (error) {
-      let errorMessage = new BadRequestError(error);
-      return res.send('nope')
+      next(error);
     }
   });
-
-  /** GET: Retrieve a list of agents for this orgId
-   * @param orgId should be sent as a query param
-   * .../?orgId => returns agents for that org
-   * TODO: allow orgId to be included in request header. Use middleware to verify
+  /** GET returns one agent for an account
+   *
    */
-  router.get("/", async function (req, res, next) {
+  router.get("/:agentId", async function (req, res, next) {
     try {
-      const orgId = req.query.orgId;
-      const agents = await Agent.getOrgAgents(orgId);
-
-      return res.json({
-        message: `You requested agents for orgId: ${orgId}`,
-        agents: agents,
-      });
+      console.log("route: finding one agent");
+      const { accountId } = req.account;
+      const { agentId } = req.params;
+      const response = await AgentService.findOne({agentId, accountId});
+      return res.status(200).json(response);
     } catch (error) {
-      let errorMessage = new BadRequestError();
-
-      return res.json({ errorMessage });
+      // let errorMessage = new BadRequestError(error);
+      next(error);
     }
   });
 
@@ -56,7 +50,7 @@ module.exports = (config) => {
    * Expects the request to have necessary information to create a new author
    */
   router.post("/", async function (req, res, next) {
-    console.log('ROUTE: POST agentRoutes')
+    console.log("ROUTE: POST agentRoutes");
     // // Validate the schema
     // const validator = jsonschema.validate(req.body, agentCreateSchema);
     // if (!validator.valid) {
@@ -68,13 +62,12 @@ module.exports = (config) => {
 
     // Upon valid schema, attempt to create the agent
     try {
-      console.log('trying: agent post route')
-      const {body, account} = req
-      body.accountId = account.accountId // attach account ID
-      return res.send(await AgentService.create(body))
+      console.log("trying: agent post route");
+      const { body, account } = req;
+      const {accountId} = account
+      return res.send(await AgentService.create({body, accountId}));
     } catch (error) {
-      // res.send(error);
-      next(error)
+      next(error);
     }
 
     // if newBlogger.active == true
