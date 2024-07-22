@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
 const { BCRYPT_WORK_FACTOR } = require("../config");
+const IdGenerator = require('../utilities/IdGenerator')
 
 module.exports = (sequelize) => {
   // console.log(sequelize)
@@ -8,22 +9,22 @@ module.exports = (sequelize) => {
     "User",
     {
       userId: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.STRING(40),
+        defaultValue: IdGenerator.userId(),
         primaryKey: true,
       },
-      orgId: {
-        type: DataTypes.STRING(6),
+      accountId: {
+        type: DataTypes.STRING(40),
         references: {
           // This is a reference to another model
-          model: "orgs",
+          model: "accounts",
           // This is the column name of the referenced model
-          key: "orgId",
+          key: "accountId",
         },
         allowNull: false,
       },
       blogId: {
-        type: DataTypes.STRING(9),
+        type: DataTypes.STRING(14),
         references: {
           // This is a reference to another model
           model: "blogs",
@@ -54,7 +55,7 @@ module.exports = (sequelize) => {
       },
       role: {
         type: DataTypes.ENUM("user", "standard", "editor", "admin"),
-        allowNull: false,
+        allowNull: true,
         defaultValue: "user",
       },
       imageUrl: {

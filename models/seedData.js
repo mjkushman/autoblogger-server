@@ -1,50 +1,57 @@
-const orgSeed = [
+// developer accounts
+const accountSeed = [
   {
-    orgId: "111111",
-    name: "Org Name 1",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    firstName: "Mandor",
+    lastName: "Shebang",
     email: "org1@org1.com",
-    plan: "free",
-    accessKey: "123",
+    apiKey: "hashedapikey",
+    apiKeyIndex: "1234567890",
+    password: "hashedpassword",
   },
   {
-    orgId: "222222",
-    name: "Org Name 2",
+    accountId: "act_00000000-0000-0000-0000-000000000002",
+    firstName: "Marigold",
+    lastName: "Moonbeam",
     email: "org2@org2.com",
-    plan: "standard",
-    accessKey: "123",
+    apiKey: "hashedapikey",
+    apiKeyIndex: "1234567890",
+    password: "hashedpassword",
   },
   {
-    orgId: "333333",
-    name: "Org Name 3",
+    accountId: "act_00000000-0000-0000-0000-000000000003",
+    firstName: "Momo",
+    lastName: "Grifter",
     email: "org3@org3.com",
-    plan: "enterprise",
-    accessKey: "123",
+    apiKey: "hashedapikey",
+    apiKeyIndex: "1234567890",
+    password: "hashedpassword",
   },
 ];
 
 const blogSeed = [
   {
-    blogId: "blog00001",
-    orgId: "111111",
-    title: "My First Blog for org 1",
+    blogId: "blg_0000000001",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    label: "My First Blog for org 1",
   },
   {
-    blogId: "blog00002",
-    orgId: "111111",
-    title: "My Second Blog for org 1",
+    blogId: "blg_0000000002",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    label: "My Second Blog for org 1",
   },
   {
-    blogId: "blog00003",
-    orgId: "222222",
-    title: "My First Blog for org 2",
+    blogId: "blg_0000000003",
+    accountId: "act_00000000-0000-0000-0000-000000000002",
+    label: "My First Blog for org 2",
   },
 ];
 
 const userSeed = [
   {
-    userId: "11111111-1111-1111-1111-111111111111",
-    orgId: "111111",
-    blogId: "blog00001",
+    userId: "usr_00000000-0000-0000-0000-000000000001",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    blogId: "blg_0000000001",
     email: "user1@gmail.com",
     password: "hashedpassword",
     firstName: "User",
@@ -53,9 +60,9 @@ const userSeed = [
     role: "standard",
   },
   {
-    userId: "22222222-2222-2222-2222-222222222222",
-    orgId: "222222",
-    blogId: "blog00001",
+    userId: "usr_00000000-0000-0000-0000-000000000002",
+    accountId: "act_00000000-0000-0000-0000-000000000002",
+    blogId: "blg_0000000001",
     email: "user2@gmail.com",
     password: "hashedpassword",
     firstName: "User",
@@ -64,9 +71,9 @@ const userSeed = [
     role: "user",
   },
   {
-    userId: "33333333-3333-3333-3333-333333333333",
-    orgId: "333333",
-    blogId: "blog00002",
+    userId: "usr_00000000-0000-0000-0000-000000000003",
+    accountId: "act_00000000-0000-0000-0000-000000000003",
+    blogId: "blg_0000000002",
     email: "user3@gmail.com",
     password: "hashedpassword",
     firstName: "User",
@@ -75,9 +82,9 @@ const userSeed = [
     role: "user",
   },
   {
-    userId: "44444444-4444-4444-4444-444444444444",
-    orgId: "111111",
-    blogId: "blog00002",
+    userId: "usr_00000000-0000-0000-0000-000000000004",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    blogId: "blg_0000000002",
     email: "user4@gmail.com",
     password: "hashedpassword",
     firstName: "User",
@@ -86,9 +93,9 @@ const userSeed = [
     role: "admin",
   },
   {
-    userId: "55555555-5555-5555-5555-555555555555",
-    orgId: "111111",
-    blogId: "blog00003",
+    userId: "usr_00000000-0000-0000-0000-000000000005",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    blogId: "blg_0000000002",
     email: "user5@gmail.com",
     password: "hashedpassword",
     firstName: "User",
@@ -98,65 +105,81 @@ const userSeed = [
   },
 ];
 
-const endUserSeed = [
+// const endUserSeed = [
+//   {
+//     userId: "11111111-1111-1111-1111-111111111111",
+//     accountId: "act_00000000-0000-0000-0000-000000000001",
+//     email: "user1@gmail.com",
+//     password: "hashedpassword",
+//     firstName: "User",
+//     lastName: "One",
+//     username: "user1",
+//     role: "user",
+//   },
+//   {
+//     userId: "22222222-2222-2222-2222-222222222222",
+//     accountId: "act_00000000-0000-0000-0000-000000000002",
+//     email: "user2@gmail.com",
+//     password: "hashedpassword",
+//     firstName: "User",
+//     lastName: "Two",
+//     username: "user2",
+//     role: "user",
+//   },
+//   {
+//     userId: "33333333-3333-3333-3333-333333333333",
+//     accountId: "act_00000000-0000-0000-0000-000000000003",
+//     email: "user3@gmail.com",
+//     password: "hashedpassword",
+//     firstName: "User",
+//     lastName: "Three",
+//     username: "user3",
+//     role: "user",
+//   },
+//   {
+//     userId: "44444444-4444-4444-4444-444444444444",
+//     accountId: "act_00000000-0000-0000-0000-000000000001",
+//     email: "user4@gmail.com",
+//     password: "hashedpassword",
+//     firstName: "User",
+//     lastName: "Four",
+//     username: "user4",
+//     role: "admin",
+//   },
+//   {
+//     userId: "55555555-5555-5555-5555-555555555555",
+//     accountId: "act_00000000-0000-0000-0000-000000000003",
+//     email: "user5@gmail.com",
+//     password: "hashedpassword",
+//     firstName: "User",
+//     lastName: "Five",
+//     username: "user5",
+//     role: "admin",
+//   },
+// ];
+
+const agentSeed = [
   {
-    userId: "11111111-1111-1111-1111-111111111111",
-    orgId: "111111",
-    email: "user1@gmail.com",
-    password: "hashedpassword",
+    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    blogId: "blg_0000000001",
+    email: "agent001@gmail.com",
     firstName: "User",
     lastName: "One",
-    username: "user1",
-    role: "user",
+    username: "agent001",
+    cronSchedule: "* * * * 1",
+    displaySchedule: "Every minute, only on Monday"
+
   },
-  {
-    userId: "22222222-2222-2222-2222-222222222222",
-    orgId: "222222",
-    email: "user2@gmail.com",
-    password: "hashedpassword",
-    firstName: "User",
-    lastName: "Two",
-    username: "user2",
-    role: "user",
-  },
-  {
-    userId: "33333333-3333-3333-3333-333333333333",
-    orgId: "333333",
-    email: "user3@gmail.com",
-    password: "hashedpassword",
-    firstName: "User",
-    lastName: "Three",
-    username: "user3",
-    role: "user",
-  },
-  {
-    userId: "44444444-4444-4444-4444-444444444444",
-    orgId: "111111",
-    email: "user4@gmail.com",
-    password: "hashedpassword",
-    firstName: "User",
-    lastName: "Four",
-    username: "user4",
-    role: "admin",
-  },
-  {
-    userId: "55555555-5555-5555-5555-555555555555",
-    orgId: "111111",
-    email: "user5@gmail.com",
-    password: "hashedpassword",
-    firstName: "User",
-    lastName: "Five",
-    username: "user5",
-    role: "admin",
-  },
-];
+]
+
 
 const postSeed = [
   // made by user:
   {
     postId: "post000001",
-    userId: "11111111-1111-1111-1111-111111111111",
-    blogId: "blog00001",
+    userId: "usr_00000000-0000-0000-0000-000000000001",
+    blogId: "blg_0000000001",
     titlePlaintext: "Post Title 1",
     titleHtml: "<h1>Post Title 1</h1>",
     bodyPlaintext: `Greetings, fellow furry friends and esteemed humans!
@@ -228,9 +251,9 @@ const postSeed = [
   // made by agent:
   {
     postId: "post000002",
-    blogId: "blog00001",
-    // agentId:"aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    userId: "22222222-2222-2222-2222-222222222222",
+    blogId: "blg_0000000001",
+    agentId:"agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    // userId: "usr_00000000-0000-0000-0000-000000000002",
     titlePlaintext: "Post Title 2",
     titleHtml: "<h1>Post Title 2</h1>",
     bodyPlaintext: `Hey there, paw-some pals and internet enthusiasts!
@@ -299,4 +322,4 @@ const postSeed = [
   },
 ];
 
-module.exports = { orgSeed, blogSeed, userSeed, endUserSeed, postSeed };
+module.exports = { accountSeed, agentSeed, blogSeed, userSeed, postSeed };
