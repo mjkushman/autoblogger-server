@@ -5,7 +5,7 @@ const {
   BadRequestError,
   NotFoundError,
   ExpressError,
-} = require("../expressError");
+} = require("../utilities/expressError");
 const slug = require('slug');
 const {nanoid} = require('nanoid');
 

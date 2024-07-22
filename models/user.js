@@ -8,7 +8,7 @@ const {
   NotFoundError,
   BadRequestError,
   UnauthorizedError,
-} = require("../expressError");
+} = require("../utilities/expressError");
 
 class User {
   /** Returns a list of all users

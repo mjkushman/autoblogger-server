@@ -5,7 +5,7 @@ const {
   BadRequestError,
   NotFoundError,
   ExpressError,
-} = require("../expressError");
+} = require("../utilities/expressError");
 
 const createAiReply = require('../utilities/aiCommentor')
 
