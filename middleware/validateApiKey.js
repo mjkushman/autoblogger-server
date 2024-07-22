@@ -2,7 +2,7 @@ const {
   ExpressError,
   UnauthorizedError,
   NotFoundError,
-} = require("../expressError");
+} = require("../utilities/expressError");
 const developerService = require("../services/AccountService");
 const { cache } = require("../cache");
 const bcrypt = require("bcrypt");
