@@ -62,8 +62,13 @@ class AgentService extends LLMService {
       return new ExpressError(error);
     }
   }
+  static async serverStart() {
+    // get all enabled agents
+    const enabledAgents = await Agent.findAll({ where: { isEnabled: true } });
+    // put them all in a hash map
+  }
 
-  static async create({body, accountId}) {
+  static async create({ accountId, body }) {
     console.log("service: creating a new agent");
     try {
       let newAgent = { ...body, accountId };
@@ -77,7 +82,7 @@ class AgentService extends LLMService {
     }
   }
 
-  static async findAll({accountId}) {
+  static async findAll({ accountId }) {
     console.log(`service: finding all agents for accountId: ${accountId}`);
     try {
       let agents = await Agent.findAll({ where: { accountId } });
@@ -92,6 +97,27 @@ class AgentService extends LLMService {
     try {
       let agent = await Agent.findOne({ where: { agentId, accountId } });
       return agent;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  static async update({ accountId, agentId, body }) {
+    console.log(`service: updating one agent for accountId: ${accountId}`);
+    try {
+      const result = await Agent.update(body, {
+        where: { agentId, accountId },
+        returning: true,
+      });
+      if (result[1]) {
+        const updatedAgent = result[1][0];
+        // DO SOME LOGIC IF THE AGENT IS NOW ENABLED
+        if (updatedAgent.isEnabled) {
+          console.log("turn this bad boy on");
+        }
+        return updatedAgent;
+      }
+      throw new Error();
     } catch (error) {
       return error;
     }
