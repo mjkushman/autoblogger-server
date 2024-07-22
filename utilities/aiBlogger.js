@@ -11,7 +11,7 @@ const User = require("../models/user");
 const { OPEN_AI_KEY } = require("../config");
 
 const OpenAI = require("openai");
-const { ExpressError } = require("../expressError");
+const { ExpressError } = require("./expressError");
 const htmlParser = require('./htmlParser')
 const getUnsplashImage = require('./getUnsplashImage')
 

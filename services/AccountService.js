@@ -3,7 +3,7 @@
 // const db = require('../dborm')
 
 const { Account, Blog } = require("../models");
-const { ExpressError } = require("../expressError");
+const { ExpressError } = require("../utilities/expressError");
 const crypto = require("crypto");
 const { hash } = require("../utilities/hasher");
 const { cache } = require("../cache");

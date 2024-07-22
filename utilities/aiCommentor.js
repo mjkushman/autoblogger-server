@@ -5,7 +5,7 @@
 
 const Post = require("../models/post");
 const User = require("../models/user");
-const { ExpressError } = require("../expressError");
+const { ExpressError } = require("./expressError");
 
 const { OPEN_AI_KEY } = require("../config");
 

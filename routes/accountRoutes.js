@@ -6,7 +6,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 const developerService = require("../services/AccountService");
 
-const { BadRequestError } = require("../expressError");
+const { BadRequestError } = require("../utilities/expressError");
 const { validateApiKey } = require("../middleware/validateApiKey");
 
 module.exports = (config) => {

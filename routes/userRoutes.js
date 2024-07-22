@@ -6,7 +6,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 
 const userUpdateSchema = require("../schemas/userUpdate.json");
-const { BadRequestError } = require("../expressError");
+const { BadRequestError } = require("../utilities/expressError");
 const jsonschema = require("jsonschema");
 const UserService = require("../services/UserService");
 
