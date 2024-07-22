@@ -6,21 +6,20 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 
-const { NotFoundError } = require("./expressError");
+const { NotFoundError } = require("./utilities/expressError");
 const { verifyJWT } = require("./middleware/authorizations");
-
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
 const routes = require("./routes");
-// const adminRoutes = require('./adminRoutes')
 
 const rateLimit = require("express-rate-limit");
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
-  message: "Too many requests, please wait a few minutes."
+  message: "Too many requests, please wait a few minutes.",
 });
 
 module.exports = (config) => {
@@ -33,12 +32,14 @@ module.exports = (config) => {
   app.use(limiter); // sites for api consumers
 
   app.use("/", routes(config)); // All the routes
-  
 
   /** Handle 404 errors -- this matches everything */
   app.use(function (req, res, next) {
     return next(new NotFoundError());
   });
+
+  // New error handler
+  app.use(errorHandler)
 
   /** Generic error handler; anything unhandled goes here. */
   app.use(function (err, req, res, next) {
