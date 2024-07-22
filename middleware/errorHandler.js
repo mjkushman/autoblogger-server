@@ -1,4 +1,4 @@
-const { UniqueConstraintError } = require("sequelize");
+const { UniqueConstraintError, ValidationError } = require("sequelize");
 const {
   ExpressError,
   NotFoundError,
@@ -8,14 +8,23 @@ const {
 } = require("../utilities/expressError");
 
 const errorHandler = (err, req, res, next) => {
-//   console.log(`Middleware caught this error: ${err}`);
+  console.log(`Middleware caught this error: ${err}`);
+  console.dir(err);
+  console.log('ERROR STACK')
   console.error(err.stack); // Logs the error stack for debugging
 
   if (err instanceof UniqueConstraintError) {
     // Handle Sequelize unique constraint error
     return res.status(409).json({
-      status: "error",
-      message: "A record with the provided unique field(s) already exists.",
+      status: err.type,
+      message: err.message,
+    });
+  }
+  if (err instanceof ValidationError) {
+    // Handle Sequelize unique constraint error
+    return res.status(401).json({
+      status: err.type,
+      message: err.message,
     });
   }
   if (err instanceof BadRequestError) {

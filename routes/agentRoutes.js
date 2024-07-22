@@ -69,11 +69,12 @@ module.exports = (config) => {
     // Upon valid schema, attempt to create the agent
     try {
       console.log('trying: agent post route')
-      const {body} = req
+      const {body, account} = req
+      body.accountId = account.accountId // attach account ID
       return res.send(await AgentService.create(body))
     } catch (error) {
-      res.send(error);
-      return next()
+      // res.send(error);
+      next(error)
     }
 
     // if newBlogger.active == true

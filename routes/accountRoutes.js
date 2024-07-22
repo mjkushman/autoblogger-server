@@ -34,8 +34,8 @@ module.exports = (config) => {
   });
 
   router.get("/protected", validateApiKey, async function (req, res, next) {
-    console.log("Developer gained access. Dev:", res.user);
-    return res.json({ msg: "This is a protected route", user: req.user });
+    console.log("Developer gained access. Dev:", req.account);
+    return res.json({ msg: "This is a protected route", account: req.account });
   });
 
   return router;

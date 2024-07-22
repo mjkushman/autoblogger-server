@@ -3,11 +3,12 @@ const {
   UnauthorizedError,
   NotFoundError,
 } = require("../utilities/expressError");
-const developerService = require("../services/AccountService");
+const AccountService = require("../services/AccountService");
 const { cache } = require("../cache");
 const bcrypt = require("bcrypt");
 
 module.exports = {
+  // Validate the API key and attached the retrieved account to the request
   async validateApiKey(req, res, next) {
     const apiKey = req.headers["X-API-KEY"] || req.headers["x-api-key"];
     const hostname = req.hostname // host from headers
@@ -16,8 +17,8 @@ module.exports = {
 
     // If this is a dev environment, manually add some data and allow access
     if(process.env.NODE_ENV == 'development' && apiKey == 'dev') {
-      const devForDev = {
-        accountId: "11111111-1111-1111-1111-111111111111",
+      const devAccount = {
+        accountId: "act_00000000-0000-0000-0000-000000000001",
         firstName: 'Max',
         lastName: 'Developer',
         label: 'Max Blogger',
@@ -25,9 +26,9 @@ module.exports = {
         host: host,
         hostname: hostname
       }
-      console.log('continuing in dev environment', devForDev)
-      req.user = devForDev;
-      cache.set(apiKey, devForDev)
+      console.log('continuing in dev environment', devAccount)
+      req.account = devAccount;
+      cache.set(apiKey, devAccount)
       return next()
     }
     try {
@@ -40,31 +41,31 @@ module.exports = {
         );
 
       // Check the cache for this api key. If found, return early.
-      const cachedDeveloper = cache.get(apiKey);
-      if (cachedDeveloper) {
-        req.user = cachedDeveloper;
+      const cachedAccount = cache.get(apiKey);
+      if (cachedAccount) {
+        req.account = cachedAccount;
         // console.log('FOUND USER IN CACHE')
         return next();
       }
 
       // Lookup the user by api key index
-      const developer = await developerService.findByApiKeyIndex({ apiKey });
-      if (!developer) {
+      const account = await AccountService.findByApiKeyIndex({ apiKey });
+      if (!account) {
         throw new NotFoundError("Invalid api key", 404);
       }
       // Compare the retrieved dev apiKey with provided Key
-      if (developer) {
-          bcrypt.compare(apiKey, developer.apiKey, (error, result) => {
+      if (account) {
+          bcrypt.compare(apiKey, account.apiKey, (error, result) => {
             if (error) {
               throw new ExpressError(error, 401);
             }
             if (result) {
               // Store the retrieved developer
-              cache.set(apiKey, developer);
+              cache.set(apiKey, account);
               //   console.log(`CACHED!:`, developer)
     
               // This must is a valid developer
-              req.user = developer;
+              req.account = account;
             }
           });
       }

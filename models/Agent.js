@@ -9,7 +9,6 @@ module.exports = (sequelize) => {
     {
       agentId: {
         type: DataTypes.STRING(40),
-        defaultValue: IdGenerator.agentId(),
         primaryKey: true,
       },
       accountId: {
@@ -58,6 +57,7 @@ module.exports = (sequelize) => {
       tableName: "agents",
       hooks: {
         beforeCreate: async (record) => {
+          record.agentId = IdGenerator.agentId();
           if (record.cronSchedule) {
             console.log('before Create Hook cronSchedule:', record.cronSchedule)
             record.displaySchedule = cronstrue.toString(record.cronSchedule);

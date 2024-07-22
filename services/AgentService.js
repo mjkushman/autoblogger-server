@@ -80,13 +80,15 @@ class AgentService extends LLMService {
     console.log("service: creating a new agent");
     try {
       console.log("trying");
+
       return await Agent.create(body);
     } catch (error) {
       console.log("catching");
-      console.log("Errors:", error);
-      // let errors = error.map((error) => error.errors)
-      return { errors: error.errors };
-      // throw new ExpressError(errors)
+      let errorStack = error.errors.map(({ type, message }) => ({
+        type,
+        message,
+      }));
+      return { errors: errorStack };
     }
   }
 
