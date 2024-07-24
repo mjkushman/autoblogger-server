@@ -23,7 +23,7 @@ module.exports = (config) => {
     try {
       console.log("route: finding all agents");
       const { accountId } = req.account;
-      const response = await AgentService.findAll({accountId});
+      const response = await AgentService.findAll({ accountId });
       return res.status(200).json(response);
     } catch (error) {
       next(error);
@@ -37,7 +37,7 @@ module.exports = (config) => {
       console.log("route: finding one agent");
       const { accountId } = req.account;
       const { agentId } = req.params;
-      const response = await AgentService.findOne({agentId, accountId});
+      const response = await AgentService.findOne({ agentId, accountId });
       return res.status(200).json(response);
     } catch (error) {
       // let errorMessage = new BadRequestError(error);
@@ -64,8 +64,10 @@ module.exports = (config) => {
     try {
       console.log("trying: agent post route");
       const { body, account } = req;
-      const {accountId} = account
-      return res.send(await AgentService.create({body, accountId}));
+      const { accountId } = account;
+      return res
+        .status(201)
+        .json(await AgentService.create({ body, accountId }));
     } catch (error) {
       next(error);
     }
@@ -74,39 +76,49 @@ module.exports = (config) => {
     // newBlogger.activate() ==> uses node cron to start a task based on the current settings, defined in model
   });
 
-  // /** Update settings to the agent
-  //  * @param :agentId determines which agent they want to update
-  //  * Middleware should verify that orgId in the user's token matches the orgId of the agent they want to update.
-  //  *
-  //  *
-  //  */
-  // router.patch("/:agentId", async function (req, res, next) {
-  //   try {
-  //     // Validate the request's schema
-  //     const validator = jsonschema.validate(req.body, agentUpdateSchema);
-  //     if (!validator.valid) {
+  /** Update settings to the agent
+   * @param :agentId determines which agent they want to update
+   * Middleware should verify that orgId in the user's token matches the orgId of the agent they want to update.
+   *
+   *
+   */
+  router.patch("/:agentId", async function (req, res, next) {
+    try {
+      // // Validate the request's schema
+      // const validator = jsonschema.validate(req.body, agentUpdateSchema);
+      // if (!validator.valid) {
 
-  //         let errorMessage = new BadRequestError();
-  //         const errors = validator.errors.map((e) => e.stack);
-  //         errorMessage = { ...errorMessage, errors };
-  //         return res.json({errorMessage,});
-  //     }
+      //     let errorMessage = new BadRequestError();
+      //     const errors = validator.errors.map((e) => e.stack);
+      //     errorMessage = { ...errorMessage, errors };
+      //     return res.json({errorMessage,});
+      // }
 
-  //     // Verify that the agent being updated belongs to the same org as the user making the update
-  //     const agentId = req.params.agentId;
-  //     const agent = new Agent(agentId);
-  //     if (agent.orgId !== res.locals.orgId) return UnauthorizedError;
+      // Verify that the agent being updated belongs to the same org as the user making the update
+      const { body, account } = req;
+      const { accountId } = account;
+      const { agentId } = req.params;
+      const agent = await AgentService.update({ accountId, agentId, body });
+      return res.status(201).json(agent);
+    } catch (error) {
+      next(error);
+    }
+  });
 
-  //     let { updateCols, updateVals } = updateUserSql(req.body);
-  //   } catch (error) {
+  /** Delete this agent entirely */
+  router.delete("/:agentId", async function (req, res, next) {
+    try {
+      const { account } = req;
+      const { accountId } = account;
+      const { agentId } = req.params;
+      const result = await AgentService.delete({ accountId, agentId });
+      return res.status(200).json(result)
+    } catch (error) {
+      next(error)
+    }
+  });
 
-  //   }
-  // });
-
-  // /** Delete this agent entirely */
-  // router.delete("/:agentId", async function (req, res, next) {});
-
-  // // === AI AGENT FUNCTIONS
+  // === AI AGENT FUNCTIONS
 
   // /** Sanity check: INITIATING AGENT
   //  * This route should not actually be needed by the ai agent or app

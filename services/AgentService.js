@@ -2,7 +2,7 @@
 
 const cron = require("node-cron");
 const { Agent, Post } = require("../models");
-const { ExpressError } = require("../utilities/expressError");
+const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const LLMService = require("../services/LLMService");
 const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
@@ -66,6 +66,9 @@ class AgentService extends LLMService {
     // get all enabled agents
     const enabledAgents = await Agent.findAll({ where: { isEnabled: true } });
     // put them all in a hash map
+    for (let agent of enabledAgents) {
+      this.AGENTS.set(agent.agentId, agent); // store each agent at a key of its own id
+    }
   }
 
   static async create({ accountId, body }) {
@@ -88,22 +91,26 @@ class AgentService extends LLMService {
       let agents = await Agent.findAll({ where: { accountId } });
       return agents;
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
   static async findOne({ agentId, accountId }) {
-    console.log(`service: finding one agent for accountId: ${accountId}`);
+    console.log(
+      `service: finding agent ${agentId} for accountId: ${accountId}`
+    );
     try {
       let agent = await Agent.findOne({ where: { agentId, accountId } });
       return agent;
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
   static async update({ accountId, agentId, body }) {
-    console.log(`service: updating one agent for accountId: ${accountId}`);
+    console.log(
+      `service: updating agent ${agentId} for accountId: ${accountId}`
+    );
     try {
       const result = await Agent.update(body, {
         where: { agentId, accountId },
@@ -113,13 +120,31 @@ class AgentService extends LLMService {
         const updatedAgent = result[1][0];
         // DO SOME LOGIC IF THE AGENT IS NOW ENABLED
         if (updatedAgent.isEnabled) {
-          console.log("turn this bad boy on");
+          // console.log("turn this bad boy on");
+          this.AGENTS.set(updatedAgent.agentId, updatedAgent); // add this agent to the Map of enabled agents
         }
         return updatedAgent;
       }
       throw new Error();
     } catch (error) {
-      return error;
+      throw error;
+    }
+  }
+
+  static async delete({ accountId, agentId }) {
+    console.log(`service: deleting agent ${agentId} for account: ${accountId}`);
+    try {
+      let result = await Agent.destroy({ where: { agentId, accountId } });
+      console.log(`DELETE RESULTT: ${result}`);
+      if (result > 0) {
+        this.AGENTS.delete(agentId) // remove from active agents.
+        return { message: "Delete successful" };
+      }
+      else {
+        throw new NotFoundError(`Could not find agent ${agentId} for account ${accountId} to delete.`);
+      }
+    } catch (error) {
+      throw error;
     }
   }
 
