@@ -7,7 +7,7 @@ require("colors");
 const {name, version } = require('./package.json')
 const SECRET_KEY = process.env.SECRET_KEY || "secret-dev";
 const PORT = +process.env.PORT || 3001;
-const OPEN_AI_KEY = process.env.OPEN_AI_KEY;
+const OPENAI_API_KEY = process.env.OPEN_AI_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
 const UNSPLASH_CLIENT_ID = process.env.UNSPLASH_CLIENT_ID;
 const NODE_ENV = process.env.NODE_ENV;
@@ -33,7 +33,7 @@ console.log("--Config--".green);
 console.log("NODE_ENV:".yellow, NODE_ENV);
 console.log("SECRET_KEY:".red, SECRET_KEY);
 console.log("UNSPLASH CLIENT ID:".yellow, UNSPLASH_CLIENT_ID);
-console.log("OPEN_AI_KEY:".red, OPEN_AI_KEY);
+console.log("OPEN_AI_KEY:".red, OPENAI_API_KEY);
 console.log("PORT:".yellow, PORT.toString());
 console.log("BCRYPT_WORK_FACTOR".yellow, BCRYPT_WORK_FACTOR);
 console.log("Database:".yellow, getDatabaseUri());
@@ -45,7 +45,7 @@ module.exports = {
   SECRET_KEY,
   PORT,
   BCRYPT_WORK_FACTOR,
-  OPEN_AI_KEY,
+  OPENAI_API_KEY,
   ANTHROPIC_KEY,
   UNSPLASH_CLIENT_ID,
   getDatabaseUri,
@@ -66,7 +66,7 @@ module.exports = {
     SECRET_KEY,
     PORT,
     BCRYPT_WORK_FACTOR,
-    OPEN_AI_KEY,
+    OPENAI_API_KEY,
     ANTHROPIC_KEY,
     UNSPLASH_CLIENT_ID,
   },
