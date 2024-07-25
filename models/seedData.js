@@ -167,9 +167,27 @@ const agentSeed = [
     firstName: "User",
     lastName: "One",
     username: "agent001",
+    // cronSchedule: "* * * * 1",
+    // displaySchedule: "Every minute, only on Monday"
+  },
+]
+const agentActionSeed = [
+  {
+    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    action: "blog_post",
     cronSchedule: "* * * * 1",
-    displaySchedule: "Every minute, only on Monday"
-
+    displaySchedule: "Every minute, only on Monday",
+    isEnabled: false,
+  },
+  {
+    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    action: "blog_comment",
+    isEnabled: false,
+  },
+  {
+    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    action: "social",
+    isEnabled: false,
   },
 ]
 
@@ -322,4 +340,4 @@ const postSeed = [
   },
 ];
 
-module.exports = { accountSeed, agentSeed, blogSeed, userSeed, postSeed };
+module.exports = { accountSeed, agentSeed, blogSeed, userSeed, postSeed, agentActionSeed };

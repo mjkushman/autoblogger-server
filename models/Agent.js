@@ -1,9 +1,11 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, ValidationError } = require("sequelize");
 const { nanoid } = require("nanoid");
 const IdGenerator = require("../utilities/IdGenerator");
 const cronstrue = require("cronstrue");
+const cron = require("node-cron");
 
 module.exports = (sequelize) => {
+  const validLLMs = ["chatgpt", "claude"];
   const Agent = sequelize.define(
     "Agent",
     {
@@ -33,6 +35,84 @@ module.exports = (sequelize) => {
           isEmail: true,
         },
       },
+      postSettings: {
+        type: DataTypes.JSONB,
+        defaultValue: {
+          isEnabled: false,
+          llm: "chatgpt",
+          maxWords: 10000,
+          cronSchedule: null,
+          displaySchedule: null,
+        },
+        validate: {
+          hasValidCron(value) {
+            if (value.cronSchedule && !cron.validate(value.cronSchedule))
+              throw new ValidationError(`cronSchedule must be a valid cron expression`);
+          },
+          hasCronIfEnabled(value) {
+            if (value.isEnabled && !value.cronSchedule)
+              throw new ValidationError(
+                `cronSchedule must be supplied if isEnabled: true`
+              );
+          },
+          isValidLLM(value) {
+            if (value.llm && !validLLMs.includes(value.llm))
+              throw new ValidationError(`llm must be one of: ${validLLMs.join(", ")}`);
+          },
+          maxWordCount(value) {
+            if (value && value.maxWords) {
+              const wordLimit = 10000;
+              if (value.maxWords > wordLimit) {
+                throw new ValidationError(`maxWords must be ${wordLimit} or less`);
+              }
+            }
+          },
+        },
+      },
+      commentSettings: {
+        type: DataTypes.JSONB,
+        defaultValue: {
+          isEnabled: false,
+          llm: "chatgpt",
+          maxWords: 100,
+        },
+        validate: {
+          isValidLLM(value) {
+            if (value.llm && !validLLMs.includes(value.llm))
+              throw new ValidationError(`llm must be one of: ${validLLMs.join(", ")}`);
+          },
+          maxWordCount(value) {
+            if (value && value.maxWords) {
+              const wordLimit = 500;
+              if (value.maxWords > wordLimit) {
+                throw new Error(`maxWords must be ${wordLimit} or less`);
+              }
+            }
+          },
+        },
+      },
+      socialSettings: {
+        type: DataTypes.JSONB,
+        defaultValue: {
+          isEnabled: false,
+          llm: "chatgpt",
+          maxWords: 100,
+        },
+        validate: {
+          isValidLLM(value) {
+            if (value.llm && !validLLMs.includes(value.llm))
+              throw new ValidationError(`llm must be one of: ${validLLMs.join(", ")}`);
+          },
+          maxWordCount(value) {
+            if (value && value.maxWords) {
+              const wordLimit = 500;
+              if (value.maxWords > wordLimit) {
+                throw new Error(`maxWords must be ${wordLimit} or less`);
+              }
+            }
+          },
+        },
+      },
       imageUrl: {
         type: DataTypes.STRING,
         validate: {
@@ -41,34 +121,38 @@ module.exports = (sequelize) => {
         defaultValue:
           "https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/wcjwyet2dyaav8nl04ro.jpg",
       },
-      isEnabled: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      cronSchedule: {
-        type: DataTypes.STRING,
-      },
-      displaySchedule: {
-        type: DataTypes.STRING,
-      },
       authorBio: { type: DataTypes.TEXT },
     },
     {
       tableName: "agents",
       hooks: {
-        beforeCreate: async (record) => {
-          record.agentId = IdGenerator.agentId();
-          if (record.cronSchedule) {
-            console.log('before Create Hook cronSchedule:', record.cronSchedule)
-            record.displaySchedule = cronstrue.toString(record.cronSchedule);
-            console.log('before Create Hook displaySchedule:', record.displaySchedule)
-            
+        beforeUpdate: async (record) => {
+          if (record.postSettings.cronSchedule) {
+            console.log(
+              "HOOK! before Update Hook cronSchedule:",
+              record.postSettings.cronSchedule
+            );
+            record.postSettings.displaySchedule = cronstrue.toString(
+              record.postSettings.cronSchedule
+            );
           }
         },
-        beforeUpdate: async (record) => {
-          if (record.cronSchedule) {
-            console.log('before Update Hook cronSchedule:', record.cronSchedule)
-            record.displaySchedule = cronstrue.toString(record.cronSchedule);
+        beforeCreate: async (record) => {
+          record.agentId = IdGenerator.agentId(); // set the agentId
+          if (record.postSettings.cronSchedule) {
+            // set the agent cron display schedule
+            // record.postSettings.cronSchedule = record.postSettings.cronSchedule || "0 0 */365 * *"
+            console.log(
+              "before Create Hook cronSchedule:",
+              record.postSettings.cronSchedule
+            );
+            record.postSettings.displaySchedule = cronstrue.toString(
+              record.postSettings.cronSchedule
+            );
+            console.log(
+              "before Create Hook displaySchedule:",
+              record.postSettings.displaySchedule
+            );
           }
         },
       },

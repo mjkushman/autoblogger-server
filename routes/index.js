@@ -12,6 +12,7 @@ const swaggerUi = require("swagger-ui-express");
 const accountRoutes = require("./accountRoutes");
 const blogRoutes = require('./blogRoutes')
 const agentRoutes = require('./agentRoutes')
+
 const { validateApiKey } = require("../middleware/validateApiKey");
 
 module.exports = (config) => {

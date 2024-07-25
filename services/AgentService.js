@@ -63,10 +63,14 @@ class AgentService extends LLMService {
     }
   }
   static async serverStart() {
-    // get all enabled agents
-    const enabledAgents = await Agent.findAll({ where: { isEnabled: true } });
+    // get all agents with posting enabled
+    const enabledAgents = await Agent.findAll({
+      include: { agentActions }, // I think this is wrong
+      where: { isEnabled: { posts: true } },
+    });
     // put them all in a hash map
     for (let agent of enabledAgents) {
+      // TODO: call cron to schedule this agent based on agent.cronSchedule
       this.AGENTS.set(agent.agentId, agent); // store each agent at a key of its own id
     }
   }
@@ -77,11 +81,7 @@ class AgentService extends LLMService {
       let newAgent = { ...body, accountId };
       return await Agent.create(newAgent);
     } catch (error) {
-      let errorStack = error.errors.map(({ type, message }) => ({
-        type,
-        message,
-      }));
-      return { errors: errorStack };
+      throw(error)
     }
   }
 
@@ -100,7 +100,9 @@ class AgentService extends LLMService {
       `service: finding agent ${agentId} for accountId: ${accountId}`
     );
     try {
-      let agent = await Agent.findOne({ where: { agentId, accountId } });
+      let agent = await Agent.findOne({
+        where: { agentId, accountId },
+      });
       return agent;
     } catch (error) {
       throw error;
@@ -112,20 +114,22 @@ class AgentService extends LLMService {
       `service: updating agent ${agentId} for accountId: ${accountId}`
     );
     try {
-      const result = await Agent.update(body, {
-        where: { agentId, accountId },
-        returning: true,
-      });
-      if (result[1]) {
-        const updatedAgent = result[1][0];
-        // DO SOME LOGIC IF THE AGENT IS NOW ENABLED
-        if (updatedAgent.isEnabled) {
-          // console.log("turn this bad boy on");
-          this.AGENTS.set(updatedAgent.agentId, updatedAgent); // add this agent to the Map of enabled agents
-        }
-        return updatedAgent;
+      const agent = await Agent.findOne({where: {agentId, accountId}})
+      if(!agent) throw new NotFoundError("Agent not found.")
+
+      await agent.update(body)
+      await agent.save(); // trigger the beforeUpdate hook
+      
+      // const result = await Agent.update(body, {
+      //   where: { agentId, accountId },
+      //   returning: true,
+      // });
+
+      if (agent.postSettings.isEnabled) {
+        // TODO: SOME LOGIC IF THE AGENT IS NOW ENABLED
       }
-      throw new Error();
+      return agent;
+      
     } catch (error) {
       throw error;
     }
@@ -137,11 +141,12 @@ class AgentService extends LLMService {
       let result = await Agent.destroy({ where: { agentId, accountId } });
       console.log(`DELETE RESULTT: ${result}`);
       if (result > 0) {
-        this.AGENTS.delete(agentId) // remove from active agents.
+        this.AGENTS.delete(agentId); // remove from active agents.
         return { message: "Delete successful" };
-      }
-      else {
-        throw new NotFoundError(`Could not find agent ${agentId} for account ${accountId} to delete.`);
+      } else {
+        throw new NotFoundError(
+          `Could not find agent ${agentId} for account ${accountId} to delete.`
+        );
       }
     } catch (error) {
       throw error;
@@ -223,6 +228,9 @@ class AgentService extends LLMService {
     const newPost = await this.#savePost(postData);
     return newPost;
   }
+
+  // new schedule() method to replace enable()
+  schedule(agent) {}
 
   /** Starts running this agent according to their schedules and adds this agent to AGENTS
    *  Future refactoringL: Abstract the scheduling function into its own function to be called for each schedule (blog, social, others in the future)
