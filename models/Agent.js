@@ -43,6 +43,7 @@ module.exports = (sequelize) => {
           maxWords: 10000,
           cronSchedule: null,
           displaySchedule: null,
+          timezone: "America/Los_Angeles",
         },
         validate: {
           hasValidCron(value) {

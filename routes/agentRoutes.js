@@ -105,6 +105,19 @@ module.exports = (config) => {
     }
   });
 
+  // convenience method for easy activation / deactivation
+  router.post("/:agentId/activate", async function (req, res, next) {
+    try {
+      const { account } = req;
+      const { accountId } = account;
+      const { agentId } = req.params;
+      const agent = await AgentService.activate({ accountId, agentId });
+      return res.status(201).json(agent);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   /** Delete this agent entirely */
   router.delete("/:agentId", async function (req, res, next) {
     try {

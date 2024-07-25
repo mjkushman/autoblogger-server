@@ -37,7 +37,12 @@ class AgentService extends LLMService {
   }
 
   // === CLASS PROPERTIES ===
-  static AGENTS = new Map();
+  /** store as
+   *  {agentId: ScheduledTask}
+   *  where ScheduledTask is the return value from cron.schedule()
+   */
+  static SCHEDULED_POSTS = new Map();
+  static SCHEDULED_SOCIAL = new Map();
 
   // == INSTANCE PROPERTIES ==
   bioBlock = this.authorBio
@@ -71,7 +76,7 @@ class AgentService extends LLMService {
     // put them all in a hash map
     for (let agent of enabledAgents) {
       // TODO: call cron to schedule this agent based on agent.cronSchedule
-      this.AGENTS.set(agent.agentId, agent); // store each agent at a key of its own id
+      // this.SCHEDULED_POSTS.set(agent.agentId, agent); // store each agent at a key of its own id
     }
   }
 
@@ -81,7 +86,7 @@ class AgentService extends LLMService {
       let newAgent = { ...body, accountId };
       return await Agent.create(newAgent);
     } catch (error) {
-      throw(error)
+      throw error;
     }
   }
 
@@ -114,24 +119,41 @@ class AgentService extends LLMService {
       `service: updating agent ${agentId} for accountId: ${accountId}`
     );
     try {
-      const agent = await Agent.findOne({where: {agentId, accountId}})
-      if(!agent) throw new NotFoundError("Agent not found.")
+      const agent = await Agent.findOne({ where: { agentId, accountId } });
+      if (!agent) throw new NotFoundError("Agent not found.");
 
-      await agent.update(body)
+      await agent.update(body);
       await agent.save(); // trigger the beforeUpdate hook
-      
-      // const result = await Agent.update(body, {
-      //   where: { agentId, accountId },
-      //   returning: true,
-      // });
 
       if (agent.postSettings.isEnabled) {
         // TODO: SOME LOGIC IF THE AGENT IS NOW ENABLED
+        await enable(agent);
       }
+      if (!agent.postSettings.isEnabled) {
+        await disable(agent);
+      }
+
       return agent;
-      
     } catch (error) {
       throw error;
+    }
+  }
+
+  static async activate({ accountId, agentId }) {
+    console.log(`activating ${agentId}`);
+    try {
+      const agent = await Agent.findOne({ where: { accountId, agentId } });
+      if (!agent) throw new NotFoundError("Unable to find agent.");
+
+      (agent.postSettings = {
+        ...agent.postSettings,
+        isEnabled: true,
+      }),
+        await enable(agent); // adds agent to SCHEDULED TASKS
+      await agent.save();
+      return agent;
+    } catch (error) {
+      throw new Error(error);
     }
   }
 
@@ -141,7 +163,7 @@ class AgentService extends LLMService {
       let result = await Agent.destroy({ where: { agentId, accountId } });
       console.log(`DELETE RESULTT: ${result}`);
       if (result > 0) {
-        this.AGENTS.delete(agentId); // remove from active agents.
+        this.SCHEDULED_POSTS.delete(agentId); // remove from active tasks.
         return { message: "Delete successful" };
       } else {
         throw new NotFoundError(
@@ -229,75 +251,79 @@ class AgentService extends LLMService {
     return newPost;
   }
 
-  // new schedule() method to replace enable()
-  schedule(agent) {}
-
   /** Starts running this agent according to their schedules and adds this agent to AGENTS
-   *  Future refactoringL: Abstract the scheduling function into its own function to be called for each schedule (blog, social, others in the future)
+   *  Future refactoring: Abstract the scheduling function into its own function to be called for each schedule (blog, social, others in the future)
    *  */
-  enable() {
-    this.disable(); // First makes sure it's not already running.
-    let tasks = [];
-
+  // Retooling Enable and Disable
+  enablePosting(agent) {
+    disablePosting(agent); // First makes sure it's not already running.
+    const { agentId, postSettings, username } = agent;
     // set blogging schedule
-    if (this.isEnabled && this.schedule.blog) {
-      const blogTask = cron.schedule(
-        this.schedule.blog,
-        async () => {
-          console.log(`Running AI blogger for ${this.username}`);
-          try {
-            await this.writeBlogPost();
-            console.log(`Finished running ${this.username}`);
-          } catch (error) {
-            console.log(
-              `Error trying to write blog post for ${this.username}:`,
-              error
-            );
-          }
-        },
-        {
-          scheduled: this.isEnabled,
-          timezone: "America/Los_Angeles",
-        }
-      );
-      tasks.push(blogTask);
-    }
-    // set social schedule
-    if (this.isEnabled && this.schedule.social) {
-      const socialTask = cron.schedule(
-        this.schedule.social,
-        async () => {
-          console.log(`Running AI social for ${this.username}`);
-          try {
-            await this.writeSocialPost();
-            console.log(`Finished running ${this.username}`);
-          } catch (error) {
-            console.log(
-              `Error trying to write social post for ${this.username}:`,
-              error
-            );
-          }
-        },
-        {
-          scheduled: this.isEnabled,
-          timezone: "America/Los_Angeles",
-        }
-      );
-      tasks.push(socialTask);
-    }
 
+    const task = cron.schedule(
+      postSettings.cronSchedule,
+      async () => {
+        console.log(`Running AI blogger for ${username}`);
+        try {
+          // await this.writeBlogPost();
+          console.log(`Finished running ${username}`);
+        } catch (error) {
+          console.log(
+            `Error trying to write blog post for ${username}:`,
+            error
+          );
+        }
+      },
+      {
+        scheduled: false,
+        timezone: postSettings.timezone,
+      }
+    );
+    task.start(); // start the task
     // Sets an array of tasks at agentId
-    AGENTS.set(this.agentId, tasks);
+    SCHEDULED_TASKS.set(agentId, task);
+  }
+  enableSocial(agent) {
+    disableSocial(agent); // First makes sure it's not already running.
+    const { agentId, socialSettings, username } = agent;
+
+    // set social schedule
+
+    const task = cron.schedule(
+      socialSettings.cronSchedule,
+      async () => {
+        console.log(`Running AI social for ${username}`);
+        try {
+          // await agent.writeSocialPost();
+          console.log(`Finished running ${username}`);
+        } catch (error) {
+          console.log(
+            `Error trying to write social post for ${username}:`,
+            error
+          );
+        }
+      },
+      {
+        scheduled: false,
+        timezone: socialSettings.timezone,
+      }
+    );
+    task.start(); // start the task
+    SCHEDULED_SOCIAL.set(agentId, task); // Set the task at agentId
   }
 
-  disable() {
+  disablePosting(agent) {
     // Ends the recurring tasks from this agent
-    // Remove it from AGENTS
-    const tasks = AGENTS.get(this.agentId);
-    if (tasks) {
-      for (const task of tasks) task.stop();
-    }
-    AGENTS.delete(this.agentId);
+    // Remove it from SCHEDULED_POSTS
+    const { agentId } = agent;
+    SCHEDULED_POSTS.delete(agentId);
+  };
+
+  disableSocial(agent) {
+    // Ends the recurring tasks from this agent
+    // Remove it from SCHEDULED_SOCIAL
+    const { agentId } = agent;
+    SCHEDULED_SOCIAL.delete(agentId);
   }
 
   // ===PRIVATE HELPER METHODS===
