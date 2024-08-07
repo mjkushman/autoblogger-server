@@ -1,94 +1,13 @@
 // Define the ai agent class. Final naming tbd. Could be agent or author or something else. This is the new aiBlogger.js
 
-const cron = require("node-cron");
-const { Agent, Post } = require("../models");
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const LLMService = require("../services/LLMService");
 const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
 const PostService = require("../services/PostService");
 const { ChatGPT } = require("../utilities/Chat");
+const ACTIVE_AGENTS = require("../models/ActiveAgents");
 
-class ActiveAgent {
-  constructor(agentId) {
-    this.agent = () => Agent.findOne(agentId);
-    this.socialTask = null; // TODO: nodecron task
-    this.blogTask = null; // TODO: nodecron task
-  }
-}
-
-class ActiveAgents extends Map {
-  // comes with get, set, delete methods
-
-  // Function will either add/update a post task or a social task
-  // needs to get the agent from map if it exists. If it doesn't exist, create it in the Map. THEN, update the respective task: social or post
-  add(agentId) {
-    const agent = this.agents.get(agentId) || new ActiveAgent(agentId);
-    const { socialSettings, postSettings, username } = agent;
-
-    // Check if SOCIAL is enabled and create task if neccessary
-    if (agent.socialSettings.isEnabled) {
-      if (agent.socialTask) agent.socialTask.stop(); // stop any active task
-      const task = cron.schedule(
-        socialSettings.cronSchedule,
-        async () => {
-          console.log(`Running Autosocial for ${username}`);
-          try {
-            // PRIMARY FUNCTON
-            // await this.writePost();
-            console.log(`Finished Autosocial for ${username}`);
-          } catch (error) {
-            console.log(`Error trying to Autosocial for ${username}:`, error);
-          }
-        },
-        {
-          scheduled: false,
-          timezone: socialSettings.timezone,
-        }
-      );
-      task.start(); // start the task
-      agent.socialtask = task; // node cron object
-    }
-
-    // Check if POST is enabled and create task if neccessary
-    if (agent.postSettings.isEnabled) {
-      if (agent.blogTask) agent.blogTask.stop(); // stop any active task
-      const task = cron.schedule(
-        postSettings.cronSchedule,
-        async () => {
-          console.log(`Running Autoblog for ${username}`);
-          try {
-            // PRIMARY FUNCTON
-            // await this.writePost();
-            console.log(`Finished Autoblog for ${username}`);
-          } catch (error) {
-            console.log(`Error trying to Autoblog for ${username}:`, error);
-          }
-        },
-        {
-          scheduled: false,
-          timezone: postSettings.timezone,
-        }
-      );
-      task.start(); // start the task
-
-      agent.blogTask = task; // node cron object
-    }
-    // Save the updated agent under its agentId
-    return this.set(agentId, agent);
-  }
-  remove(agentId) {
-    const agent = this.get(agentId);
-    if (!agent) throw new NotFoundError("Agent is not active");
-    // stop any active blog or social task
-    if (agent.blogTask) agent.blogTask.stop();
-    if (agent.socialTask) agent.socialTask.stop();
-    return this.delete(agentId); // remove from active agents.
-  }
-  #loadActive() {} // do it on server start. Combine with constructor?
-}
-
-const ACTIVE_AGENTS = new ActiveAgents();
 class AgentService extends LLMService {
   // commenting this out because I'm trying another approach.
   // Instead of instantiating with "... new AiAgent(id)" I will instantiate with AiAgent.init(id)
@@ -118,46 +37,7 @@ class AgentService extends LLMService {
     this.imageUrl = imageUrl;
   }
 
-  // == TESTING GROUNDS ==
-  /**
-   * 
-   * 
-   * ACTIVE_AGENTS
-[
-	{ key: value },
-	{ agentId: 	{ 
-			agent: agentObject,
-			social: cronObject, 
-			blog: cronObject
-			} 
-	},
-	{agentId: agentObject},
-]
-   * []
-   * 
-   * 
-   * 
-   * 
-   * 
-   */
-
-  // [
-  //   { key: value },
-  //   { agentId: {
-  //     agent: {agent},
-  //     social: {ScheduledNodeTask},
-  //     blog: {ScheduledNodeTask}
-  //   }
-  // },
-  // ]
-
   // === CLASS PROPERTIES ===
-  /** store as
-   *  {agentId: ScheduledTask}
-   *  where ScheduledTask is the return value from cron.schedule()
-   */
-  static SCHEDULED_POSTS = new Map();
-  static SCHEDULED_SOCIAL = new Map();
 
   // == INSTANCE PROPERTIES ==
   bioBlock = this.authorBio
@@ -213,11 +93,10 @@ class AgentService extends LLMService {
 
       if (agent.isEnabled) {
         // triggers activation procedure
-        return await activate(agentId)
-      }
-      else if (!agent.isEnabled) {
+        return await activate(agentId);
+      } else if (!agent.isEnabled) {
         // triggers deactivation procedure
-        return await deactivate(agentId)
+        return await deactivate(agentId);
       }
       return agent;
     } catch (error) {
@@ -259,14 +138,6 @@ class AgentService extends LLMService {
     } catch (error) {
       throw error;
     }
-  }
-
-  static async enableAll() {
-    // retreives all agents and starts the ones that should be started. Use this class method when the server starts up.
-  }
-
-  static async disableAll() {
-    // deactivates all currently running agents
   }
 
   // CLASS METHODS
