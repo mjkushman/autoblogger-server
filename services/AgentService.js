@@ -6,7 +6,89 @@ const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const LLMService = require("../services/LLMService");
 const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
+const PostService = require("../services/PostService");
+const { ChatGPT } = require("../utilities/Chat");
 
+class ActiveAgent {
+  constructor(agentId) {
+    this.agent = () => Agent.findOne(agentId);
+    this.socialTask = null; // TODO: nodecron task
+    this.blogTask = null; // TODO: nodecron task
+  }
+}
+
+class ActiveAgents extends Map {
+  // comes with get, set, delete methods
+
+  // Function will either add/update a post task or a social task
+  // needs to get the agent from map if it exists. If it doesn't exist, create it in the Map. THEN, update the respective task: social or post
+  add(agentId) {
+    const agent = this.agents.get(agentId) || new ActiveAgent(agentId);
+    const { socialSettings, postSettings, username } = agent;
+
+    // Check if SOCIAL is enabled and create task if neccessary
+    if (agent.socialSettings.isEnabled) {
+      if (agent.socialTask) agent.socialTask.stop(); // stop any active task
+      const task = cron.schedule(
+        socialSettings.cronSchedule,
+        async () => {
+          console.log(`Running Autosocial for ${username}`);
+          try {
+            // PRIMARY FUNCTON
+            // await this.writePost();
+            console.log(`Finished Autosocial for ${username}`);
+          } catch (error) {
+            console.log(`Error trying to Autosocial for ${username}:`, error);
+          }
+        },
+        {
+          scheduled: false,
+          timezone: socialSettings.timezone,
+        }
+      );
+      task.start(); // start the task
+      agent.socialtask = task; // node cron object
+    }
+
+    // Check if POST is enabled and create task if neccessary
+    if (agent.postSettings.isEnabled) {
+      if (agent.blogTask) agent.blogTask.stop(); // stop any active task
+      const task = cron.schedule(
+        postSettings.cronSchedule,
+        async () => {
+          console.log(`Running Autoblog for ${username}`);
+          try {
+            // PRIMARY FUNCTON
+            // await this.writePost();
+            console.log(`Finished Autoblog for ${username}`);
+          } catch (error) {
+            console.log(`Error trying to Autoblog for ${username}:`, error);
+          }
+        },
+        {
+          scheduled: false,
+          timezone: postSettings.timezone,
+        }
+      );
+      task.start(); // start the task
+
+      agent.blogTask = task; // node cron object
+    }
+    // Save the updated agent under its agentId
+    return this.set(agentId, agent);
+  }
+  remove(agentId) {
+    const agent = this.get(agentId);
+    if (!agent) throw new NotFoundError("Agent is not active");
+    // stop any active blog or social task
+    if (agent.blogTask) agent.blogTask.stop();
+    if (agent.socialTask) agent.socialTask.stop();
+    return this.delete(agentId); // remove from active agents.
+  }
+  #loadActive() {} // do it on server start. Combine with constructor?
+}
+
+const ACTIVE_AGENTS = new ActiveAgents();
 class AgentService extends LLMService {
   // commenting this out because I'm trying another approach.
   // Instead of instantiating with "... new AiAgent(id)" I will instantiate with AiAgent.init(id)
@@ -36,6 +118,39 @@ class AgentService extends LLMService {
     this.imageUrl = imageUrl;
   }
 
+  // == TESTING GROUNDS ==
+  /**
+   * 
+   * 
+   * ACTIVE_AGENTS
+[
+	{ key: value },
+	{ agentId: 	{ 
+			agent: agentObject,
+			social: cronObject, 
+			blog: cronObject
+			} 
+	},
+	{agentId: agentObject},
+]
+   * []
+   * 
+   * 
+   * 
+   * 
+   * 
+   */
+
+  // [
+  //   { key: value },
+  //   { agentId: {
+  //     agent: {agent},
+  //     social: {ScheduledNodeTask},
+  //     blog: {ScheduledNodeTask}
+  //   }
+  // },
+  // ]
+
   // === CLASS PROPERTIES ===
   /** store as
    *  {agentId: ScheduledTask}
@@ -50,35 +165,6 @@ class AgentService extends LLMService {
     : "";
 
   // === STATIC METHODS ===
-
-  /** Retrieve the agent's details from databse and set instance properties
-   *  @returns new AiAgent class instance with instance properties set
-   *
-   *  */
-  static async init(agentId) {
-    try {
-      const agentData = await Agent.getAgent(agentId);
-      if (agentData) {
-        return new AiAgent(agentData); // returns a new class instance with populated constructor fields.
-      } else {
-        console.log(`Unable to find an agent with that agentId ${agentId}`);
-      }
-    } catch (error) {
-      return new ExpressError(error);
-    }
-  }
-  static async serverStart() {
-    // get all agents with posting enabled
-    const enabledAgents = await Agent.findAll({
-      include: { agentActions }, // I think this is wrong
-      where: { isEnabled: { posts: true } },
-    });
-    // put them all in a hash map
-    for (let agent of enabledAgents) {
-      // TODO: call cron to schedule this agent based on agent.cronSchedule
-      // this.SCHEDULED_POSTS.set(agent.agentId, agent); // store each agent at a key of its own id
-    }
-  }
 
   static async create({ accountId, body }) {
     console.log("service: creating a new agent");
@@ -125,33 +211,33 @@ class AgentService extends LLMService {
       await agent.update(body);
       await agent.save(); // trigger the beforeUpdate hook
 
-      if (agent.postSettings.isEnabled) {
-        // TODO: SOME LOGIC IF THE AGENT IS NOW ENABLED
-        await enable(agent);
+      if (agent.isEnabled) {
+        // triggers activation procedure
+        return await activate(agentId)
       }
-      if (!agent.postSettings.isEnabled) {
-        await disable(agent);
+      else if (!agent.isEnabled) {
+        // triggers deactivation procedure
+        return await deactivate(agentId)
       }
-
       return agent;
     } catch (error) {
       throw error;
     }
   }
 
-  static async activate({ accountId, agentId }) {
+  static async activate({ agentId }) {
     console.log(`activating ${agentId}`);
     try {
-      const agent = await Agent.findOne({ where: { accountId, agentId } });
-      if (!agent) throw new NotFoundError("Unable to find agent.");
+      return ACTIVE_AGENTS.add(agentId); // add the agent to active class
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 
-      (agent.postSettings = {
-        ...agent.postSettings,
-        isEnabled: true,
-      }),
-        await enable(agent); // adds agent to SCHEDULED TASKS
-      await agent.save();
-      return agent;
+  static async deactivate({ agentId }) {
+    console.log(`deactivating ${agentId}`);
+    try {
+      return ACTIVE_AGENTS.remove(agentId); // add the agent to active class
     } catch (error) {
       throw new Error(error);
     }
@@ -191,7 +277,15 @@ class AgentService extends LLMService {
    * @param maxWords The maximum wordcount in the returned blog post
    * @returns a blog in string formatted HTML
    */
-  async writeBlogPost({ topic, llm = "chatgpt", maxWords = 1000 }) {
+  async writePost({
+    agentId,
+    options = { topic, llm: "chatgpt", maxWords: 1000 },
+  }) {
+    // Look for agent in Map. Else look in DB. Else throw error
+
+    const agent = ACT;
+
+    const { topic, llm, maxWords } = options;
     console.log(`${this.username} has started writing a blog post: 
       llm: ${llm}
       maxWords: ${maxWords}
@@ -251,81 +345,6 @@ class AgentService extends LLMService {
     return newPost;
   }
 
-  /** Starts running this agent according to their schedules and adds this agent to AGENTS
-   *  Future refactoring: Abstract the scheduling function into its own function to be called for each schedule (blog, social, others in the future)
-   *  */
-  // Retooling Enable and Disable
-  enablePosting(agent) {
-    disablePosting(agent); // First makes sure it's not already running.
-    const { agentId, postSettings, username } = agent;
-    // set blogging schedule
-
-    const task = cron.schedule(
-      postSettings.cronSchedule,
-      async () => {
-        console.log(`Running AI blogger for ${username}`);
-        try {
-          // await this.writeBlogPost();
-          console.log(`Finished running ${username}`);
-        } catch (error) {
-          console.log(
-            `Error trying to write blog post for ${username}:`,
-            error
-          );
-        }
-      },
-      {
-        scheduled: false,
-        timezone: postSettings.timezone,
-      }
-    );
-    task.start(); // start the task
-    // Sets an array of tasks at agentId
-    SCHEDULED_TASKS.set(agentId, task);
-  }
-  enableSocial(agent) {
-    disableSocial(agent); // First makes sure it's not already running.
-    const { agentId, socialSettings, username } = agent;
-
-    // set social schedule
-
-    const task = cron.schedule(
-      socialSettings.cronSchedule,
-      async () => {
-        console.log(`Running AI social for ${username}`);
-        try {
-          // await agent.writeSocialPost();
-          console.log(`Finished running ${username}`);
-        } catch (error) {
-          console.log(
-            `Error trying to write social post for ${username}:`,
-            error
-          );
-        }
-      },
-      {
-        scheduled: false,
-        timezone: socialSettings.timezone,
-      }
-    );
-    task.start(); // start the task
-    SCHEDULED_SOCIAL.set(agentId, task); // Set the task at agentId
-  }
-
-  disablePosting(agent) {
-    // Ends the recurring tasks from this agent
-    // Remove it from SCHEDULED_POSTS
-    const { agentId } = agent;
-    SCHEDULED_POSTS.delete(agentId);
-  };
-
-  disableSocial(agent) {
-    // Ends the recurring tasks from this agent
-    // Remove it from SCHEDULED_SOCIAL
-    const { agentId } = agent;
-    SCHEDULED_SOCIAL.delete(agentId);
-  }
-
   // ===PRIVATE HELPER METHODS===
 
   /** Formats the post and saves it to the databse
@@ -358,68 +377,48 @@ class AgentService extends LLMService {
    *   1. "My first article"
    *   2. "Another article I wrote"
    *   ...etc
-   * @returns string formatted list of recent titles or an empty string if this agent has not written anything
+   * @returns string formatted list of recent titles
    */
-  async #getRecentWork() {
-    let recentWork = "";
 
-    try {
-      console.log(`${this.username} is getting recent work.`);
-      const titlesResponse = await Post.getTitles(this.agentId);
-
-      if (titlesResponse.length > 0) {
-        let titlesArray = titlesResponse.map(
-          ({ titlePlaintext }) => titlePlaintext
-        );
-        for (let i = 0; i <= Math.min(14, titlesArray.length); i++) {
-          recentWork += `${Number(i) + 1}. "${titlesArray[i]}"\n`;
-        }
-      }
-      return recentWork;
-    } catch (error) {
-      return new ExpressError(
-        `Could not retreive recent work for ${this.username}. ${error}`
-      );
-    }
-  }
+  // GET RECENT WORK IS DEPRECATED
+  // async #getRecentWork(agent) {
+  //   const titles = await PostService.findRecentTitles({
+  //     agentId: agent.agentId,
+  //   });
+  //   if (!titles) return `You haven't written anything yet.`;
+  //   let recentWork = [
+  //     `Here are the titles of some of your recent work:`,
+  //     ...titles.slice(0, 9),
+  //   ].join("\n - ");
+  //   return recentWork;
+  // }
 
   /** Asks LLM to decide on a new topic to write about, based on the author's bio and recent work.
-   * @returns Topic.: An outline of the next article to write when calling writeBlogPost
+   * @returns Topic.: An outline of the next article to write when calling writePost
    */
-  async #decideBlogTopic(llm) {
-    console.log(`${this.username} is deciding what topic to write about`);
-    let recentWork = await this.#getRecentWork();
-    console.log(`DEBUGGING recentWork: ${recentWork}`); // For debugging
+  async #decideBlogTopic(agent) {
+    const { agentId } = agent;
+    const titles = await PostService.findRecentTitles({
+      agentId: agentId,
+    });
+    let recentWork = titles
+      ? [
+          `Here are the titles of some of your recent work:`,
+          ...titles.slice(0, 9),
+        ].join("\n - ")
+      : `You havent written anything yet.`;
 
-    const recentWorkBlock =
-      recentWork.length > 0
-        ? `These are recent articles you've written: ${recentWork}`
-        : "";
-
-    // Prompt construction:
-
-    let messages = [
-      {
-        role: "system",
-        content: ` You're an author of a popular blog. ${this.bioBlock} ${recentWorkBlock}`,
-      },
-      {
-        role: "user",
-        content: `Given your author profile and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still written in your voice. Create a brief outline of your next blog post.`,
-      },
-    ];
-
-    // For debugging:
-    // console.log(`Dedice Blog Topic messages: ${messages}`)
+    const chat = new ChatGPT(agent);
+    chat.addMessage(`user`, recentWork);
+    chat.addMessage(
+      `user`,
+      `Given your author bio and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still adhere to your bio. For each section of the blog post, write a brief summary of the planned content.`
+    );
 
     try {
-      const response = await super.promptLLM(messages, (llm = "chatgpt"));
-      console.log(`${this.username} finished deciding blog topic.`);
-      return response;
+      return await chat.sendPrompt();
     } catch (error) {
-      return new ExpressError(
-        `${this.username} was unable to prompt LLM to decide on a topic.  ${error}`
-      );
+      throw new Error(error);
     }
   }
 

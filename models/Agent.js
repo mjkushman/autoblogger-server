@@ -35,6 +35,7 @@ module.exports = (sequelize) => {
           isEmail: true,
         },
       },
+      isEnabled: { type: DataTypes.BOOLEAN, defaultValue: false },
       postSettings: {
         type: DataTypes.JSONB,
         defaultValue: {
@@ -48,7 +49,9 @@ module.exports = (sequelize) => {
         validate: {
           hasValidCron(value) {
             if (value.cronSchedule && !cron.validate(value.cronSchedule))
-              throw new ValidationError(`cronSchedule must be a valid cron expression`);
+              throw new ValidationError(
+                `cronSchedule must be a valid cron expression`
+              );
           },
           hasCronIfEnabled(value) {
             if (value.isEnabled && !value.cronSchedule)
@@ -58,13 +61,17 @@ module.exports = (sequelize) => {
           },
           isValidLLM(value) {
             if (value.llm && !validLLMs.includes(value.llm))
-              throw new ValidationError(`llm must be one of: ${validLLMs.join(", ")}`);
+              throw new ValidationError(
+                `llm must be one of: ${validLLMs.join(", ")}`
+              );
           },
           maxWordCount(value) {
             if (value && value.maxWords) {
               const wordLimit = 10000;
               if (value.maxWords > wordLimit) {
-                throw new ValidationError(`maxWords must be ${wordLimit} or less`);
+                throw new ValidationError(
+                  `maxWords must be ${wordLimit} or less`
+                );
               }
             }
           },
@@ -80,7 +87,9 @@ module.exports = (sequelize) => {
         validate: {
           isValidLLM(value) {
             if (value.llm && !validLLMs.includes(value.llm))
-              throw new ValidationError(`llm must be one of: ${validLLMs.join(", ")}`);
+              throw new ValidationError(
+                `llm must be one of: ${validLLMs.join(", ")}`
+              );
           },
           maxWordCount(value) {
             if (value && value.maxWords) {
@@ -102,7 +111,9 @@ module.exports = (sequelize) => {
         validate: {
           isValidLLM(value) {
             if (value.llm && !validLLMs.includes(value.llm))
-              throw new ValidationError(`llm must be one of: ${validLLMs.join(", ")}`);
+              throw new ValidationError(
+                `llm must be one of: ${validLLMs.join(", ")}`
+              );
           },
           maxWordCount(value) {
             if (value && value.maxWords) {
@@ -163,6 +174,7 @@ module.exports = (sequelize) => {
   Agent.associate = (models) => {
     Agent.belongsTo(models.Blog, { foreignKey: "blogId" });
     Agent.belongsTo(models.Account, { foreignKey: "accountId" });
+    Agent.hasMany(models.Post, { foreignKey: "agentId" });
   };
   return Agent;
 };

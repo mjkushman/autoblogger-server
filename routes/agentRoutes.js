@@ -14,6 +14,7 @@ const {
 } = require("../utilities/expressError");
 // const Agent = require("./models/Agent");
 const AgentService = require("../services/AgentService");
+const PostService = require("../services/PostService");
 
 module.exports = (config) => {
   /** GET returns a list of all agents for an account
@@ -41,6 +42,23 @@ module.exports = (config) => {
       return res.status(200).json(response);
     } catch (error) {
       // let errorMessage = new BadRequestError(error);
+      next(error);
+    }
+  });
+
+  // Mostly just used to test the service for getting titles.
+  router.get("/:agentId/titles", async function (req, res, next) {
+    try {
+      console.log("route: finding titles for one agent");
+      const { accountId } = req.account;
+      const { agentId } = req.params;
+      const agent = await AgentService.findOne({ accountId, agentId });
+      if (!agent) throw new NotFoundError("Unable to find agent");
+      const response = await PostService.findRecentTitles({
+        agentId: agent.agentId,
+      });
+      return res.status(200).json(response);
+    } catch (error) {
       next(error);
     }
   });
@@ -117,6 +135,18 @@ module.exports = (config) => {
       next(error);
     }
   });
+  // convenience method for easy activation / deactivation
+  router.post("/:agentId/deactivate", async function (req, res, next) {
+    try {
+      const { account } = req;
+      const { accountId } = account;
+      const { agentId } = req.params;
+      const agent = await AgentService.deactivate({ accountId, agentId });
+      return res.status(201).json(agent);
+    } catch (error) {
+      next(error);
+    }
+  });
 
   /** Delete this agent entirely */
   router.delete("/:agentId", async function (req, res, next) {
@@ -125,46 +155,32 @@ module.exports = (config) => {
       const { accountId } = account;
       const { agentId } = req.params;
       const result = await AgentService.delete({ accountId, agentId });
-      return res.status(200).json(result)
+      return res.status(200).json(result);
     } catch (error) {
-      next(error)
+      next(error);
     }
   });
 
-  // === AI AGENT FUNCTIONS
-
-  // /** Sanity check: INITIATING AGENT
-  //  * This route should not actually be needed by the ai agent or app
-  //  */
-  // router.get("/:agentId/init", async function (req, res, next) {
-  //     console.log('AGENT INIT request received')
-  //     const agentId = req.params.agentId
-  //     let agent = await AiAgent.init(agentId)
-  //     console.dir(agent)
-
-  //     return res.status(200).json({ message: "received", status: 200 });
-  // });
-
-  // /** Manually create a new blog post */
-  // router.post("/:agentId/blog", async function (req, res, next) {
-  //     console.log('AGENT BLOG request received')
-  //     const agentId = req.params.agentId
-  //     // let {llm, maxWords} = req.body
-  //     console.log('body dir:')
-  //     console.dir(req.body)
-
-  //     let agent = await AiAgent.init(agentId)
-  //     console.log("Agent invoked:")
-  //     console.dir(agent)
-
-  //     let blogPost = await agent.writeBlogPost(req.body)
-
-  //     return res.status(201).json({blogPost})
-
-  // });
+  /** Manually trigger agent to create a new blog post
+   * @Param options exptects a JSON object { llm, maxWords, topic,
+   * }
+   */
+  router.post("/:agentId/post", async function (req, res, next) {
+    console.log("AGENT POST request received");
+    try {
+      const { account } = req;
+      const { accountId } = account;
+      const { agentId } = req.params;
+      let { body: options } = req;
+      let post = await AgentService.writePost({ agentId, options });
+      return res.status(201).json({ post });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   /** Manually create a new social post */
-  router.post("/:authorId/social", async function (req, res, next) {});
+  router.post("/:agentId/social", async function (req, res, next) {});
 
   return router;
 };
