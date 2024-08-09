@@ -5,7 +5,8 @@ const LLMService = require("../services/LLMService");
 const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
 const PostService = require("../services/PostService");
-const { ChatGPT } = require("../utilities/Chat");
+const { ChatGPT, LLMs } = require("../utilities/Chat");
+const { Agent } = require("../models");
 const ACTIVE_AGENTS = require("../models/ActiveAgents");
 
 class AgentService extends LLMService {
@@ -123,16 +124,17 @@ class AgentService extends LLMService {
   }
 
   static async delete({ accountId, agentId }) {
-    console.log(`service: deleting agent ${agentId} for account: ${accountId}`);
+    console.log(
+      `service: deactivating and deleting agent ${agentId} for account: ${accountId}`
+    );
     try {
       let result = await Agent.destroy({ where: { agentId, accountId } });
-      console.log(`DELETE RESULTT: ${result}`);
       if (result > 0) {
-        this.SCHEDULED_POSTS.delete(agentId); // remove from active tasks.
+        await this.deactivate({ agentId }); // Deactivate
         return { message: "Delete successful" };
       } else {
         throw new NotFoundError(
-          `Could not find agent ${agentId} for account ${accountId} to delete.`
+          `Agent ${agentId} for account ${accountId} not found.`
         );
       }
     } catch (error) {
@@ -140,9 +142,7 @@ class AgentService extends LLMService {
     }
   }
 
-  // CLASS METHODS
-
-  /** Writes a blog post
+  /** WRITE BLOG POST
    * @topic An outline of the post to be written, which helps the AI write. Optional. If non is provided, the AI will run a utility function to choose a topic.
    * @param llm the name of the large language model to use. "chatgpt" | "claude"
    * @param maxWords The maximum wordcount in the returned blog post
@@ -152,53 +152,57 @@ class AgentService extends LLMService {
     agentId,
     options = { topic, llm: "chatgpt", maxWords: 1000 },
   }) {
-    // Look for agent in Map. Else look in DB. Else throw error
-
-    const agent = ACT;
-
     const { topic, llm, maxWords } = options;
-    console.log(`${this.username} has started writing a blog post: 
+    // Look for agent in Map. Else look in DB. Else throw error
+    const activeAgent = ACTIVE_AGENTS.get(agentId);
+    let agent = activeAgent.agent || (await Agent.findOne(agentId));
+
+    if (!agent) throw new NotFoundError("Agent not found.");
+    
+    console.log(`${this.username} started writing a blog post.
+      Options: 
       llm: ${llm}
       maxWords: ${maxWords}
       topic: ${topic}`);
 
     // If no topic is provided, decide one
     const topicBlock = topic || (await this.#decideBlogTopic());
-    console.log(`Next blog topic: ${topicBlock}`);
+    console.log(`Blog topic: ${topicBlock}`);
 
-    // Construct messages
-    let messages = [
-      {
-        role: "system",
-        content: `You are the author of a popular blog. ${this.bioBlock}`,
-      },
-      {
-        role: "user",
-        content: `
-        Write a new blog post using the following outline and instructions.
-        OUTLINE:
-        ${topicBlock}
-
-
-        INSTRUCTIONS:
+    // Instantiate a new Chat
+      const chat = new LLMs[llm](agent) // does this work?
+    // const chat = new ChatGPT(agent);
+    // First instruction
+    chat.addMessage(
+      `user`,
+      `Write a new blog post using the following outline and instructions.`
+    );
+    // Next instruction
+    chat.addMessage(
+      `user`,
+      `OUTLINE:
+        ${topicBlock}`
+    );
+    // Next instruction
+    chat.addMessage(
+      `user`,
+      `INSTRUCTIONS:
         1. Expand upon the topic until you reach ${maxWords} words.
         2. Format the response in HTML with proper HTML tags.
         3. Include a title in <h1> tags.
         4. Wrap the rest of the post in a <div> tag with id="primary-content".
-        5. But do not include any boilerplate HTML`,
-      },
-    ];
+        5. But do not include any boilerplate HTML`
+    );
 
     // Invoke llm
     console.log(
-      `${this.username} is about to invoke the LLM to write a blog post.`
+      `${agent.username} invoking LLM ${llm}.`
     );
-    const llmResponse = await super.promptLLM(messages, llm);
-    console.log(`${this.username} finished invoking the LLM.`);
-    // console.log(`LLM Response: ${llmResponse}`);
+    const response = await chat.sendPrompt();
+    console.log(`${agent.username} invoked ${llm}.`);
 
     // Parse and format html resposne from llm
-    let postData = htmlParser(llmResponse);
+    let postData = htmlParser(response);
 
     // Get a random image based on the post title
     const imageUrl = await getUnsplashImage(postData.titlePlaintext);
