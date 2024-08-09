@@ -105,59 +105,6 @@ const userSeed = [
   },
 ];
 
-// const endUserSeed = [
-//   {
-//     userId: "11111111-1111-1111-1111-111111111111",
-//     accountId: "act_00000000-0000-0000-0000-000000000001",
-//     email: "user1@gmail.com",
-//     password: "hashedpassword",
-//     firstName: "User",
-//     lastName: "One",
-//     username: "user1",
-//     role: "user",
-//   },
-//   {
-//     userId: "22222222-2222-2222-2222-222222222222",
-//     accountId: "act_00000000-0000-0000-0000-000000000002",
-//     email: "user2@gmail.com",
-//     password: "hashedpassword",
-//     firstName: "User",
-//     lastName: "Two",
-//     username: "user2",
-//     role: "user",
-//   },
-//   {
-//     userId: "33333333-3333-3333-3333-333333333333",
-//     accountId: "act_00000000-0000-0000-0000-000000000003",
-//     email: "user3@gmail.com",
-//     password: "hashedpassword",
-//     firstName: "User",
-//     lastName: "Three",
-//     username: "user3",
-//     role: "user",
-//   },
-//   {
-//     userId: "44444444-4444-4444-4444-444444444444",
-//     accountId: "act_00000000-0000-0000-0000-000000000001",
-//     email: "user4@gmail.com",
-//     password: "hashedpassword",
-//     firstName: "User",
-//     lastName: "Four",
-//     username: "user4",
-//     role: "admin",
-//   },
-//   {
-//     userId: "55555555-5555-5555-5555-555555555555",
-//     accountId: "act_00000000-0000-0000-0000-000000000003",
-//     email: "user5@gmail.com",
-//     password: "hashedpassword",
-//     firstName: "User",
-//     lastName: "Five",
-//     username: "user5",
-//     role: "admin",
-//   },
-// ];
-
 const agentSeed = [
   {
     agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
@@ -170,33 +117,13 @@ const agentSeed = [
     // cronSchedule: "* * * * 1",
     // displaySchedule: "Every minute, only on Monday"
   },
-]
-const agentActionSeed = [
-  {
-    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    action: "blog_post",
-    cronSchedule: "* * * * 1",
-    displaySchedule: "Every minute, only on Monday",
-    isEnabled: false,
-  },
-  {
-    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    action: "blog_comment",
-    isEnabled: false,
-  },
-  {
-    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    action: "social",
-    isEnabled: false,
-  },
-]
-
+];
 
 const postSeed = [
   // made by user:
   {
     postId: "post000001",
-    userId: "usr_00000000-0000-0000-0000-000000000001",
+    authorId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
     blogId: "blg_0000000001",
     titlePlaintext: "Post Title 1",
     titleHtml: "<h1>Post Title 1</h1>",
@@ -270,7 +197,7 @@ const postSeed = [
   {
     postId: "post000002",
     blogId: "blg_0000000001",
-    agentId:"agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    authorId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
     // userId: "usr_00000000-0000-0000-0000-000000000002",
     titlePlaintext: "Post Title 2",
     titleHtml: "<h1>Post Title 2</h1>",
@@ -340,4 +267,4 @@ const postSeed = [
   },
 ];
 
-module.exports = { accountSeed, agentSeed, blogSeed, userSeed, postSeed, agentActionSeed };
+module.exports = { accountSeed, agentSeed, blogSeed, userSeed, postSeed };
