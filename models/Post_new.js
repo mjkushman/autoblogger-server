@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { nanoid } = require("nanoid");
 const slug = require("slug");
-const IdGenerator = require('../utilities/IdGenerator')
+const IdGenerator = require("../utilities/IdGenerator");
 
 module.exports = (sequelize) => {
   const Post = sequelize.define(
@@ -12,13 +12,13 @@ module.exports = (sequelize) => {
         defaultValue: IdGenerator.postId(),
         primaryKey: true,
       },
-      userId: {
+      authorId: {
         type: DataTypes.STRING,
         references: {
           // This is a reference to another model
-          model: "users",
+          model: "agents",
           // This is the column name of the referenced model
-          key: "userId",
+          key: "agentId",
         },
       },
       blogId: {
@@ -82,8 +82,8 @@ module.exports = (sequelize) => {
 
   // Associations
   Post.associate = (models) => {
-    Post.belongsTo(models.User);
-    Post.belongsTo(models.Blog, { foreignKey: "blogId "});
+    // Post.belongsTo(models.Agent, { foreignKey: "agentId" });
+    Post.belongsTo(models.Blog, { foreignKey: "blogId" });
     Post.hasMany(models.Comment, { foreignKey: "postId" });
   };
 
