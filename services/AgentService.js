@@ -7,7 +7,7 @@ const getUnsplashImage = require("../utilities/getUnsplashImage");
 const PostService = require("../services/PostService");
 const { ChatGPT, LLMs } = require("../utilities/Chat");
 const { Agent } = require("../models");
-const ACTIVE_AGENTS = require("../models/ActiveAgents");
+const ActiveAgents = require("../models/ActiveAgents");
 
 class AgentService extends LLMService {
   // commenting this out because I'm trying another approach.
@@ -47,6 +47,10 @@ class AgentService extends LLMService {
 
   // === STATIC METHODS ===
 
+  static async sayHello() {
+    return await Agent.sayHello()
+  }
+  
   static async create({ accountId, body }) {
     console.log("service: creating a new agent");
     try {
@@ -94,10 +98,10 @@ class AgentService extends LLMService {
 
       if (agent.isEnabled) {
         // triggers activation procedure
-        return await activate(agentId);
+        await this.activate(agent);
       } else if (!agent.isEnabled) {
         // triggers deactivation procedure
-        return await deactivate(agentId);
+        await this.deactivate(agent);
       }
       return agent;
     } catch (error) {
@@ -105,10 +109,11 @@ class AgentService extends LLMService {
     }
   }
 
-  static async activate({ agentId }) {
-    console.log(`activating ${agentId}`);
+  static async activate( agent ) {
+    console.log(`activating ${agent.agentId}`);
     try {
-      return ACTIVE_AGENTS.add(agentId); // add the agent to active class
+      
+      return ActiveAgents.add(agent); // add the agent to active class
     } catch (error) {
       throw new Error(error);
     }
@@ -117,7 +122,7 @@ class AgentService extends LLMService {
   static async deactivate({ agentId }) {
     console.log(`deactivating ${agentId}`);
     try {
-      return ACTIVE_AGENTS.remove(agentId); // add the agent to active class
+      return ActiveAgents.remove(agentId); // remove the agent to active class
     } catch (error) {
       throw new Error(error);
     }
@@ -154,11 +159,11 @@ class AgentService extends LLMService {
   }) {
     const { topic, llm, maxWords } = options;
     // Look for agent in Map. Else look in DB. Else throw error
-    const activeAgent = ACTIVE_AGENTS.get(agentId);
+    const activeAgent = ActiveAgents.get(agentId);
     let agent = activeAgent.agent || (await Agent.findOne(agentId));
 
     if (!agent) throw new NotFoundError("Agent not found.");
-    
+
     console.log(`${this.username} started writing a blog post.
       Options: 
       llm: ${llm}
@@ -170,7 +175,7 @@ class AgentService extends LLMService {
     console.log(`Blog topic: ${topicBlock}`);
 
     // Instantiate a new Chat
-      const chat = new LLMs[llm](agent) // does this work?
+    const chat = new LLMs[llm](agent); // does this work?
     // const chat = new ChatGPT(agent);
     // First instruction
     chat.addMessage(
@@ -195,9 +200,7 @@ class AgentService extends LLMService {
     );
 
     // Invoke llm
-    console.log(
-      `${agent.username} invoking LLM ${llm}.`
-    );
+    console.log(`${agent.username} invoking LLM ${llm}.`);
     const response = await chat.sendPrompt();
     console.log(`${agent.username} invoked ${llm}.`);
 

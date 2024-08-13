@@ -30,6 +30,19 @@ module.exports = (config) => {
       next(error);
     }
   });
+  /** GET returns a list of all agents for an account
+   *
+   */
+  router.get("/hello", async function (req, res, next) {
+    try {
+      console.log("saying hello");
+      const { accountId } = req.account;
+      const response = await AgentService.sayHello({ accountId });
+      return res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  });
   /** GET returns one agent for an account
    *
    */
@@ -116,8 +129,10 @@ module.exports = (config) => {
       const { body, account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const agent = await AgentService.update({ accountId, agentId, body });
-      return res.status(201).json(agent);
+      const ownedAgents = account.agents.map((a) => a.agentId)
+      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+      const result = await AgentService.update({ accountId, agentId, body });
+      return res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -129,6 +144,8 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
+      const ownedAgents = account.agents.map((a) => a.agentId)
+      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const agent = await AgentService.activate({ accountId, agentId });
       return res.status(201).json(agent);
     } catch (error) {
@@ -141,6 +158,8 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
+      const ownedAgents = account.agents.map((a) => a.agentId)
+      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const agent = await AgentService.deactivate({ accountId, agentId });
       return res.status(201).json(agent);
     } catch (error) {
@@ -154,12 +173,17 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
+      const ownedAgents = account.agents.map((a) => a.agentId)
+      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.delete({ accountId, agentId });
       return res.status(200).json(result);
     } catch (error) {
       next(error);
     }
   });
+
+  // DEPRECATE THIS METHOD
+  // Instead, hit /post with agentid in payload to have that agent invoke writePost
 
   /** Manually trigger agent to create a new blog post
    * @Param options exptects a JSON object { llm, maxWords, topic,
