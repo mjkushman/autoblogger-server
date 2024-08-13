@@ -54,7 +54,9 @@ class LLMService {
 //     }
 //   }
 
-
+    testfunc() {
+        return this.openai.chat.completions.create({})
+    }
 
   promptLLM(messages, llm) {
     console.log(`Entering Switch:

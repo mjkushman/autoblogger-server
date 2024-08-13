@@ -9,89 +9,38 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 const PostService = require("../services/PostService");
 const CommentService = require("../services/CommentService");
+const AgentService = require("../services/AgentService");
 
 module.exports = (config) => {
-  // Middleware to extract orgId
-  router.use((req, res, next) => {
-    req.orgId = req.params.orgId;
-    next();
-  });
-
-  
-
   /** Create a post
    * @swagger
-   * /{orgId}/posts:
-   *   post:
-   *     summary: Manually create a new blog post
-   *     description: Creates a new blog post. Should be used sparingly since your agent creates posts automatically.
-   *     tags: [Posts]
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object
-   *             properties:
-   *               userId:
-   *                 type: string
-   *                 description: The ID of the user creating the post
-   *                 example: 11111111-1111-1111-1111-111111111111
-   *               title:
-   *                 type: string
-   *                 description: The title of the blog post
-   *                 example: My First Blog Post
-   *               bodyHtml:
-   *                 type: string
-   *                 description: The HTML content of the blog post
-   *                 example: "<p>This is the HTML content of the post.</p>"
-   *               bodyPlaintext:
-   *                 type: string
-   *                 description: The plain text content of the blog post
-   *                 example: "This is the plain text content of the post."
-   *     responses:
-   *       201:
-   *         description: New blog post created
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 post:
-   *                   type: object
-   *                   properties:
-   *                     id:
-   *                       type: string
-   *                       description: The ID of the created post
-   *                       example: 1a2b3c4d
-   *                     userId:
-   *                       type: string
-   *                       description: The ID of the user who created the post
-   *                       example: 11111111-1111-1111-1111-111111111111
-   *                     title:
-   *                       type: string
-   *                       description: The title of the blog post
-   *                       example: My First Blog Post
-   *                     bodyHtml:
-   *                       type: string
-   *                       description: The HTML content of the blog post
-   *                       example: "<p>This is the HTML content of the post.</p>"
-   *                     bodyPlaintext:
-   *                       type: string
-   *                       description: The plain text content of the blog post
-   *                       example: "This is the plain text content of the post."
-   *       400:
-   *         description: Bad request
-   *       500:
-   *         description: Internal server error
    */
   router.post("/", async function (req, res, next) {
-    const { orgId } = req;
+    // body will have fields optionally filled out. Use them to replace whatever the generated post comes back with
+    const { accountId } = req.account;
+    const {
+      agentId,
+      options,
+      titlePlaintext,
+      titleHtml,
+      bodyPlaintext,
+      bodyHtml,
+      imageUrl,
+    } = req.body;
     try {
-      // const {title, bodyPlaintext, bodyHtml} = req.body
-      const post = await PostService.create(req.body, orgId);
+      const response = await AgentService.writePost({ agentId, options });
+      const post = {
+        ...response,
+        titlePlaintext: titlePlaintext || response.titlePlaintext,
+        titleHtml: titleHtml || response.titleHtml,
+        bodyPlaintext: bodyPlaintext || response.bodyPlaintext,
+        bodyHtml: bodyHtml || response.bodyHtml,
+        imageUrl: imageUrl || response.imageUrl,
+      };
+      console.log(`CREATED POST: ${post}`);
 
-      console.log(post);
+      await PostService.create({post}) // save the newly written post
+
       return res.status(201).json({ post });
     } catch (error) {
       return next(error);
@@ -100,65 +49,28 @@ module.exports = (config) => {
 
   /** GET all posts
    * @swagger
-   * /{orgId}/posts:
-   *  get:
-   *    description: return all blog posts for a given org
-   *    tags: [Posts]
-   *    responses:
-   *      200:
-   *        description: A list of posts
    */
   router.get("/", async function (req, res, next) {
-    // TODO: Add authentication middleware
-    const { orgId } = req;
+    const { account } = req;
+
+    const blogIds = account.Blogs.map((blog) => blog.blogId);
     try {
-      const posts = await PostService.findAll(orgId);
+      const posts = await PostService.findAll(blogIds);
       return res.json({ posts });
     } catch (error) {
-      return next(error);
+      next(error);
     }
   });
 
   /** GET one post
    * @swagger
-   * /{orgId}/posts/{postId}:
-   *   get:
-   *     summary: Return a single blog post
-   *     tags: [Posts]
-   *     responses:
-   *       200:
-   *         description: A single post
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 post:
-   *                   type: object
-   *                   properties:
-   *                     id:
-   *                       type: string
-   *                       description: The user ID.
-   *                       example: 1
-   *                     username:
-   *                       type: string
-   *                       description: The user's username.
-   *                       example: johndoe
-   *                     email:
-   *                       type: string
-   *                       description: The user's email address.
-   *                       example: johndoe@example.com
-   *       400:
-   *         description: Bad request
-   *       500:
-   *         description: Internal server error
    */
   router.get("/:postId", async function (req, res, next) {
-    // TODO: Add authentication logic
-    const { orgId } = req;
     const { postId } = req.params;
+    const { account } = req;
+    const blogIds = account.Blogs.map((blog) => blog.blogId);
     try {
-      const post = await PostService.findOne({ postId, orgId });
+      const post = await PostService.findOne({ postId, blogIds });
       return res.json({ post });
     } catch (error) {
       return next(error);

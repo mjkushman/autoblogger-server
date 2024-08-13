@@ -6,14 +6,14 @@ const { Op } = require("sequelize");
 class PostService {
   /** GET all posts */
   static async findAll(blogIds) {
-    console.log("hit Posts findAll function");
+    console.log(`Getting all posts for blogIds ${blogIds}`);
     return await Post.findAll({
       where: { blogId: { [Op.or]: blogIds } },
     });
   }
 
   static async findOne({ postId, blogIds }) {
-    console.log("hit Posts findOne  function");
+    console.log(`Getting one post for postId ${postId} and blogIds ${blogIds}`);
     return await Post.findOne({
       where: { postId, blogId: { [Op.or]: blogIds } },
       include: {
@@ -32,11 +32,11 @@ class PostService {
     return titles;
   }
 
-  /** POST creates a new post */
-  static async create(body, orgId) {
+  /** POST generates a new post */
+  static async generate({post}) {
     console.log("Posts: Creating from payload and ORGID:", body, orgId);
 
-    return await Post.create({ ...body, orgId });
+    return await Post.create({ post });
   }
 }
 module.exports = PostService;
