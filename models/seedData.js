@@ -114,8 +114,14 @@ const agentSeed = [
     firstName: "User",
     lastName: "One",
     username: "agent001",
+    isActive: false,
     // cronSchedule: "* * * * 1",
-    // displaySchedule: "Every minute, only on Monday"
+    // displaySchedule: "Every minute, only on Monday",
+    socialSettings: {
+      isEnabled: false,
+      llm: "chatgpt",
+      maxWords: 100,
+    },
   },
 ];
 

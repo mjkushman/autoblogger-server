@@ -9,11 +9,12 @@ module.exports = (sequelize) => {
     {
       postId: {
         type: DataTypes.STRING(14),
-        defaultValue: IdGenerator.postId(),
         primaryKey: true,
       },
       authorId: {
         type: DataTypes.STRING,
+        // How do I get this section to allow either an agentId or a userId?
+        // And is that even what I should do? Let users create posts? Or agents only?
         references: {
           // This is a reference to another model
           model: "agents",
@@ -57,6 +58,7 @@ module.exports = (sequelize) => {
       tableName: "posts",
       hooks: {
         beforeCreate: async (record) => {
+          record.postId = IdGenerator.postId();
           if (record.titlePlaintext) {
             record.slug = slug(record.titlePlaintext);
           }

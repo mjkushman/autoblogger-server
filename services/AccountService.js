@@ -1,7 +1,7 @@
 // import the org model
 
 const { Account, Blog } = require("../models");
-const { ExpressError } = require("../utilities/expressError");
+const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const crypto = require("crypto");
 const { hash } = require("../utilities/hasher");
 const { cache } = require("../cache");
@@ -76,9 +76,15 @@ class AccountService {
       where: {
         apiKeyIndex,
       },
+      include: [Blog, Agent],
     });
     if (result) {
-      const { accountId, firstName, lastName, email, label } = result;
+      const { accountId, firstName, lastName, email, label, Blog, Agent } =
+        result;
+      // extract agentid and username
+      const agents = result.Agent.map((a) => {
+        a.agentId, a.username;
+      });
       const account = {
         accountId,
         firstName,
@@ -86,6 +92,8 @@ class AccountService {
         email,
         label,
         apiKey,
+        Blog,
+        agents,
       };
       return account;
     }
@@ -93,14 +101,29 @@ class AccountService {
   }
 
   static async findAll() {
-    console.log('account service findall')
+    console.log("account service findall");
     try {
-      console.log('trying')
+      console.log("trying");
       let accounts = await Account.findAll();
-      return accounts 
+      return accounts;
     } catch (error) {
-      console.log('catching')
+      console.log("catching");
       return error;
+    }
+  }
+  static async findOne(accountId) {
+    console.log("account service findOne");
+    try {
+      console.log("trying");
+      let account = await Account.findOne({
+        where: { accountId },
+        include: Blog,
+      });
+      if (!account) throw new NotFoundError("Account not found.");
+      return account;
+    } catch (error) {
+      console.log("catching");
+      throw new Error(error);
     }
   }
 }
