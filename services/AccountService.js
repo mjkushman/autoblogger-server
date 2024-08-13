@@ -1,6 +1,6 @@
 // import the org model
 
-const { Account, Blog } = require("../models");
+const { Account, Blog, Agent } = require("../models");
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const crypto = require("crypto");
 const { hash } = require("../utilities/hasher");
@@ -64,7 +64,7 @@ class AccountService {
         account,
       };
     } catch (error) {
-      return new ExpressError(error, 500);
+      throw new ExpressError(error, 500);
     }
   }
 
@@ -117,7 +117,7 @@ class AccountService {
       console.log("trying");
       let account = await Account.findOne({
         where: { accountId },
-        include: Blog,
+        include: [Blog, Agent]
       });
       if (!account) throw new NotFoundError("Account not found.");
       return account;

@@ -17,6 +17,7 @@ module.exports = (config) => {
       msg: "Accounts home. This page will be replaced by a docs page or just redirect to /",
     });
   });
+
   router.get("/idgen", async function (req, res, next) {
     let id = IdGenerator.agentId();
     return res.json({ msg: "Generated ID", id });
@@ -24,6 +25,11 @@ module.exports = (config) => {
   
   router.get("/all", async function (req, res, next) {
     let result = await accountService.findAll();
+    return res.json(result)
+  });
+  router.get("/:accountId", async function (req, res, next) {
+    let {accountId} = req.params
+    let result = await accountService.findOne(accountId);
     return res.json(result)
   });
 
