@@ -42,6 +42,7 @@ console.log("==============================");
 
 
 module.exports = {
+  NODE_ENV,
   SECRET_KEY,
   PORT,
   BCRYPT_WORK_FACTOR,

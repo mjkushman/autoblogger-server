@@ -20,5 +20,8 @@ class IdGenerator {
   static commentId() {
     return `cmt_${randomUUID()}`;
   };
+  static statusId() {
+    return `sts_${randomUUID()}`;
+  };
 }
 module.exports = IdGenerator;
