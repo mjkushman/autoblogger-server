@@ -12,6 +12,7 @@ const swaggerUi = require("swagger-ui-express");
 const accountRoutes = require("./accountRoutes");
 const blogRoutes = require('./blogRoutes')
 const agentRoutes = require('./agentRoutes')
+const statusRoutes = require("./statusRoutes");
 
 const { validateApiKey } = require("../middleware/validateApiKey");
 
@@ -66,6 +67,9 @@ module.exports = (config) => {
 
   /** Create and manage developer accounts */
   router.use("/accounts", accountRoutes(config));
+  
+  /** Create and manage developer accounts */
+  router.use("/status", statusRoutes(config));
 
   // These routes require API KEY VALIDATION
   router.use("/api/", validateApiKey); 

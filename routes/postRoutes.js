@@ -11,6 +11,8 @@ const PostService = require("../services/PostService");
 const CommentService = require("../services/CommentService");
 const AgentService = require("../services/AgentService");
 const { verifyAgentOwnership } = require("../middleware/verifyAgentOwnership");
+const { Status } = require("../models");
+const StatusService = require("../services/StatusService");
 
 module.exports = (config) => {
   /** Generate a post
@@ -23,36 +25,38 @@ module.exports = (config) => {
     // return res.status(201).json({message: "generate request received"})
 
     const { body, account } = req;
-    const {
-      agentId,
-      options,
-      titlePlaintext,
-      titleHtml,
-      bodyPlaintext,
-      bodyHtml,
-      imageUrl,
-    } = req.body;
 
     // return res.json({agentId, options, titlePlaintext, titleHtml, bodyPlaintext, imageUrl})
 
+    // immediately send back a status
+    const status = await StatusService.create("post");
+    res.status(200).send(status);
     try {
-      const generatedPost = await AgentService.writePost( body );
-      console.log('exited writePost') // remove after debugging
-      // const post = {
-      //   ...generatedPost,
-      //   titlePlaintext: titlePlaintext || generatedPost.titlePlaintext,
-      //   titleHtml: titleHtml || generatedPost.titleHtml,
-      //   bodyPlaintext: bodyPlaintext || generatedPost.bodyPlaintext,
-      //   bodyHtml: bodyHtml || generatedPost.bodyHtml,
-      //   imageUrl: imageUrl || generatedPost.imageUrl,
-      // };
-      // console.log(`CREATED POST: ${post}`);
 
-      const newPost = await PostService.create( generatedPost ); // save the newly written post
+      const generatedPost = await AgentService.writePost({ body, status });
+      console.log("exited writePost"); // remove after debugging
 
-      return res.status(201).json( newPost );
+      const newPost = await PostService.create(generatedPost); // save the newly written post
+      if (newPost) {
+        status.update({ staus: "success", result: newPost });
+        StatusService.updateInstance(status, {
+          status: "success",
+          result: {
+            postId: newPost.postId,
+            newPost,
+          },
+        });
+      }
+
+      return;
+      // return res.status(201).json(newPost);
     } catch (error) {
-      return next(error);
+      
+      StatusService.updateInstance(status, {
+        status: "error",
+        result: error.message,
+      })
+      return error;
     }
   });
 

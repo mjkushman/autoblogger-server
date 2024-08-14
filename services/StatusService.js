@@ -1,6 +1,14 @@
 const { Status } = require("../models");
 
 class StatusService {
+  // Finds a status
+  static async findOne(statusId) {
+    try {
+      return await Status.findByPk(statusId)
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
   // Creates a new status
   static async create(type) {
     try {
@@ -12,13 +20,12 @@ class StatusService {
       throw new Error(error.message);
     }
   }
-
-  static async update({ statusId, status }) {
+// Updates a status instance
+  static async updateInstance(instance, data) {
     try {
-      const sts = await Status.findByPk(statusId);
-      sts.update(status);
-      sts.save();
-      return sts;
+      instance.set(data);
+      await instance.save();
+      return instance;
     } catch (error) {
       throw new Error(error.message);
     }

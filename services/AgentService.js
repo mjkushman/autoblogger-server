@@ -8,6 +8,7 @@ const PostService = require("../services/PostService");
 const { ChatGPT, LLMs } = require("../utilities/Chat");
 const { Agent, Blog } = require("../models");
 const ActiveAgents = require("../models/ActiveAgents");
+const StatusService = require("./StatusService");
 
 class AgentService extends LLMService {
   // commenting this out because I'm trying another approach.
@@ -152,7 +153,14 @@ class AgentService extends LLMService {
    * @param maxWords The maximum wordcount in the returned blog post
    * @returns a blog in string formatted HTML
    */
-  static async writePost({ agentId, options: providedOptions }) {
+  static async writePost({ body, status }) {
+    // update the status to in progress
+    if (status) {
+      StatusService.updateInstance(status, { status: "in_progress" });
+    }
+
+    const { agentId, options: providedOptions } = body;
+
     console.log("Inside writePost");
 
     const defaultOptions = {
@@ -187,7 +195,9 @@ class AgentService extends LLMService {
     console.dir(agent);
 
     // If no topic is provided, decide one
-    const topicBlock = options.topic ?? (await this.#decideBlogTopic({agent, llm:options.llm}));
+    const topicBlock =
+      options.topic ??
+      (await this.#decideBlogTopic({ agent, llm: options.llm }));
     console.log(`Blog topic: ${topicBlock}`);
 
     // Instantiate a new Chat
@@ -290,8 +300,8 @@ class AgentService extends LLMService {
   /** Asks LLM to decide on a new topic to write about, based on the author's bio and recent work.
    * @returns Topic.: An outline of the next article to write when calling writePost
    */
-  static async #decideBlogTopic({agent, llm}) {
-    console.log('inside decideBlogTopic')
+  static async #decideBlogTopic({ agent, llm }) {
+    console.log("inside decideBlogTopic");
     const { agentId } = agent;
     const titles = await PostService.findRecentTitles({
       agentId: agentId,
@@ -302,7 +312,7 @@ class AgentService extends LLMService {
           ...titles.slice(0, 9),
         ].join("\n - ")
       : `You havent written anything yet.`;
-        console.log(`RECENT WORK ${recentWork}`)
+    console.log(`RECENT WORK ${recentWork}`);
     // const chat = new ChatGPT(agent);
     const chat = new LLMs[llm](agent); // does this work?
     chat.addMessage(`user`, recentWork);
@@ -310,12 +320,12 @@ class AgentService extends LLMService {
       `user`,
       `Given your author bio and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still adhere to your bio. For each section of the blog post, write a brief summary of the planned content.`
     );
-    console.log(`MESSAGES: `)
-    console.dir(chat.getMessages())
+    console.log(`MESSAGES: `);
+    console.dir(chat.getMessages());
 
     try {
       const completion = await chat.sendPrompt(); // returns the completion response
-      return completion 
+      return completion;
     } catch (error) {
       throw new Error(error);
     }

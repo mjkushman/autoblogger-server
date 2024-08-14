@@ -1,7 +1,15 @@
+const { NODE_ENV } = require("../config");
+const config = require("../config")[NODE_ENV];
 
 const Sequelize = require("sequelize");
-const config = require("../config")["development"];
-const { accountSeed, blogSeed, userSeed, postSeed, agentSeed } = require("./seedData");
+const {
+  accountSeed,
+  blogSeed,
+  userSeed,
+  postSeed,
+  agentSeed,
+  statusSeed,
+} = require("./seedData");
 
 // Create the sequelize client by connecting to db with config options
 const sequelize = new Sequelize(config.database.options);
@@ -21,20 +29,18 @@ async function connectToPostgres() {
 
 connectToPostgres();
 
-
 const models = {
   // Add models below:
-  // Org: require('./Org_new')(sequelize),
-  Account: require('./Account')(sequelize),
-  Blog: require('./Blog')(sequelize),
-  User: require('./User_new')(sequelize),
-  Agent: require('./Agent'),
-  Status: require('./Status'),
-  Post: require('./Post_new')(sequelize),
-  Comment: require('./Comment_new')(sequelize),
+  Account: require("./Account")(sequelize),
+  Blog: require("./Blog")(sequelize),
+  User: require("./User_new")(sequelize),
+  Agent: require("./Agent"),
+  Status: require("./Status")(sequelize),
+  Post: require("./Post_new")(sequelize),
+  Comment: require("./Comment_new")(sequelize),
   // more models...
-}
-
+};
+console.log("MODELS", models);
 // const models = {
 //   // Add models below:
 //   Org: Org(sequelize),
@@ -44,17 +50,15 @@ const models = {
 //   // more models...
 // }
 
-console.log('MODELS',models)
-
 // Call associate methods
 Object.keys(models).forEach((modelName) => {
-  console.log('Associating...',modelName)
+  console.log("Associating...", modelName);
   if (models[modelName].associate) {
     try {
       models[modelName].associate(models);
-      console.log(`Associated ${modelName} successfully.`)
+      console.log(`Associated ${modelName} successfully.`);
     } catch (error) {
-      console.log(`ERROR ASSOCIATING, ${modelName}`)
+      console.log(`ERROR ASSOCIATING, ${modelName}`);
     }
   }
 });
@@ -64,33 +68,39 @@ models.sequelize = sequelize;
 models.Sequelize = Sequelize;
 
 
+
 // Add seed data
 async function seedData() {
   await sequelize.sync({ force: true });
   try {
-    
-    let existingAccounts = await models.Account.findAll()
+    let existingAccounts = await models.Account.findAll();
     if (existingAccounts.length === 0) {
       await models.Account.bulkCreate(accountSeed);
       console.log("Loaded seed data for accounts.");
     }
-    let existingBlogs = await models.Blog.findAll()
+    let existingBlogs = await models.Blog.findAll();
     if (existingBlogs.length === 0) {
       await models.Blog.bulkCreate(blogSeed);
       console.log("Loaded seed data for blogs.");
     }
-    let existingUsers = await models.User.findAll()
+    let existingUsers = await models.User.findAll();
     if (existingUsers.length === 0) {
-      await models.User.bulkCreate(userSeed,{validate:true});
+      await models.User.bulkCreate(userSeed, { validate: true });
       console.log("Loaded seed data for users.");
     }
-    let existingAgents = await models.Agent.findAll()
+    let existingAgents = await models.Agent.findAll();
     if (existingAgents.length === 0) {
-      await models.Agent.bulkCreate(agentSeed, {validate:true});
+      await models.Agent.bulkCreate(agentSeed, { validate: true });
       console.log("Loaded seed data for Agents.");
     }
 
-    let existingPosts = await models.Post.findAll()
+    // let existingStatus = await models.Status.findAll();
+    // if (existingStatus.length === 0) {
+    //   await models.Status.bulkCreate(statusSeed);
+    //   console.log("Loaded seed data for Status.");
+    // }
+
+    let existingPosts = await models.Post.findAll();
     if (existingPosts.length === 0) {
       await models.Post.bulkCreate(postSeed);
       console.log("Loaded seed data for posts.");

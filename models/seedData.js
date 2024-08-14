@@ -28,6 +28,9 @@ const accountSeed = [
     password: "hashedpassword",
   },
 ];
+const statusSeed = {
+  
+}
 
 const blogSeed = [
   {
