@@ -6,7 +6,7 @@ const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
 const PostService = require("../services/PostService");
 const { ChatGPT, LLMs } = require("../utilities/Chat");
-const { Agent } = require("../models");
+const { Agent, Blog } = require("../models");
 const ActiveAgents = require("../models/ActiveAgents");
 
 class AgentService extends LLMService {
@@ -48,9 +48,9 @@ class AgentService extends LLMService {
   // === STATIC METHODS ===
 
   static async sayHello() {
-    return await Agent.sayHello()
+    return await Agent.sayHello();
   }
-  
+
   static async create({ accountId, body }) {
     console.log("service: creating a new agent");
     try {
@@ -109,10 +109,9 @@ class AgentService extends LLMService {
     }
   }
 
-  static async activate( agent ) {
+  static async activate(agent) {
     console.log(`activating ${agent.agentId}`);
     try {
-      
       return ActiveAgents.add(agent); // add the agent to active class
     } catch (error) {
       throw new Error(error);
@@ -153,29 +152,46 @@ class AgentService extends LLMService {
    * @param maxWords The maximum wordcount in the returned blog post
    * @returns a blog in string formatted HTML
    */
-  async writePost({
-    agentId,
-    options = { topic, llm: "chatgpt", maxWords: 1000 },
-  }) {
-    const { topic, llm, maxWords } = options;
+  static async writePost({ agentId, options: providedOptions }) {
+    console.log("Inside writePost");
+
+    const defaultOptions = {
+      llm: "chatgpt",
+      maxWords: 1000,
+      topic: null,
+    };
+    // overwrite default options with provided options if provided
+    const options = { ...defaultOptions, ...providedOptions };
+    console.log("Options:");
+    console.dir(options);
+    // return;
+
     // Look for agent in Map. Else look in DB. Else throw error
     const activeAgent = ActiveAgents.get(agentId);
-    let agent = activeAgent.agent || (await Agent.findOne(agentId));
+    let agent = activeAgent
+      ? activeAgent.agent
+      : await Agent.findByPk(agentId, { include: Blog });
+    // activeAgent
+    // ? let agent = activeAgent.agent
+    // : let a
+    // let agent = activeAgent.agent ?? await Agent.findByPk(agentId);
 
-    if (!agent) throw new NotFoundError("Agent not found.");
+    if (!agent) return new NotFoundError("Agent not found.");
 
-    console.log(`${this.username} started writing a blog post.
+    console.log(`${agent.username} started writing a blog post.
       Options: 
-      llm: ${llm}
-      maxWords: ${maxWords}
-      topic: ${topic}`);
+      llm: ${options.llm}
+      maxWords: ${options.maxWords}
+      topic: ${options.topic}`);
+    console.log("Agent dir:");
+    console.dir(agent);
 
     // If no topic is provided, decide one
-    const topicBlock = topic || (await this.#decideBlogTopic());
+    const topicBlock = options.topic ?? (await this.#decideBlogTopic({agent, llm:options.llm}));
     console.log(`Blog topic: ${topicBlock}`);
 
     // Instantiate a new Chat
-    const chat = new LLMs[llm](agent); // does this work?
+    const chat = new LLMs[options.llm](agent); // does this work?
     // const chat = new ChatGPT(agent);
     // First instruction
     chat.addMessage(
@@ -192,7 +208,7 @@ class AgentService extends LLMService {
     chat.addMessage(
       `user`,
       `INSTRUCTIONS:
-        1. Expand upon the topic until you reach ${maxWords} words.
+        1. Expand upon the topic until you reach ${options.maxWords} words.
         2. Format the response in HTML with proper HTML tags.
         3. Include a title in <h1> tags.
         4. Wrap the rest of the post in a <div> tag with id="primary-content".
@@ -200,27 +216,27 @@ class AgentService extends LLMService {
     );
 
     // Invoke llm
-    console.log(`${agent.username} invoking LLM ${llm}.`);
+    console.log(`${agent.username} invoking LLM ${options.llm}.`);
     const response = await chat.sendPrompt();
-    console.log(`${agent.username} invoked ${llm}.`);
+    console.log(`${agent.username} invoked ${options.llm}.`);
 
     // Parse and format html resposne from llm
-    let postData = htmlParser(response);
+    let post = htmlParser(response); // TODO: update this parser function. It's more like a formatter.
 
     // Get a random image based on the post title
-    const imageUrl = await getUnsplashImage(postData.titlePlaintext);
-    console.log("sourced image url: ".imageUrl);
+    const imageUrl = await getUnsplashImage(post.titlePlaintext);
+    console.log("sourced image url: ", imageUrl);
 
-    // Save the post to databse
-    postData = {
-      ...postData,
+    // Assemble the post for response
+    const generatedPost = {
+      ...post,
       imageUrl: String(imageUrl),
-      agentId: this.agentId,
+      agentId: agent.agentId,
     };
-    console.log(`${this.username}'s postData about to be saved to db:`);
-    console.dir(postData);
-    const newPost = await this.#savePost(postData);
-    return newPost;
+    console.log(`${agent.username}'s postData about to be saved to db:`);
+    console.dir(generatedPost);
+
+    return generatedPost; // return the generated, formatted post.
   }
 
   // ===PRIVATE HELPER METHODS===
@@ -274,7 +290,8 @@ class AgentService extends LLMService {
   /** Asks LLM to decide on a new topic to write about, based on the author's bio and recent work.
    * @returns Topic.: An outline of the next article to write when calling writePost
    */
-  async #decideBlogTopic(agent) {
+  static async #decideBlogTopic({agent, llm}) {
+    console.log('inside decideBlogTopic')
     const { agentId } = agent;
     const titles = await PostService.findRecentTitles({
       agentId: agentId,
@@ -285,16 +302,20 @@ class AgentService extends LLMService {
           ...titles.slice(0, 9),
         ].join("\n - ")
       : `You havent written anything yet.`;
-
-    const chat = new ChatGPT(agent);
+        console.log(`RECENT WORK ${recentWork}`)
+    // const chat = new ChatGPT(agent);
+    const chat = new LLMs[llm](agent); // does this work?
     chat.addMessage(`user`, recentWork);
     chat.addMessage(
       `user`,
       `Given your author bio and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still adhere to your bio. For each section of the blog post, write a brief summary of the planned content.`
     );
+    console.log(`MESSAGES: `)
+    console.dir(chat.getMessages())
 
     try {
-      return await chat.sendPrompt();
+      const completion = await chat.sendPrompt(); // returns the completion response
+      return completion 
     } catch (error) {
       throw new Error(error);
     }

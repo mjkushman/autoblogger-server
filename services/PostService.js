@@ -23,20 +23,23 @@ class PostService {
   }
 
   static async findRecentTitles({ agentId }) {
-    console.log("hit Posts findAll function");
+    console.log("inside findRecentTitles function");
     const posts = await Post.findAll({
       where: { authorId: agentId },
       order: [["updatedAt", "DESC"]],
     });
     const titles = posts.map((post) => post.titlePlaintext);
+    console.log(`Titles: ${titles}`)
     return titles;
   }
 
-  /** POST generates a new post */
-  static async generate({post}) {
-    console.log("Posts: Creating from payload and ORGID:", body, orgId);
-
-    return await Post.create({ post });
-  }
+  static async create(post) {
+    try {
+      const newPost = await Post.create(post)
+      return newPost
+    } catch (error) {
+      throw new Error(error)
+    }
+  } 
 }
 module.exports = PostService;

@@ -10,14 +10,19 @@ const router = express.Router({ mergeParams: true });
 const PostService = require("../services/PostService");
 const CommentService = require("../services/CommentService");
 const AgentService = require("../services/AgentService");
+const { verifyAgentOwnership } = require("../middleware/verifyAgentOwnership");
 
 module.exports = (config) => {
-  /** Create a post
+  /** Generate a post
    * @swagger
    */
-  router.post("/", async function (req, res, next) {
+  router.post("/", verifyAgentOwnership, async function (req, res, next) {
     // body will have fields optionally filled out. Use them to replace whatever the generated post comes back with
-    const { accountId } = req.account;
+
+    // USE THIS TO VERIFY REQUEST WITHOUT DOING FURTHER LOGIC
+    // return res.status(201).json({message: "generate request received"})
+
+    const { body, account } = req;
     const {
       agentId,
       options,
@@ -27,21 +32,25 @@ module.exports = (config) => {
       bodyHtml,
       imageUrl,
     } = req.body;
+
+    // return res.json({agentId, options, titlePlaintext, titleHtml, bodyPlaintext, imageUrl})
+
     try {
-      const response = await AgentService.writePost({ agentId, options });
-      const post = {
-        ...response,
-        titlePlaintext: titlePlaintext || response.titlePlaintext,
-        titleHtml: titleHtml || response.titleHtml,
-        bodyPlaintext: bodyPlaintext || response.bodyPlaintext,
-        bodyHtml: bodyHtml || response.bodyHtml,
-        imageUrl: imageUrl || response.imageUrl,
-      };
-      console.log(`CREATED POST: ${post}`);
+      const generatedPost = await AgentService.writePost( body );
+      console.log('exited writePost') // remove after debugging
+      // const post = {
+      //   ...generatedPost,
+      //   titlePlaintext: titlePlaintext || generatedPost.titlePlaintext,
+      //   titleHtml: titleHtml || generatedPost.titleHtml,
+      //   bodyPlaintext: bodyPlaintext || generatedPost.bodyPlaintext,
+      //   bodyHtml: bodyHtml || generatedPost.bodyHtml,
+      //   imageUrl: imageUrl || generatedPost.imageUrl,
+      // };
+      // console.log(`CREATED POST: ${post}`);
 
-      await PostService.create({post}) // save the newly written post
+      const newPost = await PostService.create( generatedPost ); // save the newly written post
 
-      return res.status(201).json({ post });
+      return res.status(201).json( newPost );
     } catch (error) {
       return next(error);
     }

@@ -4,7 +4,8 @@ const { NotFoundError } = require("../utilities/expressError");
 
 class ActiveAgent {
   constructor(agent) {
-    this.agentId = agent.agentId;
+    this.agent = agent
+    this.agentId = agent.agentId; // I think this is redundant with the line above
     this.socialTask = null; // TODO: nodecron task
     this.blogTask = null; // TODO: nodecron task
   }

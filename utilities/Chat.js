@@ -15,10 +15,11 @@ class Chat {
     this.messages = [];
     this.instruction = `
         You're the author of a popular blog${
-          agent.blog.label ? ` named ${agent.blog.label}` : ""
+          agent.Blog.label ? ` named "${agent.Blog.label}"` : ""
         }. 
-        This is your author bio:
-        ${agent.postSettings.bio}`;
+        ${agent.postSettings.authorBio 
+          ? `This is your author bio: ${agent.postSettings.authorBio}`
+        : ``}`;
   }
   promptCreated = false;
 
@@ -40,9 +41,9 @@ class ChatGPT extends Chat {
   constructor(agent, apiKey = OPENAI_API_KEY) {
     super(agent);
     this.agent = agent;
-    this.instruction = super.instruction;
+    // this.instruction = super.instruction;
     this.llm = new OpenAI({ apiKey });
-    this.addMessage("system", instruction); // Adds the instruction to messages array. Claude will do something else with it.
+    this.addMessage("system", this.instruction); // Adds the instruction to messages array. Claude will do something else with it.
   }
   // Depening on the use case (get topic, write post) I should use further functions to build the messages array
 
@@ -53,11 +54,10 @@ class ChatGPT extends Chat {
 
   // Sends a fully constructed messages block to the api
   async sendPrompt() {
-    // TODO, must be implemented
     try {
       const response = await this.llm.chat.completions.create({
         messages: this.getMessages(),
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         // response_format: {"type":"json_object"},
       });
       let completion = response.choices[0].message.content;
