@@ -37,6 +37,7 @@ module.exports = (config) => {
       console.log("exited writePost"); // remove after debugging
 
       const newPost = await PostService.create(generatedPost); // save the newly written post
+      
       if (newPost) {
         status.update({ staus: "success", result: newPost });
         StatusService.updateInstance(status, {
@@ -51,7 +52,7 @@ module.exports = (config) => {
       return;
       // return res.status(201).json(newPost);
     } catch (error) {
-      
+      console.log(error)
       StatusService.updateInstance(status, {
         status: "error",
         result: error.message,

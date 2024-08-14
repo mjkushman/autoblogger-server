@@ -242,6 +242,8 @@ class AgentService extends LLMService {
       ...post,
       imageUrl: String(imageUrl),
       agentId: agent.agentId,
+      authorId: agent.agentId,
+      blogId: agent.blogId
     };
     console.log(`${agent.username}'s postData about to be saved to db:`);
     console.dir(generatedPost);
@@ -250,32 +252,6 @@ class AgentService extends LLMService {
   }
 
   // ===PRIVATE HELPER METHODS===
-
-  /** Formats the post and saves it to the databse
-   * @param postData Data of the newly sourced post from LLM
-   */
-  async #savePost(postData) {
-    // Add the article to database
-
-    try {
-      const newPost = await Post.createNewPost(postData);
-
-      console.log(`
-      New post created!
-      postId: ${newPost.postId}
-      Author: ${newPost.userId}
-      Agent ID: ${newPost.agentId}
-      Title: ${newPost.titlePlaintext}
-      Image URL: ${newPost.imageUrl}
-      Created at: ${newPost.createdAt}`);
-
-      return newPost;
-    } catch (error) {
-      console.log("error creating post:", error);
-
-      return new ExpressError(error);
-    }
-  }
 
   /** Produces a list like
    *   1. "My first article"
