@@ -1,6 +1,6 @@
 const OpenAI = require("openai");
 const { OPENAI_API_KEY } = require("../config");
-const PostService = require("../services/PostService");
+
 
 class Message {
   constructor(role, content) {
@@ -18,10 +18,12 @@ class Chat {
           agent.Blog.label ? ` named "${agent.Blog.label}"` : ""
         }. 
         ${
-          agent.postSettings.authorBio
-            ? `This is your author bio: ${agent.postSettings.authorBio}`
+          agent.postSettings.personality
+            ? `This is your personality: ${agent.postSettings.personality}`
             : ``
         }`;
+      console.log(`Initial personality: ${agent.postSettings.personality}`)
+      console.log(`Initial instruction: ${this.instruction}`)
   }
   addMessage(role, content) {
     const message = new Message(role, content);
@@ -73,7 +75,7 @@ class ChatGPT extends Chat {
 }
 
 class Claude extends Chat {}
-
+// TODO
 // function createPostPromptMessages (agent, topic){
 //         const bio = agent.bio;
 //         const maxWords = agent.postSettings.maxWords;

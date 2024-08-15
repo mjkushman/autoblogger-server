@@ -37,8 +37,6 @@ function verifyJWT(req, res, next) {
 }
 
 
-
-
 /** Makes sure a user is logged in by checking for a user object on res.locals
  * The function above, verifyJWT, will set res.locals.user if a valid token is provided
  */
@@ -52,16 +50,14 @@ function verifyLoggedIn(req, res, next) {
     }
   }
 
-
-
+// I was going to delete these two middleware but I might need to actually implement them later
 
 // Make sure the user is logged in and is an admin
-function verifyAdmin() {console.log('verifyAdmin')}
-
+// function verifyAdmin() {console.log('verifyAdmin')}
 
 
 // Make sure the user is logged in and their request pertains to themselves
-function verifyCorrectUser() {console.log('verifyCorrectUser')}
+// function verifyCorrectUser() {console.log('verifyCorrectUser')}
 
 
-module.exports = {verifyLoggedIn, verifyJWT, verifyAdmin, verifyCorrectUser };
+module.exports = {verifyLoggedIn, verifyJWT  };

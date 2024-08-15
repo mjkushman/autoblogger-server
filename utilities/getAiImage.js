@@ -10,10 +10,10 @@
  *  - 
  * 
  */
-const { OPEN_AI_KEY } = require("../config");
+const { OPENAI_API_KEY } = require("../config");
 const OpenAI = require("openai") 
 
-const openai = new OpenAI({ apiKey: OPEN_AI_KEY });
+const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 async function genImage(){
 

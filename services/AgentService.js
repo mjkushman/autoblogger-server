@@ -1,17 +1,16 @@
 // Define the ai agent class. Final naming tbd. Could be agent or author or something else. This is the new aiBlogger.js
 
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
-const LLMService = require("../services/LLMService");
 const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
 const PostService = require("../services/PostService");
-const { ChatGPT, LLMs } = require("../utilities/Chat");
+const { LLMs } = require("../utilities/Chat");
 const { Agent, Blog } = require("../models");
-// const ActiveAgents = require("../models/ActiveAgents");
+
 const StatusService = require("./StatusService");
 const cron = require("node-cron");
 
-// should be K:V => (agentId: ActiveAgent{agent, blogTask, socialTask})
+// Holds active agent cron tasks
 const ACTIVE_AGENTS = new Map();
 
 class ActiveAgent {
@@ -24,7 +23,6 @@ class ActiveAgent {
 }
 
 class AgentService {
-
   constructor() {}
 
   // === STATIC METHODS ===
@@ -37,13 +35,12 @@ class AgentService {
       },
     });
     for (let agent of agents) {
-      // do something
-      if(agent.postSettings.isEnabled) this.#startBlogTask(agent)
-      if(agent.socialSettings.isEnabled) this.#startSocialTask(agent)
+      if (agent.postSettings.isEnabled) this.#startBlogTask(agent);
+      if (agent.socialSettings.isEnabled) this.#startSocialTask(agent);
       console.log(`LOADED ACTIVE AGENT: ${agent.username}`);
-    };
-    console.log(`Initially loaded ACTIVE AGENTS:`)
-    console.dir(ACTIVE_AGENTS)
+    }
+    console.log(`Initially loaded ACTIVE AGENTS:`);
+    console.dir(ACTIVE_AGENTS);
   }
 
   static sayHello() {
@@ -99,9 +96,9 @@ class AgentService {
       await agent.save(); // trigger the beforeUpdate hook
 
       // Logic for if agent should be activated or deactivated based on update
-      if(agent.isEnabled){
-        if(agent.postSettings.isEnabled) this.#startBlogTask(agent)
-        if(agent.socialSettings.isEnabled) this.#startSocialTask(agent)
+      if (agent.isEnabled) {
+        if (agent.postSettings.isEnabled) this.#startBlogTask(agent);
+        if (agent.socialSettings.isEnabled) this.#startSocialTask(agent);
       }
 
       if (!agent.isEnabled) {
@@ -109,117 +106,15 @@ class AgentService {
         // remove from ACTIVE AGENTS
         this.#stopBlogTask(agent);
         this.#stopSocialTask(agent);
-        ACTIVE_AGENTS.delete(agentId)      
+        ACTIVE_AGENTS.delete(agentId);
         // this.#deactivateAgent(agent);
-      }
-      else if (!agent.postSettings.isEnabled) {this.#stopBlogTask(agent) }
-    else if (!agent.socialSettings.isEnabled) this.#stopSocialTask(agent)
-
+      } else if (!agent.postSettings.isEnabled) {
+        this.#stopBlogTask(agent);
+      } else if (!agent.socialSettings.isEnabled) this.#stopSocialTask(agent);
 
       return agent;
     } catch (error) {
       throw error;
-    }
-  }
-
-
-  // TODO: Redo the logic for activate and deactivate. Maybe activatePosting?
-  static async #startBlogTask(agent) {
-    console.log(`${agent.username} setting Blog Task`);
-    try {
-      const { agentId, postSettings } = agent;
-      const { cronSchedule, timezone } = postSettings;
-      const activeAgent = ACTIVE_AGENTS.get(agentId) || {} ; // Retrieve current agent or instantiate empty object
-
-      const task = cron.schedule(
-        cronSchedule,
-        async () => {
-          const generatedPost = await AgentService.writePost({agentId: agent.agentId});
-          PostService.create(generatedPost); // save the post
-          }, 
-          { timezone, }
-      );
-      // create a new ActiveAgent to replace the current one
-      const updatedAgent = new ActiveAgent(activeAgent)
-      updatedAgent.agent = agent;
-      updatedAgent.blogTask = task;
-
-      ACTIVE_AGENTS.set(agentId, updatedAgent);
-      console.log("CURRENT ACTIVE AGENTS:");
-      console.dir(ACTIVE_AGENTS);
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
-  // Automated social is not meant to be accessed yet.
-  static async #startSocialTask(agent) {
-    console.log(`${agent.username} setting Social Task`);
-    try {
-      const { agentId, socialSettings } = agent;
-      const { cronSchedule, timezone } = postSettings;
-      const activeAgent = ACTIVE_AGENTS.get(agentId) || {} ; // Retrieve current agent or instantiate empty object
-
-      const task = cron.schedule(
-        cronSchedule,
-        // TODO: create a function to auto social
-        console.log('placeholder for autosocial')
-      );
-      // create a new ActiveAgent to replace the current one
-      const updatedAgent = new ActiveAgent(activeAgent)
-      updatedAgent.agent = agent;
-      updatedAgent.socialTask = task;
-
-      ACTIVE_AGENTS.set(agentId, updatedAgent);
-      console.log("CURRENT ACTIVE AGENTS:");
-      console.dir(ACTIVE_AGENTS);
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
-
-  static async #stopBlogTask({ agentId }) {
-    const activeAgent = ACTIVE_AGENTS.get(agentId);
-    if (!activeAgent) return; // Nothing to deactivate
-    if (activeAgent.blogTask) {
-      activeAgent.blogTask.stop(); // stop the task
-      const updatedAgent = new ActiveAgent(activeAgent) // creates a new AA to replace
-      updatedAgent.blogTask = null; 
-
-      ACTIVE_AGENTS.set(agentId, updatedAgent);
-      console.log("blogTask stopped");
-      return;
-    }
-    console.log("no active blog task to stop");
-    return;
-  }
-
-  static async #stopSocialTask({ agentId }) {
-    const activeAgent = ACTIVE_AGENTS.get(agentId);
-    if (!activeAgent) return; // Nothing to deactivate
-    if (activeAgent.socialTask) {
-      activeAgent.socialTask.stop(); // stop the task
-      const updatedAgent = new ActiveAgent(activeAgent) // creates a new AA to replace
-      updatedAgent.socialTask = null  
-
-      ACTIVE_AGENTS.set(agentId, updatedAgent);
-      console.log("socialTask stopped");
-      return;
-    }
-    console.log("no active social task to stop");
-    return;
-  }
-
-  static async #deactivateAgent({ agentId }) {
-    console.log(`deactivating ${agentId}`);
-    try {
-      const activeAgent = ACTIVE_AGENTS.get(agentId);
-      if(!activeAgent) return // Nothing to deactivate
-      // stop any running task
-      if (activeAgent.blogTask) activeAgent.blogTask.stop();
-      if (activeAgent.socialTask) activeAgent.socialTask.stop();
-      ACTIVE_AGENTS.delete(agentId); // remove the agent to active class
-    } catch (error) {
-      throw new Error(error);
     }
   }
 
@@ -240,6 +135,12 @@ class AgentService {
     } catch (error) {
       throw error;
     }
+  }
+
+  // TODO: Write a social media post
+  static async writeSocial() {
+    // do something
+    return;
   }
 
   /** WRITE BLOG POST
@@ -318,11 +219,10 @@ class AgentService {
     console.log(`${agent.username} invoked ${options.llm}.`);
 
     // Parse and format html resposne from llm
-    let post = htmlParser(response); // TODO: update this parser function. It's more like a formatter.
+    let post = htmlParser(response); // TODO: update this parser function. It's more like a formatter. Possibly ask the LLM to return a specific format.
 
     // Get a random image based on the post title
     const imageUrl = await getUnsplashImage(post.titlePlaintext);
-    // console.log("sourced image url: ", imageUrl);
 
     // Assemble the post for response
     const generatedPost = {
@@ -340,12 +240,6 @@ class AgentService {
 
   // ===PRIVATE HELPER METHODS===
 
-  /** Produces a list like
-   *   1. "My first article"
-   *   2. "Another article I wrote"
-   *   ...etc
-   * @returns string formatted list of recent titles
-   */
   /** Asks LLM to decide on a new topic to write about, based on the author's bio and recent work.
    * @returns Topic.: An outline of the next article to write when calling writePost
    */
@@ -378,10 +272,108 @@ class AgentService {
     }
   }
 
-  // TODO: Write a social media post
-  writeSocialPost() {
-    // does something
+  static async #startBlogTask(agent) {
+    console.log(`${agent.username} setting Blog Task`);
+    try {
+      const { agentId, postSettings } = agent;
+      const { cronSchedule, timezone } = postSettings;
+      const activeAgent = ACTIVE_AGENTS.get(agentId) || {}; // Retrieve current agent or instantiate empty object
+
+      const task = cron.schedule(
+        cronSchedule,
+        async () => {
+          const generatedPost = await AgentService.writePost({
+            agentId: agent.agentId,
+          });
+          PostService.create(generatedPost); // save the post
+        },
+        { timezone }
+      );
+      // create a new ActiveAgent to replace the current one
+      const updatedAgent = new ActiveAgent(activeAgent);
+      updatedAgent.agent = agent;
+      updatedAgent.blogTask = task;
+
+      ACTIVE_AGENTS.set(agentId, updatedAgent);
+      console.log("CURRENT ACTIVE AGENTS:");
+      console.dir(ACTIVE_AGENTS);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+  // Automated social is not meant to be accessed yet.
+  static async #startSocialTask(agent) {
+    return; // does nothing for now
+    console.log(`${agent.username} setting Social Task`);
+    try {
+      const { agentId, socialSettings } = agent;
+      const { cronSchedule, timezone } = postSettings;
+      const activeAgent = ACTIVE_AGENTS.get(agentId) || {}; // Retrieve current agent or instantiate empty object
+
+      const task = cron.schedule(
+        cronSchedule,
+        // TODO: create a function to auto social
+        console.log("placeholder for autosocial")
+      );
+      // create a new ActiveAgent to replace the current one
+      const updatedAgent = new ActiveAgent(activeAgent);
+      updatedAgent.agent = agent;
+      updatedAgent.socialTask = task;
+
+      ACTIVE_AGENTS.set(agentId, updatedAgent);
+      console.log("CURRENT ACTIVE AGENTS:");
+      console.dir(ACTIVE_AGENTS);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  static async #stopBlogTask({ agentId }) {
+    const activeAgent = ACTIVE_AGENTS.get(agentId);
+    if (!activeAgent) return; // Nothing to deactivate
+    if (activeAgent.blogTask) {
+      activeAgent.blogTask.stop(); // stop the task
+      const updatedAgent = new ActiveAgent(activeAgent); // creates a new AA to replace
+      updatedAgent.blogTask = null;
+
+      ACTIVE_AGENTS.set(agentId, updatedAgent);
+      console.log("blogTask stopped");
+      return;
+    }
+    console.log("no active blog task to stop");
+    return;
+  }
+
+  static async #stopSocialTask({ agentId }) {
+    return; // does nothing for now
+    const activeAgent = ACTIVE_AGENTS.get(agentId);
+    if (!activeAgent) return; // Nothing to deactivate
+    if (activeAgent.socialTask) {
+      activeAgent.socialTask.stop(); // stop the task
+      const updatedAgent = new ActiveAgent(activeAgent); // creates a new AA to replace
+      updatedAgent.socialTask = null;
+
+      ACTIVE_AGENTS.set(agentId, updatedAgent);
+      console.log("socialTask stopped");
+      return;
+    }
+    console.log("no active social task to stop");
+    return;
+  }
+
+  static async #deactivateAgent({ agentId }) {
+    console.log(`deactivating ${agentId}`);
+    try {
+      const activeAgent = ACTIVE_AGENTS.get(agentId);
+      if (!activeAgent) return; // Nothing to deactivate
+      // stop any running task
+      if (activeAgent.blogTask) activeAgent.blogTask.stop();
+      if (activeAgent.socialTask) activeAgent.socialTask.stop();
+      ACTIVE_AGENTS.delete(agentId); // remove the agent to active class
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }
-AgentService.loadActive()
+AgentService.loadActive(); // Upon server start, schedule all active agent tasks
 module.exports = AgentService;

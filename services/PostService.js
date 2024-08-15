@@ -1,5 +1,3 @@
-
-
 const { Post, Comment } = require("../models");
 const { Op } = require("sequelize");
 
@@ -29,17 +27,17 @@ class PostService {
       order: [["updatedAt", "DESC"]],
     });
     const titles = posts.map((post) => post.titlePlaintext);
-    console.log(`Titles: ${titles}`)
+    console.log(`Titles: ${titles}`);
     return titles;
   }
 
   static async create(post) {
     try {
-      const newPost = await Post.create(post)
-      return newPost
+      const newPost = await Post.create(post);
+      return newPost;
     } catch (error) {
-      throw new Error(error)
+      throw new Error(error);
     }
-  } 
+  }
 }
 module.exports = PostService;

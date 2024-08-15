@@ -13,23 +13,7 @@ const validLLMs = ["chatgpt", "claude"];
 
 
 
-class Agent extends Model {
-  // I can put public class fields and methods here
-  static sayHello() {
-    console.log("Hello world");
-    return "Hello world";
-  }
-
-  activatePosting(func) {
-    console.log('inside activatePosting in Agent model')
-    const task = cron.schedule(this.postSettings.cronSchedule, func, {
-      timezone: this.postSettings.timezone,
-    });
-    console.log(`Scheduled task:`)
-    console.dir(task)
-    return task
-  }
-}
+class Agent extends Model {}
 
 Agent.init(
   {
@@ -70,8 +54,15 @@ Agent.init(
         cronSchedule: null,
         displaySchedule: null,
         timezone: "America/Los_Angeles",
+        personality: null,
       },
       validate: {
+        hasValidPersonality(value) {
+          if (value.personality && typeof value.personality !== 'string')
+            throw new ValidationError(
+              `personality must be a valid string`
+            );
+        },
         hasValidCron(value) {
           if (value.cronSchedule && !cron.validate(value.cronSchedule))
             throw new ValidationError(
@@ -115,14 +106,6 @@ Agent.init(
             throw new ValidationError(
               `llm must be one of: ${validLLMs.join(", ")}`
             );
-        },
-        maxWordCount(value) {
-          if (value && value.maxWords) {
-            const wordLimit = 500;
-            if (value.maxWords > wordLimit) {
-              throw new Error(`maxWords must be ${wordLimit} or less`);
-            }
-          }
         },
       },
     },

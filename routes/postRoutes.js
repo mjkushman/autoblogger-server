@@ -2,7 +2,7 @@
 
 // Routes for blog posts
 
-const Comment = require("../models/Comment_new"); // import comment model from models folder
+const Comment = require("../models/Comment"); // import comment model from models folder
 const { verifyLoggedIn } = require("../middleware/authorizations");
 const express = require("express");
 

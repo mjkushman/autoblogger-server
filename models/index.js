@@ -33,11 +33,11 @@ const models = {
   // Add models below:
   Account: require("./Account")(sequelize),
   Blog: require("./Blog")(sequelize),
-  User: require("./User_new")(sequelize),
+  User: require("./User")(sequelize),
   Agent: require("./Agent"),
   Status: require("./Status")(sequelize),
   Post: require("./Post")(sequelize),
-  Comment: require("./Comment_new")(sequelize),
+  Comment: require("./Comment")(sequelize),
   // more models...
 };
 console.log("MODELS", models);
