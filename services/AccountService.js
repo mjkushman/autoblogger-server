@@ -3,7 +3,6 @@
 const { Account, Blog, Agent } = require("../models");
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const crypto = require("crypto");
-const { hash } = require("../utilities/hasher");
 const { cache } = require("../cache");
 const BlogService = require("./BlogService");
 
