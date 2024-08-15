@@ -146,7 +146,7 @@ module.exports = (config) => {
       const { agentId } = req.params;
       const ownedAgents = account.agents.map((a) => a.agentId)
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
-      const agent = await AgentService.activate({ accountId, agentId });
+      // const agent = await AgentService.activate({ accountId, agentId });
       return res.status(201).json(agent);
     } catch (error) {
       next(error);
@@ -160,7 +160,7 @@ module.exports = (config) => {
       const { agentId } = req.params;
       const ownedAgents = account.agents.map((a) => a.agentId)
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
-      const agent = await AgentService.deactivate({ accountId, agentId });
+      // const agent = await AgentService.deactivate({ accountId, agentId });
       return res.status(201).json(agent);
     } catch (error) {
       next(error);

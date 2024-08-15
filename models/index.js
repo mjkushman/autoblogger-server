@@ -36,19 +36,11 @@ const models = {
   User: require("./User_new")(sequelize),
   Agent: require("./Agent"),
   Status: require("./Status")(sequelize),
-  Post: require("./Post_new")(sequelize),
+  Post: require("./Post")(sequelize),
   Comment: require("./Comment_new")(sequelize),
   // more models...
 };
 console.log("MODELS", models);
-// const models = {
-//   // Add models below:
-//   Org: Org(sequelize),
-//   User: User(sequelize),
-//   EndUser: EndUser(sequelize),
-//   Post: Post(sequelize)
-//   // more models...
-// }
 
 // Call associate methods
 Object.keys(models).forEach((modelName) => {
@@ -67,44 +59,45 @@ Object.keys(models).forEach((modelName) => {
 models.sequelize = sequelize;
 models.Sequelize = Sequelize;
 
-
-
 // Add seed data
 async function seedData() {
   await sequelize.sync({ force: true });
   try {
-    let existingAccounts = await models.Account.findAll();
-    if (existingAccounts.length === 0) {
-      await models.Account.bulkCreate(accountSeed);
-      console.log("Loaded seed data for accounts.");
+    // Seed Accounts
+    for (const account of accountSeed) {
+      await models.Account.upsert(account); // upsert: update if exists, otherwise insert
     }
-    let existingBlogs = await models.Blog.findAll();
-    if (existingBlogs.length === 0) {
-      await models.Blog.bulkCreate(blogSeed);
-      console.log("Loaded seed data for blogs.");
-    }
-    let existingUsers = await models.User.findAll();
-    if (existingUsers.length === 0) {
-      await models.User.bulkCreate(userSeed, { validate: true });
-      console.log("Loaded seed data for users.");
-    }
-    let existingAgents = await models.Agent.findAll();
-    if (existingAgents.length === 0) {
-      await models.Agent.bulkCreate(agentSeed, { validate: true });
-      console.log("Loaded seed data for Agents.");
-    }
+    console.log("Upserted seed data for accounts.");
 
-    // let existingStatus = await models.Status.findAll();
-    // if (existingStatus.length === 0) {
-    //   await models.Status.bulkCreate(statusSeed);
-    //   console.log("Loaded seed data for Status.");
+    // let existingAccounts = await models.Account.findAll();
+    // if (existingAccounts.length === 0) {
+    //   await models.Account.bulkCreate(accountSeed);
+    //   console.log("Loaded seed data for accounts.");
     // }
-
-    let existingPosts = await models.Post.findAll();
-    if (existingPosts.length === 0) {
-      await models.Post.bulkCreate(postSeed);
-      console.log("Loaded seed data for posts.");
+    // Seed Blogs
+    for (const blog of blogSeed) {
+      await models.Blog.upsert(blog);
     }
+    console.log("Upserted seed data for blogs.");
+
+    // Seed Users
+    for (const user of userSeed) {
+      await models.User.upsert(user, { validate: true });
+    }
+    console.log("Upserted seed data for users.");
+
+    // Seed Agents
+    for (const agent of agentSeed) {
+      await models.Agent.upsert(agent, { validate: false });
+    }
+    console.log("Upserted seed data for Agents.");
+
+// Seed Posts
+    for (const post of postSeed) {
+      await models.Post.upsert(post);
+    }
+    console.log("Upserted seed data for posts.");
+    
   } catch (error) {
     console.log("Error seeding:", error);
   }

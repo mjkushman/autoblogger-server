@@ -1,19 +1,24 @@
 const cron = require("node-cron");
 const { Agent } = require("../models");
+
 const { NotFoundError } = require("../utilities/expressError");
+const AgentService = require("../services/AgentService");
 
 class ActiveAgent {
   constructor(agent) {
-    this.agent = agent
+    this.agent = agent;
     this.agentId = agent.agentId; // I think this is redundant with the line above
+    this.blogTask = null; 
     this.socialTask = null; // TODO: nodecron task
-    this.blogTask = null; // TODO: nodecron task
   }
-  // async initialize(agentId) {
-  //   console.log("initializing")
-  //   this.agent = await Agent.findByPk(agentId);
-  //   console.log("initialized")
-  // }
+
+  // add methods to set blogTask and set socialTask
+
+  setBlogTask() {
+
+  }
+
+  
 }
 
 class ActiveAgents extends Map {
@@ -26,11 +31,10 @@ class ActiveAgents extends Map {
   // needs to get the agent from map if it exists. If it doesn't exist, create it in the Map. THEN, update the respective task: social or post
   add(agent) {
     console.log(`ADDING ACTIVE AGENT: ${agent}`);
-    console.log(`getting agent: ${this.get(agent)}`);
+    // console.log(`getting agent: ${this.get(agent)}`);
     const activeAgent = this.get(agent.agentId) ?? new ActiveAgent(agent);
-    console.log(`activeAgent: ${activeAgent}`);
-    console.dir(activeAgent);
-    const { socialSettings, postSettings } = activeAgent;
+    // console.log(`activeAgent: ${activeAgent}`);
+    // console.dir(activeAgent);
 
     // Check if SOCIAL is enabled and create task if neccessary
     if (agent.socialSettings.isEnabled) {
@@ -38,13 +42,13 @@ class ActiveAgents extends Map {
       const task = cron.schedule(
         agent.socialSettings.cronSchedule,
         async () => {
-          console.log(`Running Autosocial for ${username}`);
+          console.log(`Running Autosocial for ${agent.username}`);
           try {
-            // PRIMARY FUNCTON
-            // await this.writePost();
-            console.log(`Finished Autosocial for ${username}`);
+            // PRIMARY FUNCTON GOES HERE
+
+            console.log(`Finished Autosocial for ${agent.username}`);
           } catch (error) {
-            console.log(`Error trying to Autosocial for ${username}:`, error);
+            console.log(`Error trying to Autosocial for ${agent.username}:`, error);
           }
         },
         {
@@ -62,13 +66,13 @@ class ActiveAgents extends Map {
       const task = cron.schedule(
         agent.postSettings.cronSchedule,
         async () => {
-          console.log(`Running Autoblog for ${username}`);
+          console.log(`Running Autoblog for ${agent.username}`);
           try {
-            // PRIMARY FUNCTON
-            // await this.writePost();
-            console.log(`Finished Autoblog for ${username}`);
+            // PRIMARY FUNCTON GOES HERE
+            AgentService.writePost({ agentId: agent.agentId });
+            console.log(`Finished Autoblog for ${agent.username}`);
           } catch (error) {
-            console.log(`Error trying to Autoblog for ${username}:`, error);
+            console.log(`Error trying to Autoblog for ${agent.username}:`, error);
           }
         },
         {
@@ -82,7 +86,6 @@ class ActiveAgents extends Map {
     }
     // Save the updated agent under its agentId
     let aa = this.set(agent.agentId, activeAgent);
-    console.log(`Finished setting new active agent`);
     console.log(`Current Active Agents:`);
     console.dir(this);
     return aa;
@@ -91,19 +94,20 @@ class ActiveAgents extends Map {
     const agent = this.get(agentId);
     if (!agent) {
       // already inactive
-      console.log("Agent is already inactive");
+      console.log("Agent is already deactivated");
       return;
-    } 
+    }
     console.log(`REMOVING ACTIVE AGENT: ${agentId}`);
     // stop any active blog or social task
     if (agent.blogTask) agent.blogTask.stop();
     if (agent.socialTask) agent.socialTask.stop();
 
     this.delete(agentId); // remove from active agents.
-    console.log("current active agents:");
-    console.dir(this);
+    // console.log("current active agents:");
+    // console.dir(this);
     return { message: "deactivated" };
   }
+  
   async #loadActive() {
     const agents = await Agent.findAll({
       where: {
@@ -114,11 +118,13 @@ class ActiveAgents extends Map {
       this.add(agent); // run the add function for each active agent
       console.log(`LOADED ACTIVE AGENT: ${agent.username}`);
     }
-  } // do it on server start. Combine with constructor?
+  } 
 }
 
-const ACTIVE_AGENTS = new ActiveAgents();
-// ACTIVE_AGENTS.loadActive()
-console.log(`FINISHED LOADING ACTIVE AGENTS`);
+// const ACTIVE_AGENTS = new ActiveAgents();
 
-module.exports = ACTIVE_AGENTS;
+console.log(`Loaded ACTIVE_AGENTS:`);
+console.dir(ACTIVE_AGENTS);
+
+// module.exports = ActiveAgents;
+// module.exports = ACTIVE_AGENTS;

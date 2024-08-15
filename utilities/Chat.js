@@ -17,12 +17,12 @@ class Chat {
         You're the author of a popular blog${
           agent.Blog.label ? ` named "${agent.Blog.label}"` : ""
         }. 
-        ${agent.postSettings.authorBio 
-          ? `This is your author bio: ${agent.postSettings.authorBio}`
-        : ``}`;
+        ${
+          agent.postSettings.authorBio
+            ? `This is your author bio: ${agent.postSettings.authorBio}`
+            : ``
+        }`;
   }
-  promptCreated = false;
-
   addMessage(role, content) {
     const message = new Message(role, content);
     this.messages.push(message);
@@ -40,6 +40,7 @@ class Chat {
 class ChatGPT extends Chat {
   constructor(agent, apiKey = OPENAI_API_KEY) {
     super(agent);
+    console.log("ChatGPT constructed");
     this.agent = agent;
     // this.instruction = super.instruction;
     this.llm = new OpenAI({ apiKey });
@@ -62,8 +63,8 @@ class ChatGPT extends Chat {
       });
       let completion = response.choices[0].message.content;
       // For debugging:
-      console.log("COMPLETION:");
-      console.log(completion);
+      // console.log("COMPLETION:");
+      // console.log(completion);
       return completion;
     } catch (error) {
       throw new Error(error);
@@ -90,8 +91,8 @@ class Claude extends Chat {}
 // }
 
 const LLMs = {
-  "chatgpt":ChatGPT,
-  "claude": Claude
-}
+  chatgpt: ChatGPT,
+  claude: Claude,
+};
 
 module.exports = { ChatGPT, LLMs };

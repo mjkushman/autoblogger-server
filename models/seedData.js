@@ -118,12 +118,27 @@ const agentSeed = [
     lastName: "One",
     username: "agent001",
     isActive: false,
-    // cronSchedule: "* * * * 1",
-    // displaySchedule: "Every minute, only on Monday",
-    socialSettings: {
+    postSettings: {
       isEnabled: false,
       llm: "chatgpt",
-      maxWords: 100,
+      maxWords: 500,
+      cronSchedule: "* * * * *"
+    },
+  },
+  {
+    agentId: "agt_00000000-0000-0000-00000000000b",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    blogId: "blg_0000000001",
+    email: "agent00b@gmail.com",
+    firstName: "User",
+    lastName: "One",
+    username: "agent002",
+    isActive: true,
+    postSettings: {
+      isEnabled: true,
+      llm: "chatgpt",
+      maxWords: 300,
+      cronSchedule: "* * * * *"
     },
   },
 ];
@@ -207,7 +222,6 @@ const postSeed = [
     postId: "post000002",
     blogId: "blg_0000000001",
     authorId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    // userId: "usr_00000000-0000-0000-0000-000000000002",
     titlePlaintext: "Post Title 2",
     titleHtml: "<h1>Post Title 2</h1>",
     bodyPlaintext: `Hey there, paw-some pals and internet enthusiasts!

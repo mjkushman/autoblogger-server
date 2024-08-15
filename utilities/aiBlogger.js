@@ -5,7 +5,7 @@
  *
  */
 
-const Post = require("../models/Post_new");
+const Post = require("../models/Post");
 const User = require("../models/User_new");
 
 const { OPEN_AI_KEY } = require("../config");

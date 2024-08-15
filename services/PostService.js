@@ -1,4 +1,4 @@
-// import the org model
+
 
 const { Post, Comment } = require("../models");
 const { Op } = require("sequelize");

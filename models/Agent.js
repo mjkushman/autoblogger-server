@@ -9,11 +9,25 @@ const sequelize = new Sequelize(config.database.options);
 
 const validLLMs = ["chatgpt", "claude"];
 
+
+
+
+
 class Agent extends Model {
   // I can put public class fields and methods here
   static sayHello() {
     console.log("Hello world");
     return "Hello world";
+  }
+
+  activatePosting(func) {
+    console.log('inside activatePosting in Agent model')
+    const task = cron.schedule(this.postSettings.cronSchedule, func, {
+      timezone: this.postSettings.timezone,
+    });
+    console.log(`Scheduled task:`)
+    console.dir(task)
+    return task
   }
 }
 

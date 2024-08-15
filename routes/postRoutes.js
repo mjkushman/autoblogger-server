@@ -26,38 +26,33 @@ module.exports = (config) => {
 
     const { body, account } = req;
 
-    // return res.json({agentId, options, titlePlaintext, titleHtml, bodyPlaintext, imageUrl})
-
     // immediately send back a status
     const status = await StatusService.create("post");
     res.status(200).send(status);
+
     try {
-
-      const generatedPost = await AgentService.writePost({ body, status });
-      console.log("exited writePost"); // remove after debugging
-
+      const { agentId, options } = req.body;
+      const generatedPost = await AgentService.writePost({
+        agentId,
+        options,
+        status,
+      });
       const newPost = await PostService.create(generatedPost); // save the newly written post
-      
+
       if (newPost) {
-        status.update({ staus: "success", result: newPost });
         StatusService.updateInstance(status, {
           status: "success",
-          result: {
-            postId: newPost.postId,
-            newPost,
-          },
+          result: { post: newPost },
         });
       }
-
       return;
-      // return res.status(201).json(newPost);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       StatusService.updateInstance(status, {
         status: "error",
-        result: error.message,
-      })
-      return error;
+        result: "Unable to generate",
+      });
+      return;
     }
   });
 
