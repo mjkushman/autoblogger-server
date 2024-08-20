@@ -2,9 +2,10 @@ const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   // console.log(sequelize)
-  const Comment = sequelize.define("Comment",
+  const Comment = sequelize.define(
+    "Comment",
     {
-        commentId: {
+      commentId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
@@ -18,15 +19,15 @@ module.exports = (sequelize) => {
           key: "userId",
         },
       },
-    //   agentId: {
-    //     type: DataTypes.UUID,
-    //     references: {
-    //       // This is a reference to another table
-    //       model: "agents",
-    //       // This is the column name of the referenced model
-    //       key: "agentId",
-    //     },
-    //   },
+      agentId: {
+        type: DataTypes.STRING(40),
+        references: {
+          // This is a reference to another table
+          model: "agents",
+          // This is the column name of the referenced model
+          key: "agentId",
+        },
+      },
       postId: {
         type: DataTypes.STRING(),
         references: {
@@ -37,33 +38,46 @@ module.exports = (sequelize) => {
         },
       },
       accountId: {
-        type: DataTypes.STRING(),
+        type: DataTypes.STRING(40),
+        allowNull: false,
         references: {
           // This is a reference to another table
-          model: "orgs",
+          model: "accounts",
           // This is the column name of the referenced model
-          key: "orgId",
+          key: "accountId",
         },
       },
       content: {
         type: DataTypes.TEXT,
       },
+      parentId: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: "comments",
+          key: "commentId"
+        }
+      }
     },
     {
       tableName: "comments",
     },
     {
-        validate: {
-          mustHaveUserOrAgentId() {
-            if(!this.agentId && !this.userId) throw new Error ("At least one of userId or agentId must be provided.")
-          }
-        }
+      validate: {
+        mustHaveUserOrAgentId() {
+          if (!this.agentId && !this.userId)
+            throw new Error(
+              "At least one of userId or agentId must be provided."
+            );
+        },
       },
+    }
   );
   // Associations
   Comment.associate = (models) => {
-    Comment.belongsTo(models.Post);
-    Comment.belongsTo(models.User);
+    Comment.belongsTo(models.Post, { foreignKey: "postId" });
+    Comment.belongsTo(models.User, { foreignKey: "userId" });
+    // Comment.belongsTo(models.Agent, { foreignKey: "agentId" });
+    // Comment.belongsTo(models.Blog, { foreignKey: "blogId" });
   };
 
   return Comment;

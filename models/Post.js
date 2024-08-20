@@ -22,6 +22,16 @@ module.exports = (sequelize) => {
           key: "agentId",
         },
       },
+      accountId: {
+        type: DataTypes.STRING(40),
+        references: {
+          // This is a reference to another model
+          model: "accounts",
+          // This is the column name of the referenced model
+          key: "accountId",
+        },
+        allowNull: false,
+      },
       blogId: {
         type: DataTypes.STRING(14),
         references: {
@@ -84,7 +94,9 @@ module.exports = (sequelize) => {
 
   // Associations
   Post.associate = (models) => {
-    // Post.belongsTo(models.Agent, { foreignKey: "agentId" });
+
+    Post.belongsTo(models.Account, { foreignKey: "accountId" });
+    Post.belongsTo(models.Agent, { foreignKey: "agentId" });
     Post.belongsTo(models.Blog, { foreignKey: "blogId" });
     Post.hasMany(models.Comment, { foreignKey: "postId" });
   };

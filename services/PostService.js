@@ -1,4 +1,4 @@
-const { Post, Comment } = require("../models");
+const { Post, Comment, Agent } = require("../models");
 const { Op } = require("sequelize");
 
 class PostService {

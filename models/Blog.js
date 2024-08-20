@@ -9,7 +9,6 @@ module.exports = (sequelize) => {
     {
       blogId: {
         type: DataTypes.STRING(14),
-        defaultValue: IdGenerator.blogId(),
         primaryKey: true,
         unique: true,
       },
@@ -26,17 +25,18 @@ module.exports = (sequelize) => {
     },
     {
       tableName: "blogs",
-      // hooks: {
-      //   beforeCreate: (record) => {
-      //     record.blogId = nanoid(9);
-      //   },
-      // },
+      hooks: {
+        beforeCreate: async (record) => {
+          record.postId = IdGenerator.blogId();
+        },
+      },
     }
   );
   // Associations
   Blog.associate = (models) => {
     Blog.belongsTo(models.Account, { foreignKey: "accountId" });
     Blog.hasMany(models.Post, { foreignKey: "blogId" });
+    Blog.hasMany(models.Comment, { foreignKey: "blogId" });
     Blog.hasMany(models.User, { foreignKey: "blogId" });
   };
   return Blog;

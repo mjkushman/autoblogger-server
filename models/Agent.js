@@ -98,9 +98,16 @@ Agent.init(
       defaultValue: {
         isEnabled: false,
         llm: "chatgpt",
-        maxWords: 100,
+        maxWords: 200,
+        personality: null
       },
       validate: {
+        hasValidPersonality(value) {
+          if (value.personality && typeof value.personality !== 'string')
+            throw new ValidationError(
+              `personality must be a valid string`
+            );
+        },
         isValidLLM(value) {
           if (value.llm && !validLLMs.includes(value.llm))
             throw new ValidationError(
@@ -171,6 +178,7 @@ Agent.init(
 Agent.associate = (models) => {
   Agent.belongsTo(models.Blog, { foreignKey: "blogId" });
   Agent.belongsTo(models.Account, { foreignKey: "accountId" });
+  // Agent.hasMany(models.Post);
   Agent.hasMany(models.Post, { foreignKey: "agentId" });
 };
 

@@ -54,11 +54,13 @@ module.exports = {
     }
     try {
       // make sure API exists
-      if (!apiKey || apiKey === "")
+      if (!apiKey || apiKey === "") {
         throw new UnauthorizedError(
           "Unauthorized. Please include X-API-KEY in request header.",
           401
         );
+
+      }
 
       // Check the cache for this api key. If found, return early.
       const cachedAccount = cache.get(apiKey);
@@ -91,7 +93,7 @@ module.exports = {
       }
       return next();
     } catch (error) {
-      throw next(error);
+      return next(error);
     }
   },
 };

@@ -5,7 +5,7 @@ const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
 const PostService = require("../services/PostService");
 const { LLMs } = require("../utilities/Chat");
-const { Agent, Blog } = require("../models");
+const { Agent, Blog, Post } = require("../models");
 
 const StatusService = require("./StatusService");
 const cron = require("node-cron");
@@ -60,12 +60,44 @@ class AgentService {
   static async findAll({ accountId }) {
     console.log(`service: finding all agents for accountId: ${accountId}`);
     try {
-      let agents = await Agent.findAll({ where: { accountId } });
+      let agents = await Agent.findAll({
+        where: { accountId },
+        include: [{ model: Post, attributes: ["postId", "titlePlaintext"] }],
+      });
       return agents;
     } catch (error) {
       throw error;
     }
   }
+
+  static async findOneByPostId({ postId }) {
+    console.log(`Finding an agent by ${postId}`);
+    try {
+      const agent = await Agent.findOne({
+        include: [
+          { model: Post, attributes: ["postId"], where: { postId: postId } },
+          { model: Blog },
+        ],
+      });
+      if(!agent) throw new NotFoundError()
+      return agent;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // static async findAuthor({ postId }) {
+  //   console.log(`Finding author of post ${postId}`);
+  //   console.log(await Post.findOne({where: {postId}, include: [Agent]} ))
+  //   try {
+  //     const post = await Post.findOne({where: {postId}, include: Agent} );
+  //     const {Agent} = post
+  //     console.log(`The whole agent is ${Agent}`)
+  //     return post // Recorded as authorId in Post model. But this is agentId.
+  //   } catch (error) {
+  //     return error
+  //   }
+  // }
 
   static async findOne({ agentId, accountId }) {
     console.log(
@@ -74,6 +106,7 @@ class AgentService {
     try {
       let agent = await Agent.findOne({
         where: { agentId, accountId },
+        include: [{ model: Post, attributes: ["postId", "titlePlaintext"] }],
       });
       return agent;
     } catch (error) {
@@ -141,6 +174,43 @@ class AgentService {
   static async writeSocial() {
     // do something
     return;
+  }
+
+  static async generateComment({agent, comment}) {
+    console.log(`Inside AgentService generateComment`)
+    // accept a newly created comment (id, ) and an agent
+
+    const defaultOptions = { 
+      llm: "chatgpt",
+      maxWords: 200,
+    }
+    const { username, firstName, lastName } = comment.User
+    let options = {...defaultOptions, ...agent.commentSettings}
+    console.log(`comment options ${{...options}}`)
+
+  // instantiate a chat
+    const chat = new LLMs[options.llm](agent)
+
+    chat.addMessage(
+      `user`,
+      `A user has commented on one of your articles. Write a thoughtful response in ${options.maxWords} words or less using the following information as context.`
+    );
+    // Next instruction
+    chat.addMessage(
+      `user`,
+      `- The user's comment: ${comment.content} \n
+       - The user's info: ${{...comment.User}} \n
+       
+       Your original article text: \n
+       "${comment.Post.titlePlaintext}"\n\n
+       "${comment.Post.bodyPlaintext}"
+       `
+    );
+    const completion = await chat.sendPrompt()
+    console.log(completion)
+    return completion
+
+
   }
 
   /** WRITE BLOG POST

@@ -57,8 +57,8 @@ const userSeed = [
     blogId: "blg_0000000001",
     email: "user1@gmail.com",
     password: "hashedpassword",
-    firstName: "User",
-    lastName: "One",
+    firstName: "User1FN",
+    lastName: "User1LN",
     username: "user1",
     role: "standard",
   },
@@ -68,8 +68,8 @@ const userSeed = [
     blogId: "blg_0000000001",
     email: "user2@gmail.com",
     password: "hashedpassword",
-    firstName: "User",
-    lastName: "Two",
+    firstName: "User1FN",
+    lastName: "User1LN",
     username: "user2",
     role: "user",
   },
@@ -144,10 +144,12 @@ const agentSeed = [
 ];
 
 const postSeed = [
-  // made by user:
+
   {
-    postId: "post000001",
+    postId: "pst_0000000001",
     authorId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
     blogId: "blg_0000000001",
     titlePlaintext: "Post Title 1",
     titleHtml: "<h1>Post Title 1</h1>",
@@ -219,9 +221,11 @@ const postSeed = [
   },
   // made by agent:
   {
-    postId: "post000002",
+    postId: "pst_0000000002",
     blogId: "blg_0000000001",
     authorId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
     titlePlaintext: "Post Title 2",
     titleHtml: "<h1>Post Title 2</h1>",
     bodyPlaintext: `Hey there, paw-some pals and internet enthusiasts!
