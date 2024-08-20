@@ -7,7 +7,6 @@ const express = require("express");
 
 const router = express.Router({ mergeParams: true });
 const CommentService = require("../services/CommentService");
-const PostService = require("../services/PostService");
 const AgentService = require("../services/AgentService");
 const StatusService = require("../services/StatusService");
 
@@ -35,49 +34,7 @@ module.exports = (config) => {
     }
   });
 
-  /** Get all comments for one post
-   * @swagger
-   * /{orgId}/comments/post/{postId}:
-   *   get:
-   *     summary: Get all comments for one post
-   *     description: Get all comments for post postId.
-   *     tags: [Comments]
-   *     responses:
-   *       200:
-   *         description: List of comments
-   */
-  router.get("/post/:postId", async function (req, res, next) {
-    const { postId } = req.params;
-    const { account } = req;
-    try {
-      const comments = await CommentService.findAllByPost({ postId, account });
-      return res.json({ comments });
-    } catch (error) {
-      return next(error);
-    }
-  });
 
-  /** Get all comments for one blog
-   * @swagger
-   * /{orgId}/comments/blog/{blogId}:
-   *   get:
-   *     summary: Get all comments for one post
-   *     description: Get all comments for post postId.
-   *     tags: [Comments]
-   *     responses:
-   *       200:
-   *         description: List of comments
-   */
-  router.get("/blog/:blogId", async function (req, res, next) {
-    const { blogId } = req.params;
-    const { account } = req;
-    try {
-      const comments = await CommentService.findAllByBlog({ blogId, account });
-      return res.json({ comments });
-    } catch (error) {
-      return next(error);
-    }
-  });
 
   /** Get one comment
    * @swagger
@@ -113,7 +70,7 @@ module.exports = (config) => {
    */
   router.get("/:postId/comments", async function (req, res, next) {
     try {
-      const postId = req.params.postId;
+      const {postId} = req.params;
       const { comments, numComments } = await CommentService.getComments(
         postId
       );
@@ -145,6 +102,7 @@ module.exports = (config) => {
         commentId: comment.commentId,
         parentId: comment.parentId,
         userId: comment.userId,
+        postId: comment.postId,
         content: comment.content,
         authorFirstName: comment.User.firstName,
         authorUsername: comment.User.username,
@@ -189,5 +147,18 @@ module.exports = (config) => {
       return next(error);
     }
   });
+
+  router.delete('/', async function ( req, res, next) {
+    try {
+      const { commentId } = req.body
+      const { accountId }= req.account
+      const result = await CommentService.destroy({ commentId, accountId})
+
+      return res.status(200).json({result: result})
+    } catch (error) {
+      next(error)
+    }
+  })
+
   return router;
 };

@@ -42,27 +42,18 @@ module.exports = (sequelize) => {
         },
         allowNull: false,
       },
-      titlePlaintext: {
-        type: DataTypes.STRING,
-      },
-      titleHtml: {
-        type: DataTypes.TEXT,
-      },
-      bodyPlaintext: {
-        type: DataTypes.TEXT,
-      },
-      bodyHtml: {
-        type: DataTypes.TEXT,
-      },
+      titlePlaintext: { type: DataTypes.STRING },
+      titleHtml: { type: DataTypes.TEXT },
+      bodyPlaintext: { type: DataTypes.TEXT },
+      bodyHtml: { type: DataTypes.TEXT },
       imageUrl: {
         type: DataTypes.TEXT,
         validate: {
           isUrl: true,
         },
       },
-      slug: {
-        type: DataTypes.STRING,
-      },
+      slug: { type: DataTypes.STRING },
+      isPublished: { type: DataTypes.BOOLEAN },
     },
     {
       tableName: "posts",
@@ -94,7 +85,6 @@ module.exports = (sequelize) => {
 
   // Associations
   Post.associate = (models) => {
-
     Post.belongsTo(models.Account, { foreignKey: "accountId" });
     Post.belongsTo(models.Agent, { foreignKey: "agentId" });
     Post.belongsTo(models.Blog, { foreignKey: "blogId" });

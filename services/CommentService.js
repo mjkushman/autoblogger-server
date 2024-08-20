@@ -32,24 +32,6 @@ class CommentService {
     }
   }
 
-  // Get all comments for one post
-  static async findAllByPost({ postId, accountId }) {
-    console.log("hit Comment findAllByPost  function");
-
-    try {
-      return await Comment.findAll({ where: { postId, accountId } });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Get all comments for one blog
-  static async findAllByBlog({ blogId, account }) {
-    console.log("hit Comment findAllByPost  function");
-    const { accountId } = account;
-    return await Comment.findAll({ where: { blogId, accountId } });
-  }
-
   /** POST creates a new comment */
   static async create({
     postId,
@@ -94,6 +76,17 @@ class CommentService {
     } catch (error) {
       throw error;
     }
+  }
+
+  static async destroy({accountId, commentId}){
+    try {
+      const result = await Comment.destroy({where: {accountId, commentId}})
+      if(result) return "Success"
+      else return "Nothing to delete"
+    } catch (error) {
+      throw error
+    }
+
   }
 }
 module.exports = CommentService;
