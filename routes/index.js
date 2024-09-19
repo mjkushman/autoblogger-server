@@ -13,6 +13,7 @@ const accountRoutes = require("./accountRoutes");
 const blogRoutes = require('./blogRoutes')
 const agentRoutes = require('./agentRoutes')
 const statusRoutes = require("./statusRoutes");
+const authRoutes = require("./authRoutes");
 
 const { validateApiKey } = require("../middleware/validateApiKey");
 
@@ -67,6 +68,9 @@ module.exports = (config) => {
 
   /** Create and manage developer accounts */
   router.use("/accounts", accountRoutes(config));
+  
+  /** Handle authentication */
+  router.use("/auth", authRoutes(config));
   
   /** Create and manage developer accounts */
   router.use("/status", statusRoutes(config));

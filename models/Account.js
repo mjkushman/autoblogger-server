@@ -59,10 +59,9 @@ module.exports = (sequelize) => {
           }
           // hash api key before saving
           if (record.apiKey) {
-            record.apiKey = await bcrypt.hash(
-              record.apiKey,
-              BCRYPT_WORK_FACTOR
-            );
+            bcrypt.hash(record.apiKey, BCRYPT_WORK_FACTOR, (err, hash) => {
+              record.apiKey = hash;
+            });
           }
         },
         beforeUpdate: async (record) => {
