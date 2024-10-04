@@ -5,6 +5,7 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const accountService = require("../services/AccountService");
+const authService = require("../services/AuthService");
 const IdGenerator = require("../utilities/IdGenerator");
 
 const { BadRequestError } = require("../utilities/expressError");
@@ -22,21 +23,32 @@ module.exports = (config) => {
     let id = IdGenerator.agentId();
     return res.json({ msg: "Generated ID", id });
   });
-  
+
   router.get("/all", async function (req, res, next) {
     let result = await accountService.findAll();
-    return res.json(result)
+    return res.json(result);
   });
   router.get("/:accountId", async function (req, res, next) {
-    let {accountId} = req.params
-    let result = await accountService.findOne(accountId);
-    return res.json(result)
+    let { accountId } = req.params;
+    try {
+      let result = await accountService.findOne(accountId);
+      return res.json(result);
+      
+    } catch (error) {
+      return next (error)
+    }
   });
 
-  // Handle post request to create a developer account
+  // Handle post request to create a developer account. Sends back a token
   router.post("/", async function (req, res, next) {
-    let result = await accountService.create(req);
-    return res.status(result.status).json(result);
+    try {
+      const account = await accountService.create(req);
+
+      const token = await authService.generateToken(account);
+      return res.status(201).json({ token });
+    } catch (error) {
+      return next(error);
+    }
   });
 
   router.get("/protected", validateApiKey, async function (req, res, next) {

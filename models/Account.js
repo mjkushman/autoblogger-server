@@ -8,8 +8,8 @@ module.exports = (sequelize) => {
     "Account",
     {
       accountId: {
+        // value is created by a hook below
         type: DataTypes.STRING(40),
-        defaultValue: IdGenerator.accountId(),
         primaryKey: true,
       },
       email: {
@@ -50,6 +50,9 @@ module.exports = (sequelize) => {
       tableName: "accounts",
       hooks: {
         beforeCreate: async (record) => {
+          // create Id upon new record
+          record.accountId = IdGenerator.accountId();
+  
           // hash password key before saving
           if (record.password) {
             record.password = await bcrypt.hash(

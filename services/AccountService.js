@@ -45,7 +45,8 @@ class AccountService {
         label: label,
       });
       // get account blogs. Should just be one right now.
-      const blogList = await newAccount.getBlogs();
+      
+      const blogList = await newAccount.getBlogs(); // getBlogs is a getter method provided by sequelize models
       // store new account in cache
       const account = {
         accountId: newAccount.accountId,
@@ -58,10 +59,7 @@ class AccountService {
       cache.set(apiKey, account);
       // TODO: Send email to developer with their api key await blogList.map(({blogId, label}) => blogId, label)
 
-      return {
-        status: 201,
-        account,
-      };
+      return account;
     } catch (error) {
       throw new ExpressError(error, 500);
     }
