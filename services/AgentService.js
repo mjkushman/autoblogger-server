@@ -6,6 +6,7 @@ const getUnsplashImage = require("../utilities/getUnsplashImage");
 const PostService = require("../services/PostService");
 const { LLMs } = require("../utilities/Chat");
 const { Agent, Blog, Post } = require("../models");
+const {cronEncode, cronDecode} = require('../utilities/cronEncoder' )
 
 const StatusService = require("./StatusService");
 const cron = require("node-cron");
@@ -125,6 +126,7 @@ class AgentService {
       });
       if (!agent) throw new NotFoundError("Agent not found.");
 
+      console.log('Attempting update with body: ', body)
       await agent.update(body);
       await agent.save(); // trigger the beforeUpdate hook
 
@@ -368,7 +370,7 @@ class AgentService {
       console.log("CURRENT ACTIVE AGENTS:");
       console.dir(ACTIVE_AGENTS);
     } catch (error) {
-      throw new Error(error);
+      throw new Error(error.message);
     }
   }
   // Automated social is not meant to be accessed yet.

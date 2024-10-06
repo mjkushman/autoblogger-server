@@ -27,7 +27,7 @@ module.exports = (sequelize) => {
       tableName: "blogs",
       hooks: {
         beforeCreate: async (record) => {
-          record.postId = IdGenerator.blogId();
+          record.blogId = IdGenerator.blogId();
         },
       },
     }

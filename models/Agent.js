@@ -4,6 +4,7 @@ const IdGenerator = require("../utilities/IdGenerator");
 const cronstrue = require("cronstrue");
 const cron = require("node-cron");
 const config = require("../config")["development"];
+const {cronEncode, cronDecode} = require('../utilities/cronEncoder' )
 
 const sequelize = new Sequelize(config.database.options);
 
@@ -53,6 +54,8 @@ Agent.init(
         maxWords: 10000,
         cronSchedule: null,
         displaySchedule: null,
+        time: "12:00",
+        daysOfWeek: [],
         timezone: "America/Los_Angeles",
         personality: null,
       },
@@ -63,16 +66,10 @@ Agent.init(
               `personality must be a valid string`
             );
         },
-        hasValidCron(value) {
-          if (value.cronSchedule && !cron.validate(value.cronSchedule))
+        hasScheduleIfEnabled(value) {
+          if (value.isEnabled && (!value.time || !value.timezone || !value.daysOfWeek))
             throw new ValidationError(
-              `cronSchedule must be a valid cron expression`
-            );
-        },
-        hasCronIfEnabled(value) {
-          if (value.isEnabled && !value.cronSchedule)
-            throw new ValidationError(
-              `cronSchedule must be supplied if enabling posting for an agent.`
+              `Time, days of week, and timezone must be supplied if enabling posting for an agent.`
             );
         },
         isValidLLM(value) {
@@ -156,6 +153,21 @@ Agent.init(
     tableName: "agents",
     hooks: {
       beforeUpdate: async (record) => {
+        // create a valid cron expression from time and days
+        if(record.postSettings?.daysOfWeek && record.postSettings?.time) {
+          try {
+            
+            let encodedCron =cronEncode({
+              time: record.postSettings.time,
+              daysOfWeek: record.postSettings.daysOfWeek,
+            });
+  
+            record.postSettings.cronSchedule = encodedCron
+          } catch (error) {
+            throw new Error(error)
+          }
+        };
+        // set the human readable schedule string
         if (record.postSettings.cronSchedule) {
           record.postSettings.displaySchedule = cronstrue.toString(
             record.postSettings.cronSchedule
@@ -165,7 +177,7 @@ Agent.init(
       beforeCreate: async (record) => {
         record.agentId = IdGenerator.agentId(); // set the agentId
         if (record.postSettings.cronSchedule) {
-          // set the agent cron display schedule
+          // set the human readable schedule string
           record.postSettings.displaySchedule = cronstrue.toString(
             record.postSettings.cronSchedule
           );

@@ -69,6 +69,7 @@ class AccountService {
     console.log("FINDING BY API KEY INDEX");
 
     const apiKeyIndex = apiKey.substring(0, 9);
+    console.log("API KEY INDEX:", apiKeyIndex);
     const result = await Account.findOne({
       where: {
         apiKeyIndex,
@@ -76,12 +77,13 @@ class AccountService {
       include: [Blog, Agent],
     });
     if (result) {
-      const { accountId, firstName, lastName, email, label, Blog, Agent } =
+      const { accountId, firstName, lastName, email, label, Blogs, Agents } =
         result;
-      // extract agentid and username
-      const agents = result.Agent.map((a) => {
-        a.agentId, a.username;
-      });
+      console.log('RESULT OF APIKEYINDEX LOOKUP:', result)
+        // extract agentid and username
+      // const agents = result.Agents.map((a) => {
+      //   a.agentId, a.username;
+      // });
       const account = {
         accountId,
         firstName,
@@ -89,9 +91,11 @@ class AccountService {
         email,
         label,
         apiKey,
-        Blog,
-        agents,
+        Blogs,
+        Agents,
       };
+
+      console.log("CONSTRUNCTED ACCOUNT RESPONSE:", account)
       return account;
     }
     return result;

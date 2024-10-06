@@ -5,8 +5,8 @@ const accountSeed = [
     firstName: "Mandor",
     lastName: "Shebang",
     email: "org1@org1.com",
-    apiKey: "hashedapikey",
-    apiKeyIndex: "1234567890",
+    apiKey: "01.123456789012345678901234567890",
+    apiKeyIndex: "01.123456",
     password: "hashedpassword",
   },
   {
@@ -14,8 +14,8 @@ const accountSeed = [
     firstName: "Marigold",
     lastName: "Moonbeam",
     email: "org2@org2.com",
-    apiKey: "hashedapikey",
-    apiKeyIndex: "1234567890",
+    apiKey: "02.123456789012345678901234567890",
+    apiKeyIndex: "02.123456",
     password: "hashedpassword",
   },
   {
@@ -23,8 +23,8 @@ const accountSeed = [
     firstName: "Momo",
     lastName: "Grifter",
     email: "org3@org3.com",
-    apiKey: "hashedapikey",
-    apiKeyIndex: "1234567890",
+    apiKey: "03.123456789012345678901234567890",
+    apiKeyIndex: "03.123456",
     password: "hashedpassword",
   },
 ];
@@ -122,6 +122,8 @@ const agentSeed = [
       isEnabled: false,
       llm: "chatgpt",
       maxWords: 500,
+      timezone: "America/New_York",
+      personality: "Bitter and vindictive with every word.",
       cronSchedule: "* * * * *"
     },
   },

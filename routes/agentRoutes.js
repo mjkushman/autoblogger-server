@@ -129,7 +129,8 @@ module.exports = (config) => {
       const { body, account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.agents.map((a) => a.agentId)
+      const ownedAgents = account.Agents.map((a) => a.agentId)
+      
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.update({ accountId, agentId, body });
       return res.status(200).json(result);
@@ -144,7 +145,7 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.agents.map((a) => a.agentId)
+      const ownedAgents = account.Agents.map((a) => a.agentId)
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       // const agent = await AgentService.activate({ accountId, agentId });
       return res.status(201).json(agent);
@@ -158,7 +159,7 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.agents.map((a) => a.agentId)
+      const ownedAgents = account.Agents.map((a) => a.agentId)
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       // const agent = await AgentService.deactivate({ accountId, agentId });
       return res.status(201).json(agent);
@@ -173,7 +174,7 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.agents.map((a) => a.agentId)
+      const ownedAgents = account.Agents.map((a) => a.agentId)
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.delete({ accountId, agentId });
       return res.status(200).json(result);
