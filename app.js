@@ -10,17 +10,12 @@ const { NotFoundError } = require("./utilities/expressError");
 const { verifyJWT } = require("./middleware/authorizations");
 const errorHandler = require("./middleware/errorHandler");
 
+
 const app = express();
 
 const routes = require("./routes");
 
-const rateLimit = require("express-rate-limit");
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  message: "Too many requests, please wait a few minutes.",
-});
 
 module.exports = (config) => {
   app.use(cors());
@@ -29,7 +24,6 @@ module.exports = (config) => {
   app.use(morgan("tiny"));
   app.use(verifyJWT); // stores decoded token on res.locals.user, if one is provided
 
-  app.use(limiter); // sites for api consumers
 
   app.use("/", routes(config)); // All the routes
 
