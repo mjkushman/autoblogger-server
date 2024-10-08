@@ -5,11 +5,11 @@
 // const {User} = require('../models') // import blog model from models folder
 const express = require("express");
 const jsonschema = require("jsonschema");
-const registerSchema = require("../schemas/userRegister.json");
-const userAuthSchema = require("../schemas/userAuthenticate.json");
-const { BadRequestError } = require("../utilities/expressError");
-const { createToken } = require("../utilities/jwtoken");
-const AuthService = require("../services/AuthService");
+const registerSchema = require("../../schemas/userRegister.json");
+const userAuthSchema = require("../../schemas/userAuthenticate.json");
+const { BadRequestError } = require("../../utilities/expressError");
+const { createToken } = require("../../utilities/jwtoken");
+const AuthService = require("../../services/AuthService");
 
 const router = express.Router({ mergeParams: true });
 

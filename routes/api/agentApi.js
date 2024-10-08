@@ -11,10 +11,10 @@ const {
   BadRequestError,
   ExpressError,
   UnauthorizedError,
-} = require("../utilities/expressError");
+} = require("../../utilities/expressError");
 // const Agent = require("./models/Agent");
-const AgentService = require("../services/AgentService");
-const PostService = require("../services/PostService");
+const AgentService = require("../../services/AgentService");
+const PostService = require("../../services/PostService");
 
 module.exports = (config) => {
   /** GET returns a list of all agents for an account
@@ -115,23 +115,33 @@ module.exports = (config) => {
    */
   router.patch("/:agentId", async function (req, res, next) {
     try {
-      // // Validate the request's schema
-      // const validator = jsonschema.validate(req.body, agentUpdateSchema);
-      // if (!validator.valid) {
-
-      //     let errorMessage = new BadRequestError();
-      //     const errors = validator.errors.map((e) => e.stack);
-      //     errorMessage = { ...errorMessage, errors };
-      //     return res.json({errorMessage,});
-      // }
-
       // Verify that the agent being updated belongs to the same org as the user making the update
       const { body, account } = req;
-      const { accountId } = account;
+      const { accountId } = req;
       const { agentId } = req.params;
       const ownedAgents = account.Agents.map((a) => a.agentId)
       
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+      const result = await AgentService.update({ accountId, agentId, body });
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // THIS REPLACES THE PATCH WITH /:agentId
+  router.patch("/", async function (req, res, next) {
+    console.log("HIT NEW PATCH")
+    console.log(req.user)
+    try {
+      // Verify that the agent being updated belongs to the same org as the user making the update
+      const { body } = req;
+      const { accountId } = req.user;
+      const { agentId } = req.body;
+      console.log("agentId",agentId)
+      // const ownedAgents = account.Agents.map((a) => a.agentId)
+      
+      // if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.update({ accountId, agentId, body });
       return res.status(200).json(result);
     } catch (error) {

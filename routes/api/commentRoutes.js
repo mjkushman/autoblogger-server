@@ -2,13 +2,13 @@
 
 // Routes for blog posts
 
-const { verifyLoggedIn } = require("../middleware/authorizations");
+const { requireAuth } = require("../../middleware/authorizations");
 const express = require("express");
 
 const router = express.Router({ mergeParams: true });
-const CommentService = require("../services/CommentService");
-const AgentService = require("../services/AgentService");
-const StatusService = require("../services/StatusService");
+const CommentService = require("../../services/CommentService");
+const AgentService = require("../../services/AgentService");
+const StatusService = require("../../services/StatusService");
 
 module.exports = (config) => {
   /** Get all comments

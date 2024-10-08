@@ -13,22 +13,19 @@ const { UnauthorizedError } = require("../utilities/expressError");
 
 
 
-// Make sure a JWT is signed and all that
 /** Middleware to store the contents of the JWT on res.locals.user
- * If there are headers and a token provided in the authorization header,
- * Attempt to decode the token and store it on res.locals.user.
- * If decoding fails - probably due to invalid signature - throw an error but still return next.
- * 
  * If no token, also return next
  * Token is not needed. But it will only store res.locals.user if a valid token is provided.
  */
 function verifyJWT(req, res, next) {
   try {
-    const authHeader = req.headers && req.headers.authorization;
+    const authHeader = req.headers?.authorization;
     if (authHeader) {
-      const token = authHeader.replace(/^[Bb]earer /, "").trim();
-      res.locals.user = jwt.verify(token, SECRET_KEY);
-      console.log('stored user token to locals')
+      console.log('found header: ',authHeader)
+      let token = authHeader.replace(/^[Bb]earer\s+["']?([^"']+)["']?$/, "$1").trim(); // strip "bearer" and any quotes from the token
+
+      req.user = jwt.verify(token, SECRET_KEY);
+      console.log('stored user token to req.user', req.user)
     }
     return next();
   } catch (error) {
@@ -40,10 +37,10 @@ function verifyJWT(req, res, next) {
 /** Makes sure a user is logged in by checking for a user object on res.locals
  * The function above, verifyJWT, will set res.locals.user if a valid token is provided
  */
-function verifyLoggedIn(req, res, next) {
+function requireAuth(req, res, next) {
     console.log('VERIFY LOGIN',{...res.locals})
     try {
-      if(res.locals.user == null) throw new UnauthorizedError();
+      if(req.user == null) throw new UnauthorizedError();
       return next();
     } catch (error) {
       return next(error);
@@ -60,4 +57,4 @@ function verifyLoggedIn(req, res, next) {
 // function verifyCorrectUser() {console.log('verifyCorrectUser')}
 
 
-module.exports = {verifyLoggedIn, verifyJWT  };
+module.exports = {requireAuth, verifyJWT  };

@@ -2,17 +2,17 @@
 
 // Routes for blog posts
 
-const Comment = require("../models/Comment"); // import comment model from models folder
-const { verifyLoggedIn } = require("../middleware/authorizations");
+const Comment = require("../../models/Comment"); // import comment model from models folder
+const { requireAuth } = require("../../middleware/authorizations");
 const express = require("express");
 
 const router = express.Router({ mergeParams: true });
-const PostService = require("../services/PostService");
-const CommentService = require("../services/CommentService");
-const AgentService = require("../services/AgentService");
-const { verifyAgentOwnership } = require("../middleware/verifyAgentOwnership");
-const { Status } = require("../models");
-const StatusService = require("../services/StatusService");
+const PostService = require("../../services/PostService");
+const CommentService = require("../../services/CommentService");
+const AgentService = require("../../services/AgentService");
+const { verifyAgentOwnership } = require("../../middleware/verifyAgentOwnership");
+const { Status } = require("../../models");
+const StatusService = require("../../services/StatusService");
 
 module.exports = (config) => {
   /** Generate a post
@@ -109,7 +109,7 @@ module.exports = (config) => {
    */
   router.post(
     "/:postId/comments",
-    verifyLoggedIn,
+    requireAuth,
     async function (req, res, next) {
       try {
         // add a new comment to the post

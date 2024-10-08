@@ -13,7 +13,7 @@ const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
-const routes = require("./routes");
+const routes = require("./routes/web");
 
 
 

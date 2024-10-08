@@ -1,6 +1,6 @@
 const express = require("express");
-const StatusService = require("../services/StatusService");
-const { NotFoundError } = require("../utilities/expressError");
+const StatusService = require("../../services/StatusService");
+const { NotFoundError } = require("../../utilities/expressError");
 
 const router = express.Router({ mergeParams: true });
 

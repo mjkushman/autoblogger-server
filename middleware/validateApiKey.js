@@ -14,42 +14,11 @@ module.exports = {
     const hostname = req.hostname; // host from headers
     const host = req.headers.host; // host from headers
 
-    // If this is a dev environment, manually add some data and allow access
+    // If this is a dev environment, provide a dev account
     if (process.env.NODE_ENV == "development" && apiKey == "dev") {
       
       const devAccount = await AccountService.findByApiKeyIndex({apiKey:"01.123456789012345678901234567890"})
       
-      // const devAccount = {
-      //   accountId: "act_00000000-0000-0000-0000-000000000001",
-      //   firstName: "Max",
-      //   lastName: "Developer",
-      //   label: "Max Blogger",
-      //   email: "maxdev@test.com",
-      //   host: host,
-      //   hostname: hostname,
-      //   Blogs: [
-      //     {
-      //       blogId: "blg_0000000001",
-      //       accountId: "act_00000000-0000-0000-0000-000000000001",
-      //       label: "My First Blog for org 1",
-      //       createdAt: "2024-07-26T18:28:12.779Z",
-      //       updatedAt: "2024-07-26T18:28:12.779Z",
-      //     },
-      //     {
-      //       blogId: "blg_0000000002",
-      //       accountId: "act_00000000-0000-0000-0000-000000000001",
-      //       label: "My Second Blog for org 1",
-      //       createdAt: "2024-07-26T18:28:12.779Z",
-      //       updatedAt: "2024-07-26T18:28:12.779Z",
-      //     },
-      //   ],
-      //   agents: [
-      //     {
-      //       agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-      //       username: "agent001",
-      //     },
-      //   ],
-      // };
       console.log("continuing in dev environment", devAccount);
       req.account = devAccount;
       cache.set(apiKey, devAccount);

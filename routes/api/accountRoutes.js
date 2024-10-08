@@ -4,20 +4,16 @@
 
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const accountService = require("../services/AccountService");
-const authService = require("../services/AuthService");
-const IdGenerator = require("../utilities/IdGenerator");
+const accountService = require("../../services/AccountService");
+const authService = require("../../services/AuthService");
+const IdGenerator = require("../../utilities/IdGenerator");
 
-const { BadRequestError } = require("../utilities/expressError");
-const { validateApiKey } = require("../middleware/validateApiKey");
+const { BadRequestError } = require("../../utilities/expressError");
+const { validateApiKey } = require("../../middleware/validateApiKey");
 
 module.exports = (config) => {
   // Hello world
-  router.get("/", async function (req, res, next) {
-    return res.json({
-      msg: "Accounts home. This page will be replaced by a docs page or just redirect to /",
-    });
-  });
+
 
   router.get("/idgen", async function (req, res, next) {
     let id = IdGenerator.agentId();
@@ -28,8 +24,12 @@ module.exports = (config) => {
     let result = await accountService.findAll();
     return res.json(result);
   });
-  router.get("/:accountId", async function (req, res, next) {
-    let { accountId } = req.params;
+  
+  /** Gets one account specified in request.user
+   * 
+   */
+  router.get("/", async function (req, res, next) {
+    let { accountId } = req.user;
     try {
       let result = await accountService.findOne(accountId);
       return res.json(result);

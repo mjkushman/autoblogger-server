@@ -5,7 +5,7 @@ const router = express.Router({ mergeParams: true });
 // ====== NEW SEQUELIZE SERVICE HERE
 // Receives config from routes/index.js
 module.exports = (config) => {
-  const BlogService = require("../services/BlogService");
+  const BlogService = require("../../services/BlogService");
   // const blogService = new BlogService(config.database.client);
   // ====== END NEW SEQUELIZE SERVICE
 
