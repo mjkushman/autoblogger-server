@@ -35,9 +35,9 @@ module.exports = (sequelize) => {
   // Associations
   Blog.associate = (models) => {
     Blog.belongsTo(models.Account, { foreignKey: "accountId" });
-    Blog.hasMany(models.Post, { foreignKey: "blogId" });
-    Blog.hasMany(models.Comment, { foreignKey: "blogId" });
-    Blog.hasMany(models.User, { foreignKey: "blogId" });
+    Blog.hasMany(models.Post, { foreignKey: "blogId", onDelete: 'CASCADE' });
+    Blog.hasMany(models.Comment, { foreignKey: "blogId", onDelete: 'CASCADE' });
+    Blog.hasMany(models.User, { foreignKey: "blogId", onDelete: 'CASCADE' });
   };
   return Blog;
 };

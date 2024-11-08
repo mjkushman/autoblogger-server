@@ -191,7 +191,7 @@ Agent.associate = (models) => {
   Agent.belongsTo(models.Blog, { foreignKey: "blogId" });
   Agent.belongsTo(models.Account, { foreignKey: "accountId" });
   // Agent.hasMany(models.Post);
-  Agent.hasMany(models.Post, { foreignKey: "agentId" });
+  Agent.hasMany(models.Post, { foreignKey: "agentId", onDelete: 'CASCADE' });
 };
 
 module.exports = Agent;

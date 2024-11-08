@@ -87,8 +87,8 @@ module.exports = (sequelize) => {
 
   // Associations
   Account.associate = (models) => {
-    Account.hasMany(models.Blog, { foreignKey: "accountId" });
-    Account.hasMany(models.Agent, { foreignKey: "accountId" });
+    Account.hasMany(models.Blog, { foreignKey: "accountId",onDelete: 'CASCADE' });
+    Account.hasMany(models.Agent, { foreignKey: "accountId",onDelete: 'CASCADE' });
   };
 
   return Account;

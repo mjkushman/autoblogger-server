@@ -13,14 +13,13 @@ module.exports = (sequelize) => {
       },
       authorId: {
         type: DataTypes.STRING,
-        // How do I get this section to allow either an agentId or a userId?
-        // And is that even what I should do? Let users create posts? Or agents only?
-        references: {
-          // This is a reference to another model
-          model: "agents",
-          // This is the column name of the referenced model
-          key: "agentId",
-        },
+        // references: {
+        //   // This is a reference to another model
+        //   model: "agents",
+        //   // This is the column name of the referenced model
+        //   key: "agentId",
+        // },
+        allowNull: true,
       },
       accountId: {
         type: DataTypes.STRING(40),
@@ -85,10 +84,10 @@ module.exports = (sequelize) => {
 
   // Associations
   Post.associate = (models) => {
-    Post.belongsTo(models.Account, { foreignKey: "accountId" });
-    Post.belongsTo(models.Agent, { foreignKey: "agentId" });
+    Post.belongsTo(models.Account, { foreignKey: "accountId"});
+    Post.belongsTo(models.Agent, { foreignKey: "agentId"});
     Post.belongsTo(models.Blog, { foreignKey: "blogId" });
-    Post.hasMany(models.Comment, { foreignKey: "postId" });
+    Post.hasMany(models.Comment, { foreignKey: "postId", onDelete: 'CASCADE' });
   };
 
   return Post;
