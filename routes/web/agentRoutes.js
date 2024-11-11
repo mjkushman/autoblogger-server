@@ -6,10 +6,8 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 // const jsonschema = require("jsonschema");
 // const agentCreateSchema = require("./agentCreateSchema.json");
-const responseHandler = require('../../middleware/responseHandler')
+
 const {
-  BadRequestError,
-  ExpressError,
   UnauthorizedError,
 } = require("../../utilities/expressError");
 // const Agent = require("./models/Agent");
@@ -24,8 +22,8 @@ module.exports = (config) => {
     try {
       console.log("route: finding all agents");
       const { accountId } = req.account;
-      const response = await AgentService.findAll({ accountId });
-      return res.status(200).json(response);
+      const result = await AgentService.findAll({ accountId });
+      return res.sendResponse({data:result, status:200})
     } catch (error) {
       next(error);
     }
@@ -37,8 +35,8 @@ module.exports = (config) => {
     try {
       console.log("saying hello");
       const { accountId } = req.account;
-      const response = await AgentService.sayHello({ accountId });
-      return res.status(200).json(response);
+      const result = await AgentService.sayHello({ accountId });
+      return res.sendResponse({data:result, status:200})
     } catch (error) {
       next(error);
     }
@@ -51,10 +49,9 @@ module.exports = (config) => {
       console.log("route: finding one agent");
       const { accountId } = req.account;
       const { agentId } = req.params;
-      const response = await AgentService.findOne({ agentId, accountId });
-      return res.status(200).json(response);
+      const result = await AgentService.findOne({ agentId, accountId });
+      return res.sendResponse({data:result, status:200})
     } catch (error) {
-      // let errorMessage = new BadRequestError(error);
       next(error);
     }
   });
@@ -67,10 +64,10 @@ module.exports = (config) => {
       const { agentId } = req.params;
       const agent = await AgentService.findOne({ accountId, agentId });
       if (!agent) throw new NotFoundError("Unable to find agent");
-      const response = await PostService.findRecentTitles({
+      const result = await PostService.findRecentTitles({
         agentId: agent.agentId,
       });
-      return res.status(200).json(response);
+      return res.sendResponse({data:result, status:200})
     } catch (error) {
       next(error);
     }
@@ -80,8 +77,8 @@ module.exports = (config) => {
    *
    * Expects the request to have necessary information to create a new author
    */
-  router.post("/" , responseHandler, async function (req, res, next) {
-    console.log("HIT AGENT POST '/'")
+  router.post("/", async function (req, res, next) {
+    console.log("HIT AGENT POST '/'");
     // TODO: Validate the schema
 
     // Upon valid schema, attempt to create the agent
@@ -89,11 +86,11 @@ module.exports = (config) => {
       console.log("trying: agent post route");
       const { body, user } = req;
       const { accountId } = user;
-      const agent = await AgentService.create({ body, accountId })
-      
-      return res.sendResponse(agent, 201)
+      const agent = await AgentService.create({ body, accountId });
+
+      return res.sendResponse({data:agent, status:201});
     } catch (error) {
-      console.log('catching error:', error)
+      console.log("catching error:", error);
       next(error);
     }
 
@@ -103,21 +100,21 @@ module.exports = (config) => {
 
   /** Update settings to the agent
    */
-  
+
   // THIS REPLACES THE PATCH WITH /:agentId
   router.patch("/", async function (req, res, next) {
-    console.log("HIT AGENT PATCH '/'")
+    console.log("HIT AGENT PATCH '/'");
     try {
       // Verify that the agent being updated belongs to the same org as the user making the update
       const { body, user } = req;
       const { accountId } = user;
       const { agentId } = req.body;
-      console.log("agentId",agentId)
+      console.log("agentId", agentId);
       // const ownedAgents = account.Agents.map((a) => a.agentId)
-      
+
       // if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.update({ accountId, agentId, body });
-      return res.status(200).json(result);
+      return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
     }
@@ -129,10 +126,13 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId)
-      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+      const ownedAgents = account.Agents.map((a) => a.agentId);
+      if (!ownedAgents.includes(agentId))
+        throw new UnauthorizedError(
+          "You may only modify agents that belong to your account."
+        );
       // const agent = await AgentService.activate({ accountId, agentId });
-      return res.status(201).json(agent);
+      return res.sendResponse({data:agent, status:201})
     } catch (error) {
       next(error);
     }
@@ -143,10 +143,13 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId)
-      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+      const ownedAgents = account.Agents.map((a) => a.agentId);
+      if (!ownedAgents.includes(agentId))
+        throw new UnauthorizedError(
+          "You may only modify agents that belong to your account."
+        );
       // const agent = await AgentService.deactivate({ accountId, agentId });
-      return res.status(201).json(agent);
+      return res.sendResponse({data:agent, status:201, message: "Agent deactivated"});
     } catch (error) {
       next(error);
     }
@@ -160,7 +163,7 @@ module.exports = (config) => {
       // const ownedAgents = account.Agents.map((a) => a.agentId)
       // if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.delete({ accountId, agentId });
-      return res.status(200).json(result);
+      return res.sendResponse({data:result, status:200}) 
     } catch (error) {
       next(error);
     }
@@ -181,14 +184,14 @@ module.exports = (config) => {
       const { agentId } = req.params;
       let { body: options } = req;
       let post = await AgentService.writePost({ agentId, options });
-      return res.status(201).json({ post });
+      return res.sendResponse({data:post, status:201});
     } catch (error) {
       next(error);
     }
   });
 
   /** Manually create a new social post */
-  router.post("/:agentId/social", async function (req, res, next) {});
+  router.post("/:agentId/social", async function (req, res, next) {return});
 
   return router;
 };

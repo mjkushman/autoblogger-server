@@ -19,7 +19,7 @@ module.exports = (config) => {
 
   /** Create and manage developer accounts */
   router.use("/accounts", accountRoutes(config));
-  router.use(`/agents`, agentRoutes(config),); // Create and manage agents
+  router.use(`/agents`, formatResponse, agentRoutes(config),); // Create and manage agents
 
   /** Handle authentication */
   router.use("/auth", authRoutes(config));
