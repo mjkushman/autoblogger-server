@@ -6,7 +6,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 // const jsonschema = require("jsonschema");
 // const agentCreateSchema = require("./agentCreateSchema.json");
-
+const responseHandler = require('../../middleware/responseHandler')
 const {
   BadRequestError,
   ExpressError,
@@ -80,26 +80,20 @@ module.exports = (config) => {
    *
    * Expects the request to have necessary information to create a new author
    */
-  router.post("/", async function (req, res, next) {
-    console.log("ROUTE: POST agentRoutes");
-    // // Validate the schema
-    // const validator = jsonschema.validate(req.body, agentCreateSchema);
-    // if (!validator.valid) {
-    //   let errorMessage = new BadRequestError();
-    //   const errors = validator.errors.map((e) => e.stack);
-    //   errorMessage = { ...errorMessage, errors };
-    //   return res.json({errorMessage,});
-    // }
+  router.post("/" , responseHandler, async function (req, res, next) {
+    console.log("HIT AGENT POST '/'")
+    // TODO: Validate the schema
 
     // Upon valid schema, attempt to create the agent
     try {
       console.log("trying: agent post route");
-      const { body, account } = req;
-      const { accountId } = account;
-      return res
-        .status(201)
-        .json(await AgentService.create({ body, accountId }));
+      const { body, user } = req;
+      const { accountId } = user;
+      const agent = await AgentService.create({ body, accountId })
+      
+      return res.sendResponse(agent, 201)
     } catch (error) {
+      console.log('catching error:', error)
       next(error);
     }
 
@@ -108,35 +102,15 @@ module.exports = (config) => {
   });
 
   /** Update settings to the agent
-   * @param :agentId determines which agent they want to update
-   * Middleware should verify that orgId in the user's token matches the orgId of the agent they want to update.
-   *
-   *
    */
-  router.patch("/:agentId", async function (req, res, next) {
-    try {
-      // Verify that the agent being updated belongs to the same org as the user making the update
-      const { body, account } = req;
-      const { accountId } = req;
-      const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId)
-      
-      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
-      const result = await AgentService.update({ accountId, agentId, body });
-      return res.status(200).json(result);
-    } catch (error) {
-      next(error);
-    }
-  });
   
   // THIS REPLACES THE PATCH WITH /:agentId
   router.patch("/", async function (req, res, next) {
-    console.log("HIT NEW PATCH")
-    console.log(req.user)
+    console.log("HIT AGENT PATCH '/'")
     try {
       // Verify that the agent being updated belongs to the same org as the user making the update
-      const { body } = req;
-      const { accountId } = req.user;
+      const { body, user } = req;
+      const { accountId } = user;
       const { agentId } = req.body;
       console.log("agentId",agentId)
       // const ownedAgents = account.Agents.map((a) => a.agentId)
@@ -179,13 +153,12 @@ module.exports = (config) => {
   });
 
   /** Delete this agent entirely */
-  router.delete("/:agentId", async function (req, res, next) {
+  router.delete("/", async function (req, res, next) {
     try {
-      const { account } = req;
-      const { accountId } = account;
-      const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId)
-      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+      const { accountId } = req.user;
+      const { agentId } = req.body;
+      // const ownedAgents = account.Agents.map((a) => a.agentId)
+      // if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.delete({ accountId, agentId });
       return res.status(200).json(result);
     } catch (error) {
