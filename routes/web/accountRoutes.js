@@ -12,17 +12,16 @@ const { BadRequestError } = require("../../utilities/expressError");
 const { validateApiKey } = require("../../middleware/validateApiKey");
 
 module.exports = (config) => {
-  // Hello world
 
-
+// This is a temporary utility route
   router.get("/idgen", async function (req, res, next) {
     let id = IdGenerator.agentId();
-    return res.json({ msg: "Generated ID", id });
+    return res.sendResponse({data:id, message: "Generated Id", status: 200});
   });
 
   router.get("/all", async function (req, res, next) {
     let result = await accountService.findAll();
-    return res.json(result);
+    return res.sendResponse({data: result, status: 200})
   });
   
   /** Gets one account specified in request.user
@@ -32,7 +31,7 @@ module.exports = (config) => {
     let { accountId } = req.user;
     try {
       let result = await accountService.findOne(accountId);
-      return res.json(result);
+      return res.sendResponse({data: result, status: 200})
       
     } catch (error) {
       return next (error)
@@ -43,9 +42,9 @@ module.exports = (config) => {
   router.post("/", async function (req, res, next) {
     try {
       const account = await accountService.create(req);
-
       const token = await authService.generateToken(account);
-      return res.status(201).json({ token });
+
+      return res.sendResponse({data: token, status: 201}) 
     } catch (error) {
       return next(error);
     }

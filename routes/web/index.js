@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 
 
-const accountRoutes = require("../api/accountRoutes");
+const accountRoutes = require("./accountRoutes");
 
 const agentRoutes = require("./agentRoutes");
 const statusRoutes = require("./statusRoutes");
@@ -18,7 +18,7 @@ module.exports = (config) => {
   });
 
   /** Create and manage developer accounts */
-  router.use("/accounts", accountRoutes(config));
+  router.use("/accounts", formatResponse, accountRoutes(config));
   router.use(`/agents`, formatResponse, agentRoutes(config),); // Create and manage agents
 
   /** Handle authentication */
