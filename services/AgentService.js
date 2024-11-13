@@ -160,7 +160,7 @@ class AgentService {
     try {
       let result = await Agent.destroy({ where: { agentId, accountId } });
       if (result > 0) {
-        await this.deactivate({ agentId }); // Deactivate
+        await this.#deactivateAgent({ agentId }); // Deactivate
         return { message: "Delete successful" };
       } else {
         throw new NotFoundError(

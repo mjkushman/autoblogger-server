@@ -127,6 +127,23 @@ class AccountService {
       throw new Error(error);
     }
   }
+
+
+  static async destroy(accountId) {
+    console.log("deleting account");
+    try {
+      console.log("trying");
+      let rowsDeleted = await Account.destroy({
+        where: { accountId }
+      });
+      
+      if (!rowsDeleted) throw new Error(`Deleted ${rowsDeleted} rows`);
+      return rowsDeleted // expect: 1
+    } catch (error) {
+      console.log("catching");
+      throw new Error(error);
+    }
+  }
 }
 
 module.exports = AccountService;
