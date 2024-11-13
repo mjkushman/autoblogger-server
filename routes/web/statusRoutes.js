@@ -8,7 +8,7 @@ module.exports = (config) => {
   // top level route
     router.get("/", async function (req, res, next) {
     try {
-      return res.json({ message: "Check a status" });
+      return res.sendResponse({ status: 200, data: null, message:"Provide a status ID to check the status" });
     } catch (error) {
       return next(error);
     }
@@ -20,7 +20,7 @@ module.exports = (config) => {
       const { statusId } = req.params;
       const status = await StatusService.findOne(statusId);
       if (!status) throw new NotFoundError("Item not found");
-      return res.status(200).json(status);
+      return res.sendResponse({ status: 200, data: status });
     } catch (error) {
       return next(error);
     }

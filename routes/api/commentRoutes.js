@@ -11,12 +11,12 @@ const AgentService = require("../../services/AgentService");
 const StatusService = require("../../services/StatusService");
 
 module.exports = (config) => {
-  /** Get all comments
-   * @swagger
-   * /{orgId}/comments:
+  /**
+   * @openapi
+   * /comments:
    *   get:
    *     summary: Get all comments
-   *     description: Get all comments for the org
+   *     description: Get all comments for the
    *     tags: [Comments]
    *     responses:
    *       200:
@@ -27,54 +27,42 @@ module.exports = (config) => {
     const { postId } = req.params;
     try {
       const comments = await CommentService.findAll({ accountId, postId });
-
-      return res.status(200).json({ comments });
+      return res.sendResponse({ status: 200, data: comments });
     } catch (error) {
       return next(error);
     }
   });
 
-
-
-  /** Get one comment
-   * @swagger
-   *  /comments/{commentId}:
+  /**
+   * @openapi
+   * /comments/{commendId}:
    *   get:
-   *     summary: Get one comment
-   *     description: Get get comment commentId
+   *     summary: Get a single comment
    *     tags: [Comments]
    *     responses:
    *       200:
-   *         description: Details of one comment commentId
+   *         description: A single comment
    */
   router.get("/:commentId", async function (req, res, next) {
     const { commentId } = req.params;
     try {
       const comment = await CommentService.findOne(commentId);
-      return res.json({ comment });
+      return res.sendResponse({ status: 200, data: comment });
     } catch (error) {
       return next(error);
     }
   });
 
-  /** Get all comments for one post. Same as above
-   * @swagger
-   * /{orgId}/comments/{postId}/comments:
-   *   get:
-   *     summary: Get all comments for postId
-   *     description: Get all comments for postId
-   *     tags: [Comments]
-   *     responses:
-   *       200:
-   *         description: List of comments
+  /**
    */
   router.get("/:postId/comments", async function (req, res, next) {
     try {
-      const {postId} = req.params;
+      const { postId } = req.params;
       const { comments, numComments } = await CommentService.getComments(
         postId
       );
-      return res.status(200).json({ numComments, comments });
+      comments.numComments = numComments;
+      return res.sendResponse({ status: 200, data: comments });
     } catch (error) {
       return next(error);
     }
@@ -118,9 +106,9 @@ module.exports = (config) => {
         // Immediately create a status and return the result
         const status = await StatusService.create("comment");
         response.reply = { status };
-        res.status(201).send(response);
+        res.sendResponse({ status: 201, data: response });
 
-        // Proceed to generate the completion
+        // Proceed to generate the completion async after response is sent
         const { agentId } = agent;
         const completion = await AgentService.generateComment({
           agent,
@@ -142,23 +130,22 @@ module.exports = (config) => {
         }
         return;
       }
-      return res.status(201).json(response);
+      return res.sendResponse({ status: 201, data: response });
     } catch (error) {
       return next(error);
     }
   });
 
-  router.delete('/', async function ( req, res, next) {
+  router.delete("/", async function (req, res, next) {
     try {
-      const { commentId } = req.body
-      const { accountId }= req.account
-      const result = await CommentService.destroy({ commentId, accountId})
-
-      return res.status(200).json({result: result})
+      const { commentId } = req.body;
+      const { accountId } = req.account;
+      const result = await CommentService.destroy({ commentId, accountId });
+      return res.sendResponse({ status: 200, data: result });
     } catch (error) {
-      next(error)
+      next(error);
     }
-  })
+  });
 
   return router;
 };

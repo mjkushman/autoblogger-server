@@ -12,6 +12,7 @@ const errorHandler = require("./middleware/errorHandler");
 
 const swaggerUI = require('swagger-ui-express')
 const swaggerSpec = require('./utilities/api_docs/swagger')
+const formatResponse = require('./middleware/responseHandler')
 
 
 
@@ -30,7 +31,7 @@ module.exports = (config) => {
   app.use(verifyJWT); // stores decoded token on res.locals.user, if one is provided
   
   
-  app.use("/", routes(config)); // All the routes
+  app.use("/", formatResponse, routes(config)); // All the routes
   
   
   

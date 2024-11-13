@@ -18,7 +18,8 @@ module.exports = (config) => {
   router.get("/", async function (req, res, next) {
     // console.log('PRE AUTH RES LOCALS',{...res.locals})
     try {
-      return res.json({ message: "hello world" });
+      return res.sendResponse({ status: 200, data: null, message: "hello world",
+      });
     } catch (error) {
       return next(error);
     }
@@ -33,8 +34,8 @@ module.exports = (config) => {
         throw new BadRequestError("Request must contain email and password");
 
       const token = await AuthService.authenticate({ email, password });
-    console.log('route, token', token)
-      return res.status(201).json({ token });
+      console.log("route, token", token);
+      return res.sendResponse({ status: 201, data: token });
     } catch (error) {
       return next(error);
     }

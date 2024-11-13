@@ -50,6 +50,18 @@ module.exports = (config) => {
     }
   });
 
+
+  // Handle delete account
+  router.delete("/", async function (req, res, next) {
+    try {
+      const result = await accountService.destroy(req.user.accountId);
+
+      return res.sendResponse({data: result, status: 200, message: "Delete successful."}) 
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   router.get("/protected", validateApiKey, async function (req, res, next) {
     console.log("Developer gained access. Dev:", req.account);
     return res.json({ msg: "This is a protected route", account: req.account });

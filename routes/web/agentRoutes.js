@@ -21,7 +21,7 @@ module.exports = (config) => {
   router.get("/", async function (req, res, next) {
     try {
       console.log("route: finding all agents");
-      const { accountId } = req.account;
+      const { accountId } = req.user;
       const result = await AgentService.findAll({ accountId });
       return res.sendResponse({data:result, status:200})
     } catch (error) {

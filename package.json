@@ -1,7 +1,6 @@
 {
   "name": "autoblogger",
   "version": "1.0.0",
-  "apiVersion": 1,
   "description": "",
   "main": "index.js",
   "scripts": {

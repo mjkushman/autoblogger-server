@@ -16,7 +16,7 @@ const options = {
     },
     servers: [
         {
-            url: `http://localhost:3001/api/${config.apiVersion}`,
+            url: `http://localhost:3001/api/v${config.majorVersion}`,
             description: "Development server"
         },
         {
@@ -48,20 +48,12 @@ const options = {
         description: "Operations about comments",
       },
       {
-        name: "Agents",
-        description: "Operations about agents",
-      },
-      {
         name: "Posts",
         description: "Operations about posts",
       },
-      {
-        name: "Blogs",
-        description: "Operations about blogs",
-      },
     ],
   },
-  apis: ['routes/**/*Routes.js']
+  apis: ['routes/**/*Routes.js','routes/**/postApi.js']
 
 };
 
