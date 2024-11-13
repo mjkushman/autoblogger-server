@@ -10,28 +10,34 @@ const { NotFoundError } = require("./utilities/expressError");
 const { verifyJWT } = require("./middleware/authorizations");
 const errorHandler = require("./middleware/errorHandler");
 
+const swaggerUI = require('swagger-ui-express')
+const swaggerSpec = require('./utilities/api_docs/swagger')
+
+
 
 const app = express();
 
 const routes = require("./routes/web");
 
 
-
 module.exports = (config) => {
+  app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec))
+  
   app.use(cors());
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(morgan("tiny"));
   app.use(verifyJWT); // stores decoded token on res.locals.user, if one is provided
-
-
+  
+  
   app.use("/", routes(config)); // All the routes
-
+  
+  
+  
   /** Handle 404 errors -- this matches everything */
   app.use(function (req, res, next) {
     return next(new NotFoundError());
   });
-
   // New error handler
   app.use(errorHandler)
 

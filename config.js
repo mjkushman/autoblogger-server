@@ -4,7 +4,7 @@
 
 require("colors");
 
-const {name, version } = require('./package.json')
+const {name, version, apiVersion } = require('./package.json')
 const SECRET_KEY = process.env.SECRET_KEY || "secret-dev";
 const PORT = +process.env.PORT || 3001;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -53,6 +53,7 @@ module.exports = {
   development: {
     name,
     version,
+    apiVersion,
     database:{
       options:{
         host:'localhost',
@@ -74,6 +75,7 @@ module.exports = {
   testing:{
     name,
     version,
+    apiVersion,
     database:{
       options:{
         host:'localhost',
