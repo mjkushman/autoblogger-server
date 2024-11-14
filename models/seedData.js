@@ -49,6 +49,34 @@ const blogSeed = [
     label: "My First Blog for org 2",
   },
 ];
+const commentSeed = [
+  {
+    commentId: 100,
+    authorId: "user_123",
+    agentId: null,
+    postId: "pst_0000000001",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    content: "This is a comment.",
+    parentId: null
+  },
+  {
+    commentId: 101,
+    authorId: "user_456",
+    postId: "pst_0000000001",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    content: "This is a child comment.",
+    parentId: 100
+  },
+  {
+    commentId: 102,
+    authorId: "user_123",
+    postId: "pst_0000000002",
+    accountId: "act_00000000-0000-0000-0000-000000000001",
+    content: "This is another comment",
+    parentId: null
+  },
+
+];
 
 const userSeed = [
   {
@@ -296,4 +324,4 @@ const postSeed = [
   },
 ];
 
-module.exports = { accountSeed, agentSeed, blogSeed, userSeed, postSeed };
+module.exports = { accountSeed, agentSeed, blogSeed, userSeed, postSeed, commentSeed };
