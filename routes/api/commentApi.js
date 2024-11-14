@@ -9,24 +9,45 @@ const router = express.Router({ mergeParams: true });
 const CommentService = require("../../services/CommentService");
 const AgentService = require("../../services/AgentService");
 const StatusService = require("../../services/StatusService");
+const { BadRequestError } = require("../../utilities/expressError");
 
 module.exports = (config) => {
   /**
    * @openapi
    * /comments:
    *   get:
-   *     summary: Get all comments
-   *     description: Get all comments for the
    *     tags: [Comments]
+   *     summary: Gets all comments
+   *     parameters:
+   *      - in: query
+   *        name: postId
+   *        required: false
+   *        schema:
+   *          type: string
+   *        description: Unique identifier for a post
+   *        example: pst_0000000001
+   *     security:
+   *       - ApiKeyAuth: []
    *     responses:
    *       200:
-   *         description: List of comments
+   *         description: An array of comments. If postId is supplied, then returns comments for just that post.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                  $ref: '#/components/schemas/Comment'
+   *       400:
+   *         description: Bad request (missing or invalid data)
+   *       500:
+   *         description: Internal server error while handling request
    */
   router.get("/", async function (req, res, next) {
     const { accountId } = req.account;
-    const { postId } = req.params;
+    const { postId } = req.query;
     try {
       const comments = await CommentService.findAll({ accountId, postId });
+      console.log("COMMENTS", comments);
       return res.sendResponse({ status: 200, data: comments });
     } catch (error) {
       return next(error);
@@ -35,34 +56,37 @@ module.exports = (config) => {
 
   /**
    * @openapi
-   * /comments/{commendId}:
+   * /comments/{commentId}:
    *   get:
-   *     summary: Get a single comment
    *     tags: [Comments]
+   *     summary: Gets one comment
+   *     parameters:
+   *      - in: path
+   *        name: commentId
+   *        required: true
+   *        schema:
+   *          type: string
+   *        description: Unique identifier for a comment
+   *        example: 100
+   *     security:
+   *       - ApiKeyAuth: []
    *     responses:
    *       200:
-   *         description: A single comment
+   *         description: An single comment
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Comment'
+   *       400:
+   *         description: Bad request (missing or invalid data)
+   *       500:
+   *         description: Internal server error while handling request
    */
   router.get("/:commentId", async function (req, res, next) {
     const { commentId } = req.params;
     try {
       const comment = await CommentService.findOne(commentId);
       return res.sendResponse({ status: 200, data: comment });
-    } catch (error) {
-      return next(error);
-    }
-  });
-
-  /**
-   */
-  router.get("/:postId/comments", async function (req, res, next) {
-    try {
-      const { postId } = req.params;
-      const { comments, numComments } = await CommentService.getComments(
-        postId
-      );
-      comments.numComments = numComments;
-      return res.sendResponse({ status: 200, data: comments });
     } catch (error) {
       return next(error);
     }
@@ -105,6 +129,7 @@ module.exports = (config) => {
 
         // Immediately create a status and return the result
         const status = await StatusService.create("comment");
+
         response.reply = { status };
         res.sendResponse({ status: 201, data: response });
 
@@ -136,9 +161,39 @@ module.exports = (config) => {
     }
   });
 
+  /**
+   * @openapi
+   * /comments/{commentId}:
+   *   delete:
+   *     tags: [Comments]
+   *     summary: Delete a comment
+   *     parameters:
+   *      - in: path
+   *        name: commentId
+   *        required: true
+   *        schema:
+   *          type: string
+   *        description: Unique identifier for a comment
+   *        example: '123'
+   *     security:
+   *       - ApiKeyAuth: []
+   *     responses:
+   *       200:
+   *         description: Confirmation message
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/DeleteSuccess'
+   *       400:
+   *         description: Bad request (missing or invalid data)
+   *       500:
+   *         description: Internal server error while handling request
+   */
   router.delete("/", async function (req, res, next) {
     try {
-      const { commentId } = req.body;
+      const { commentId } = req?.params;
+      if (!commentId || commentId <= 1)
+        throw new BadRequestError((message = "Valid commentId is required"));
       const { accountId } = req.account;
       const result = await CommentService.destroy({ commentId, accountId });
       return res.sendResponse({ status: 200, data: result });

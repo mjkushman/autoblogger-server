@@ -16,60 +16,6 @@ const {
 const { Status } = require("../../models");
 const StatusService = require("../../services/StatusService");
 
-/**
- * @openapi
-  * components:
- *   schemas:
- *     User:
- *       type: object
- *       properties:
- *         id:
- *           type: integer
- *           description: The user ID.
- *           example: 0
- *         name:
- *           type: string
- *           description: The user's name.
- *           example: Leanne Graham
- *     Post:
- *       type: object
- *       properties:
- *         postId:
- *           type: string
- *           example: 'post_123'
- *         authorId:
- *           type: string
- *           example: 'user_456'
- *         accountId:
- *           type: string
- *           example: 'account_789'
- *         blogId:
- *           type: string
- *           example: 'blog_abc'
- *         titlePlaintext:
- *           type: string
- *           example: 'My First Post'
- *         titleHtml:
- *           type: string
- *           example: '<h1>My First Post</h1>'
- *         bodyPlaintext:
- *           type: string
- *           example: 'This is the body of my first post.'
- *         bodyHtml:
- *           type: string
- *           example: '<p>This is the body of my first post.</p>'
- *         imageUrl:
- *           type: string
- *           format: uri
- *           example: 'https://example.com/image.jpg'
- *         slug:
- *           type: string
- *           example: 'my-first-post'
- *         isPublished:
- *           type: boolean
- *           example: true
- */
-
 module.exports = (config) => {
   /**
    * @openapi
@@ -78,19 +24,20 @@ module.exports = (config) => {
    *     tags: [Posts]
    *     summary: Generate and save a new post
    *     security:
-   *       - bearerAuth: []
+   *       - ApiKeyAuth: []
    *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *              $ref: '#components/schemas/Post'
+   *        required: true
+   *        content:
+   *          application/json:
+   *            schema:
+   *              $ref: '#/components/schemas/NewPostByAgentBody'
    *     responses:
    *       201:
    *         description: Request received and post generation initiated.
-   *       200:
-   *         description: Post generation successful with details.
-   *
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/NewPostByAgentSuccess'
    *       400:
    *         description: Bad request (missing or invalid data)
    *       500:
@@ -106,7 +53,7 @@ module.exports = (config) => {
 
     // immediately send back a status
     const status = await StatusService.create("post");
-    res.status(200).send(status);
+    res.sendResponse({ status: 201, data: status });
 
     try {
       const { agentId, options } = req.body;
@@ -139,16 +86,22 @@ module.exports = (config) => {
    * /posts:
    *   get:
    *     tags: [Posts]
-   *     summary: Get all posts for the authenticated user's blogs
+   *     summary: Gets all posts
    *     security:
-   *       - bearerAuth: []
+   *       - ApiKeyAuth: []
    *     responses:
    *       200:
-   *         description: Successful operation
-   *       401:
-   *         description: Unauthorized access
+   *         description: An array of blog posts
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                  $ref: '#/components/schemas/Post'
+   *       400:
+   *         description: Bad request (missing or invalid data)
    *       500:
-   *         description: Internal server error
+   *         description: Internal server error while handling request
    */
   router.get("/", async function (req, res, next) {
     const { account } = req;
@@ -163,6 +116,34 @@ module.exports = (config) => {
     }
   });
 
+  /**
+   * @openapi
+   * /posts/{postId}:
+   *   get:
+   *     tags: [Posts]
+   *     summary: Gets a single blog post
+   *     parameters:
+   *      - in: path
+   *        name: postId
+   *        required: true
+   *        schema:
+   *          type: string
+   *        description: Unique identifier for a post
+   *        example: 'pst_0000000001'
+   *     security:
+   *       - ApiKeyAuth: []
+   *     responses:
+   *       200:
+   *         description: A single blog post
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Post'
+   *       400:
+   *         description: Bad request (missing or invalid data)
+   *       500:
+   *         description: Internal server error while handling request
+   */
   router.get("/:postId", async function (req, res, next) {
     const { postId } = req.params;
     const { account } = req;
@@ -176,16 +157,21 @@ module.exports = (config) => {
     }
   });
 
-  router.get("/:postId/comments", async function (req, res, next) {
-    try {
-      const { postId } = req.params;
-      const { orgId } = req;
-      const comments = await CommentService.findAllByPost({ orgId, postId });
-      return res.sendResponse({ status: 200, data: comments });
-    } catch (error) {
-      return next(error);
-    }
-  });
+  // This should just be in the Comment API
+
+  // router.get("/:postId/comments", async function (req, res, next) {
+  //   try {
+  //     const { postId } = req.params;
+  //     const { orgId } = req;
+  //     const comments = await CommentService.findAllByPost({ orgId, postId });
+  //     return res.sendResponse({ status: 200, data: comments });
+  //   } catch (error) {
+  //     return next(error);
+  //   }
+  // });
+
+
+  // This should also be a Comment api since it modifies the Comments resource
 
   router.post(
     "/:postId/comments",
@@ -220,4 +206,3 @@ module.exports = (config) => {
   );
   return router;
 };
-
