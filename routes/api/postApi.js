@@ -10,13 +10,38 @@ const router = express.Router({ mergeParams: true });
 const PostService = require("../../services/PostService");
 const CommentService = require("../../services/CommentService");
 const AgentService = require("../../services/AgentService");
-const { verifyAgentOwnership } = require("../../middleware/verifyAgentOwnership");
+const {
+  verifyAgentOwnership,
+} = require("../../middleware/verifyAgentOwnership");
 const { Status } = require("../../models");
 const StatusService = require("../../services/StatusService");
 
 module.exports = (config) => {
-  /** Generate a post
-   * @swagger
+  /**
+   * @openapi
+   * /posts:
+   *   post:
+   *     tags: [Posts]
+   *     summary: Generate and save a new post
+   *     security:
+   *       - ApiKeyAuth: []
+   *     requestBody:
+   *        required: true
+   *        content:
+   *          application/json:
+   *            schema:
+   *              $ref: '#/components/schemas/NewPostByAgentBody'
+   *     responses:
+   *       201:
+   *         description: Request received and post generation initiated.
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/NewPostByAgentSuccess'
+   *       400:
+   *         description: Bad request (missing or invalid data)
+   *       500:
+   *         description: Internal server error during post generation
    */
   router.post("/", verifyAgentOwnership, async function (req, res, next) {
     // body will have fields optionally filled out. Use them to replace whatever the generated post comes back with
@@ -28,7 +53,7 @@ module.exports = (config) => {
 
     // immediately send back a status
     const status = await StatusService.create("post");
-    res.status(200).send(status);
+    res.sendResponse({ status: 201, data: status });
 
     try {
       const { agentId, options } = req.body;
@@ -56,8 +81,27 @@ module.exports = (config) => {
     }
   });
 
-  /** GET all posts
-   * @swagger
+  /**
+   * @openapi
+   * /posts:
+   *   get:
+   *     tags: [Posts]
+   *     summary: Gets all posts
+   *     security:
+   *       - ApiKeyAuth: []
+   *     responses:
+   *       200:
+   *         description: An array of blog posts
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                  $ref: '#/components/schemas/Post'
+   *       400:
+   *         description: Bad request (missing or invalid data)
+   *       500:
+   *         description: Internal server error while handling request
    */
   router.get("/", async function (req, res, next) {
     const { account } = req;
@@ -65,14 +109,40 @@ module.exports = (config) => {
     const blogIds = account.Blogs.map((blog) => blog.blogId);
     try {
       const posts = await PostService.findAll(blogIds);
-      return res.json({ posts });
+
+      return res.sendResponse({ status: 200, data: posts });
     } catch (error) {
       next(error);
     }
   });
 
-  /** GET one post
-   * @swagger
+  /**
+   * @openapi
+   * /posts/{postId}:
+   *   get:
+   *     tags: [Posts]
+   *     summary: Gets a single blog post
+   *     parameters:
+   *      - in: path
+   *        name: postId
+   *        required: true
+   *        schema:
+   *          type: string
+   *        description: Unique identifier for a post
+   *        example: 'pst_0000000001'
+   *     security:
+   *       - ApiKeyAuth: []
+   *     responses:
+   *       200:
+   *         description: A single blog post
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Post'
+   *       400:
+   *         description: Bad request (missing or invalid data)
+   *       500:
+   *         description: Internal server error while handling request
    */
   router.get("/:postId", async function (req, res, next) {
     const { postId } = req.params;
@@ -80,33 +150,29 @@ module.exports = (config) => {
     const blogIds = account.Blogs.map((blog) => blog.blogId);
     try {
       const post = await PostService.findOne({ postId, blogIds });
-      return res.json({ post });
+
+      return res.sendResponse({ status: 200, data: post });
     } catch (error) {
       return next(error);
     }
   });
 
-  /** GET /:id/comments Gets comments for a post */
-  router.get("/:postId/comments", async function (req, res, next) {
-    try {
-      const { postId } = req.params;
-      const { orgId } = req;
-      const comments = await CommentService.findAllByPost({ orgId, postId });
-      return res.status(200).json({
-        msg: `Returning comments for post ${postId} from org ${orgId}`,
-        comments,
-      });
-    } catch (error) {
-      return next(error);
-    }
-  });
+  // This should just be in the Comment API
 
-  /** POST /:id/comments Adds a comment to a blog post
-   * req.body requires userId and body
-   *  URL like
-   * .com/posts/:id/comments
-   * .com/posts/3/comments
-   */
+  // router.get("/:postId/comments", async function (req, res, next) {
+  //   try {
+  //     const { postId } = req.params;
+  //     const { orgId } = req;
+  //     const comments = await CommentService.findAllByPost({ orgId, postId });
+  //     return res.sendResponse({ status: 200, data: comments });
+  //   } catch (error) {
+  //     return next(error);
+  //   }
+  // });
+
+
+  // This should also be a Comment api since it modifies the Comments resource
+
   router.post(
     "/:postId/comments",
     requireAuth,
@@ -128,9 +194,11 @@ module.exports = (config) => {
         //   Comment.addAiReply(postId);
 
         // console.log(newComment)
-        return res
-          .status(201)
-          .json({ msg: `Created a comment on post ${postId}`, comment });
+        return res.sendResponse({
+          status: 201,
+          data: comment,
+          message: "Comment created",
+        });
       } catch (error) {
         return next(error);
       }

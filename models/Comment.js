@@ -10,26 +10,12 @@ module.exports = (sequelize) => {
         autoIncrement: true,
         primaryKey: true,
       },
-      userId: {
+      authorId: {
         type: DataTypes.STRING,
-        references: {
-          // This is a reference to another table
-          model: "users",
-          // This is the column name of the referenced model
-          key: "userId",
-        },
-      },
-      agentId: {
-        type: DataTypes.STRING(40),
-        references: {
-          // This is a reference to another table
-          model: "agents",
-          // This is the column name of the referenced model
-          key: "agentId",
-        },
+        allowNull: false
       },
       postId: {
-        type: DataTypes.STRING(),
+        type: DataTypes.STRING(14),
         references: {
           // This is a reference to another table
           model: "posts",
@@ -61,21 +47,11 @@ module.exports = (sequelize) => {
     {
       tableName: "comments",
     },
-    {
-      validate: {
-        mustHaveUserOrAgentId() {
-          if (!this.agentId && !this.userId)
-            throw new Error(
-              "At least one of userId or agentId must be provided."
-            );
-        },
-      },
-    }
   );
   // Associations
   Comment.associate = (models) => {
     Comment.belongsTo(models.Post, { foreignKey: "postId" });
-    Comment.belongsTo(models.User, { foreignKey: "userId" });
+    // Comment.belongsTo(models.User, { foreignKey: "userId" });
     // Comment.belongsTo(models.Agent, { foreignKey: "agentId" });
     // Comment.belongsTo(models.Blog, { foreignKey: "blogId" });
   };

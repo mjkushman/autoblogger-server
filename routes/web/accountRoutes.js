@@ -9,7 +9,7 @@ const authService = require("../../services/AuthService");
 const IdGenerator = require("../../utilities/IdGenerator");
 
 const { BadRequestError } = require("../../utilities/expressError");
-const { validateApiKey } = require("../../middleware/validateApiKey");
+const { validateApiKey } = require("../../middleware/authorizations");
 
 module.exports = (config) => {
 
@@ -45,6 +45,18 @@ module.exports = (config) => {
       const token = await authService.generateToken(account);
 
       return res.sendResponse({data: token, status: 201}) 
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+
+  // Handle delete account
+  router.delete("/", async function (req, res, next) {
+    try {
+      const result = await accountService.destroy(req.user.accountId);
+
+      return res.sendResponse({data: result, status: 200, message: "Delete successful."}) 
     } catch (error) {
       return next(error);
     }

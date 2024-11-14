@@ -13,12 +13,6 @@ module.exports = (sequelize) => {
       },
       authorId: {
         type: DataTypes.STRING,
-        // references: {
-        //   // This is a reference to another model
-        //   model: "agents",
-        //   // This is the column name of the referenced model
-        //   key: "agentId",
-        // },
         allowNull: true,
       },
       accountId: {

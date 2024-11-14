@@ -13,6 +13,7 @@ const UNSPLASH_CLIENT_ID = process.env.UNSPLASH_CLIENT_ID;
 const NODE_ENV = process.env.NODE_ENV;
 const DATABASE_USERNAME = process.env.DATABASE_USERNAME
 const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD
+const majorVersion = version[0]
 
 // Use dev database, testing database, or via env var, production database
 function getDatabaseUri() {
@@ -28,7 +29,7 @@ const BCRYPT_WORK_FACTOR = process.env.NODE_ENV === "test" ? 1 : 12;
 
 
 console.log("==============================");
-console.log(`${name} Version ${version}`)
+console.log(`${name} Version ${version} Major Version ${majorVersion}`)
 console.log("--Config--".green);
 console.log("NODE_ENV:".yellow, NODE_ENV);
 console.log("SECRET_KEY:".red, SECRET_KEY);
@@ -53,6 +54,7 @@ module.exports = {
   development: {
     name,
     version,
+    majorVersion,
     database:{
       options:{
         host:'localhost',
@@ -74,6 +76,7 @@ module.exports = {
   testing:{
     name,
     version,
+    majorVersion,
     database:{
       options:{
         host:'localhost',

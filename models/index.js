@@ -9,6 +9,7 @@ const {
   postSeed,
   agentSeed,
   statusSeed,
+  commentSeed,
 } = require("./seedData");
 
 // Create the sequelize client by connecting to db with config options
@@ -92,12 +93,16 @@ async function seedData() {
     }
     console.log("Upserted seed data for Agents.");
 
-// Seed Posts
+    // Seed Posts
     for (const post of postSeed) {
       await models.Post.upsert(post);
     }
     console.log("Upserted seed data for posts.");
-    
+    // Seed Comments
+    for (const comment of commentSeed) {
+      await models.Comment.upsert(comment);
+    }
+    console.log("Upserted seed data for comments.");
   } catch (error) {
     console.log("Error seeding:", error);
   }

@@ -22,10 +22,9 @@ module.exports = (config) => {
    */
   router.get("/", async function (req, res, next) {
     try {
-      console.log("route: finding all agents");
       const { accountId } = req.account;
-      const response = await AgentService.findAll({ accountId });
-      return res.status(200).json(response);
+      const agents = await AgentService.findAll({ accountId });
+      return res.sendResponse({status:200, data: agents})
     } catch (error) {
       next(error);
     }
@@ -37,8 +36,8 @@ module.exports = (config) => {
     try {
       console.log("saying hello");
       const { accountId } = req.account;
-      const response = await AgentService.sayHello({ accountId });
-      return res.status(200).json(response);
+      const result = await AgentService.sayHello({ accountId });
+      return res.sendResponse({status:200, data: result})
     } catch (error) {
       next(error);
     }
@@ -48,13 +47,11 @@ module.exports = (config) => {
    */
   router.get("/:agentId", async function (req, res, next) {
     try {
-      console.log("route: finding one agent");
       const { accountId } = req.account;
       const { agentId } = req.params;
-      const response = await AgentService.findOne({ agentId, accountId });
-      return res.status(200).json(response);
+      const agent = await AgentService.findOne({ agentId, accountId });
+      return res.sendResponse({status:200, data: agent})
     } catch (error) {
-      // let errorMessage = new BadRequestError(error);
       next(error);
     }
   });
@@ -62,15 +59,14 @@ module.exports = (config) => {
   // Mostly just used to test the service for getting titles.
   router.get("/:agentId/titles", async function (req, res, next) {
     try {
-      console.log("route: finding titles for one agent");
       const { accountId } = req.account;
       const { agentId } = req.params;
       const agent = await AgentService.findOne({ accountId, agentId });
       if (!agent) throw new NotFoundError("Unable to find agent");
-      const response = await PostService.findRecentTitles({
+      const titles = await PostService.findRecentTitles({
         agentId: agent.agentId,
       });
-      return res.status(200).json(response);
+      return res.sendResponse({status:200, data: titles})
     } catch (error) {
       next(error);
     }
@@ -81,24 +77,11 @@ module.exports = (config) => {
    * Expects the request to have necessary information to create a new author
    */
   router.post("/", async function (req, res, next) {
-    console.log("ROUTE: POST agentRoutes");
-    // // Validate the schema
-    // const validator = jsonschema.validate(req.body, agentCreateSchema);
-    // if (!validator.valid) {
-    //   let errorMessage = new BadRequestError();
-    //   const errors = validator.errors.map((e) => e.stack);
-    //   errorMessage = { ...errorMessage, errors };
-    //   return res.json({errorMessage,});
-    // }
-
-    // Upon valid schema, attempt to create the agent
     try {
-      console.log("trying: agent post route");
       const { body, account } = req;
       const { accountId } = account;
-      return res
-        .status(201)
-        .json(await AgentService.create({ body, accountId }));
+      const agent = await AgentService.create({ body, accountId })
+      return res.sendResponse({status:201, data: agent})
     } catch (error) {
       next(error);
     }
@@ -123,32 +106,12 @@ module.exports = (config) => {
       
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.update({ accountId, agentId, body });
-      return res.status(200).json(result);
+      return res.sendResponse({status:200, data: result})
     } catch (error) {
       next(error);
     }
   });
   
-  // THIS REPLACES THE PATCH WITH /:agentId
-  router.patch("/", async function (req, res, next) {
-    console.log("HIT NEW PATCH")
-    console.log(req.user)
-    try {
-      // Verify that the agent being updated belongs to the same org as the user making the update
-      const { body } = req;
-      const { accountId } = req.user;
-      const { agentId } = req.body;
-      console.log("agentId",agentId)
-      // const ownedAgents = account.Agents.map((a) => a.agentId)
-      
-      // if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
-      const result = await AgentService.update({ accountId, agentId, body });
-      return res.status(200).json(result);
-    } catch (error) {
-      next(error);
-    }
-  });
-
   // convenience method for easy activation / deactivation
   router.post("/:agentId/activate", async function (req, res, next) {
     try {
@@ -158,7 +121,7 @@ module.exports = (config) => {
       const ownedAgents = account.Agents.map((a) => a.agentId)
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       // const agent = await AgentService.activate({ accountId, agentId });
-      return res.status(201).json(agent);
+      return res.sendResponse({status:201, data: agent})
     } catch (error) {
       next(error);
     }
@@ -172,7 +135,7 @@ module.exports = (config) => {
       const ownedAgents = account.Agents.map((a) => a.agentId)
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       // const agent = await AgentService.deactivate({ accountId, agentId });
-      return res.status(201).json(agent);
+      return res.sendResponse({status:201, data: agent})
     } catch (error) {
       next(error);
     }
@@ -187,7 +150,7 @@ module.exports = (config) => {
       const ownedAgents = account.Agents.map((a) => a.agentId)
       if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.delete({ accountId, agentId });
-      return res.status(200).json(result);
+      return res.sendResponse({status:200, data: result})
     } catch (error) {
       next(error);
     }
@@ -208,14 +171,14 @@ module.exports = (config) => {
       const { agentId } = req.params;
       let { body: options } = req;
       let post = await AgentService.writePost({ agentId, options });
-      return res.status(201).json({ post });
+      return res.sendResponse({status:201, data: post})
     } catch (error) {
       next(error);
     }
   });
 
   /** Manually create a new social post */
-  router.post("/:agentId/social", async function (req, res, next) {});
+  // router.post("/:agentId/social", async function (req, res, next) {});
 
   return router;
 };

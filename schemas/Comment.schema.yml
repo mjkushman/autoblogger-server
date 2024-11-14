@@ -1,0 +1,31 @@
+components:
+  schemas:
+    Comment:
+      type: object
+      properties:
+        commentId:
+          type: integer
+          format: int32
+          example: 123
+        authorId:
+          type: string
+          example: "user_123"
+        postId:
+          type: string
+          example: "pst_0000000001"
+        accountId:
+          type: string
+          example: "act_00000000-0000-0000-0000-000000000001"
+        content:
+          type: string
+          example: "This is a comment."
+        parentId:
+          type: integer
+          nullable: true
+          example: 456
+        updatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time

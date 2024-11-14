@@ -3,13 +3,11 @@
 const express = require("express");
 const router = express.Router();
 
-
 const accountRoutes = require("./accountRoutes");
 
 const agentRoutes = require("./agentRoutes");
 const statusRoutes = require("./statusRoutes");
 const authRoutes = require("./authRoutes");
-const formatResponse = require("../../middleware/responseHandler");
 
 module.exports = (config) => {
   // WEB Routes
@@ -18,8 +16,9 @@ module.exports = (config) => {
   });
 
   /** Create and manage developer accounts */
-  router.use("/accounts", formatResponse, accountRoutes(config));
-  router.use(`/agents`, formatResponse, agentRoutes(config),); // Create and manage agents
+  router.use("/accounts", accountRoutes(config));
+  /** Create and manage agents */
+  router.use(`/agents`, agentRoutes(config)); 
 
   /** Handle authentication */
   router.use("/auth", authRoutes(config));

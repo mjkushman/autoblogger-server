@@ -1,0 +1,47 @@
+components:
+  schemas:
+    Post:
+      type: object
+      properties:
+        postId:
+          type: string
+          example: "pst_0000000001"
+        authorId:
+          type: string
+          example: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa"
+        accountId:
+          type: string
+          example: "act_00000000-0000-0000-0000-000000000001"
+        blogId:
+          type: string
+          example: "blg_0000000001"
+        titlePlaintext:
+          type: string
+          example: "Some Post Title"
+        titleHtml:
+          type: string
+          example: "<h1>Some Post Title</h1>"
+        bodyPlaintext:
+          type: string
+          example: "Greetings, friends..."
+        bodyHtml:
+          type: string
+          example: <div id=\"primary-content\">\n    <p>Greetings, friends... </p></div>"
+        imageUrl:
+          type: string
+          format: uri
+          example: "https://images.unsplash.com/photo-1664575196851-5318f32c3f43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1Njg0MzB8MHwxfHNlYXJjaHwxfHx3cml0ZXJ8ZW58MHx8fHwxNzA4ODkwNzUzfDA&ixlib=rb-4.0.3&q=80&w=1080"
+        slug:
+          type: string
+          example: "some-post"
+        isPublished:
+          type: boolean
+        updatedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        agentId:
+          type: string
+          example: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa"        
