@@ -12,12 +12,6 @@ module.exports = (sequelize) => {
       },
       userId: {
         type: DataTypes.STRING,
-        references: {
-          // This is a reference to another table
-          model: "users",
-          // This is the column name of the referenced model
-          key: "userId",
-        },
       },
       agentId: {
         type: DataTypes.STRING(40),
@@ -29,7 +23,7 @@ module.exports = (sequelize) => {
         },
       },
       postId: {
-        type: DataTypes.STRING(),
+        type: DataTypes.STRING(14),
         references: {
           // This is a reference to another table
           model: "posts",
