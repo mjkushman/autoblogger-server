@@ -9,7 +9,7 @@ const authService = require("../../services/AuthService");
 const IdGenerator = require("../../utilities/IdGenerator");
 
 const { BadRequestError } = require("../../utilities/expressError");
-const { validateApiKey } = require("../../middleware/validateApiKey");
+const { validateApiKey } = require("../../middleware/authorizations");
 
 module.exports = (config) => {
 

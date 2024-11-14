@@ -16,6 +16,60 @@ const {
 const { Status } = require("../../models");
 const StatusService = require("../../services/StatusService");
 
+/**
+ * @openapi
+  * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: The user ID.
+ *           example: 0
+ *         name:
+ *           type: string
+ *           description: The user's name.
+ *           example: Leanne Graham
+ *     Post:
+ *       type: object
+ *       properties:
+ *         postId:
+ *           type: string
+ *           example: 'post_123'
+ *         authorId:
+ *           type: string
+ *           example: 'user_456'
+ *         accountId:
+ *           type: string
+ *           example: 'account_789'
+ *         blogId:
+ *           type: string
+ *           example: 'blog_abc'
+ *         titlePlaintext:
+ *           type: string
+ *           example: 'My First Post'
+ *         titleHtml:
+ *           type: string
+ *           example: '<h1>My First Post</h1>'
+ *         bodyPlaintext:
+ *           type: string
+ *           example: 'This is the body of my first post.'
+ *         bodyHtml:
+ *           type: string
+ *           example: '<p>This is the body of my first post.</p>'
+ *         imageUrl:
+ *           type: string
+ *           format: uri
+ *           example: 'https://example.com/image.jpg'
+ *         slug:
+ *           type: string
+ *           example: 'my-first-post'
+ *         isPublished:
+ *           type: boolean
+ *           example: true
+ */
+
 module.exports = (config) => {
   /**
    * @openapi
@@ -30,14 +84,7 @@ module.exports = (config) => {
    *       content:
    *         application/json:
    *           schema:
-   *             type: object
-   *             properties:
-   *               agentId:
-   *                 type: string
-   *                 description: The ID of the agent to generate the post with.
-   *               options:
-   *                 type: object
-   *                 description: Optional options for the generated post (details depend on the agent).
+   *              $ref: '#components/schemas/Post'
    *     responses:
    *       201:
    *         description: Request received and post generation initiated.
@@ -122,7 +169,7 @@ module.exports = (config) => {
     const blogIds = account.Blogs.map((blog) => blog.blogId);
     try {
       const post = await PostService.findOne({ postId, blogIds });
-      
+
       return res.sendResponse({ status: 200, data: post });
     } catch (error) {
       return next(error);
@@ -161,7 +208,11 @@ module.exports = (config) => {
         //   Comment.addAiReply(postId);
 
         // console.log(newComment)
-          return res.sendResponse({ status: 201, data: comment, message: "Comment created"});
+        return res.sendResponse({
+          status: 201,
+          data: comment,
+          message: "Comment created",
+        });
       } catch (error) {
         return next(error);
       }
@@ -169,3 +220,4 @@ module.exports = (config) => {
   );
   return router;
 };
+

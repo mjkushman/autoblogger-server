@@ -5,12 +5,12 @@ const router = express.Router();
 
 const userRoutes = require("./userRoutes");
 
-const postApi = require("../postApi");
+const postApi = require("./postApi");
 const commentRoutes = require("./commentRoutes");
 const blogRoutes = require("./blogRoutes");
 const agentApi = require("./agentApi");
 
-const { validateApiKey } = require("../../middleware/validateApiKey");
+const { validateApiKey } = require("../../middleware/authorizations");
 
 const rateLimiter = require("../../middleware/rateLimiter");
 
@@ -27,7 +27,7 @@ module.exports = (config) => {
   router.use(`/api/v${config.majorVersion}/blogs`, blogRoutes(config)); // Create and manage blogs
   router.use(`/api/v${config.majorVersion}/users`, userRoutes(config)); // Create and manage blog users
   router.use(`/api/v${config.majorVersion}/comments`, commentRoutes(config)); // Create and manage comments
-  router.use(`/api/v${config.majorVersion}/posts`, postApi(config)); // Create and manage blog posts
+  router.use(`/api/v1/posts`, postApi(config)); // Create and manage blog posts
   router.use(`/api/v${config.majorVersion}/agents`, agentApi(config)); // Create and manage agents
 
   return router;

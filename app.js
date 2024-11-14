@@ -18,7 +18,7 @@ const formatResponse = require('./middleware/responseHandler')
 
 const app = express();
 
-const routes = require("./routes/web");
+const routes = require("./routes");
 
 
 module.exports = (config) => {
