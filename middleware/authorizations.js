@@ -42,7 +42,6 @@ function verifyJWT(req, res, next) {
  * The function above, verifyJWT, will set res.locals.user if a valid token is provided
  */
 function requireAuth(req, res, next) {
-  console.log("VERIFY LOGIN", { ...res.locals });
   try {
     if (req.user == null) throw new UnauthorizedError();
     return next();
@@ -83,7 +82,6 @@ async function validateApiKey(req, res, next) {
     const cachedAccount = cache.get(apiKey);
     if (cachedAccount) {
       req.account = cachedAccount;
-      // console.log('FOUND USER IN CACHE')
       return next();
     }
 
