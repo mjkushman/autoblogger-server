@@ -157,6 +157,20 @@ module.exports = (config) => {
     }
   });
 
+  /** Delete this agent entirely */
+  router.delete("/:postId", async function (req, res, next) {
+    try {
+      const { account } = req;
+      const { accountId } = account;
+      const { postId } = req.params;
+
+      const result = await PostService.delete({ accountId, postId });
+      return res.sendResponse({ status: 200, data: result });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // This should just be in the Comment API
 
   // router.get("/:postId/comments", async function (req, res, next) {
@@ -169,7 +183,6 @@ module.exports = (config) => {
   //     return next(error);
   //   }
   // });
-
 
   // This should also be a Comment api since it modifies the Comments resource
 
@@ -204,5 +217,6 @@ module.exports = (config) => {
       }
     }
   );
+
   return router;
 };

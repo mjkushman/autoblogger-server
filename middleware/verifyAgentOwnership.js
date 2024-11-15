@@ -7,7 +7,9 @@ module.exports = {
     const { account } = req;
     const { agentId } = req.body;
 
-    let ownedAgentIds = account.agents.map((agent) => agent.agentId);
+    const agents = account.Agents || account.agents
+
+    let ownedAgentIds = agents.map((agent) => agent.agentId);
     try {
       console.log(`owned Ids: ${ownedAgentIds}`);
       if (ownedAgentIds.includes(agentId)) return next();

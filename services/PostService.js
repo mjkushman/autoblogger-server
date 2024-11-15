@@ -39,5 +39,23 @@ class PostService {
       throw new Error(error);
     }
   }
+
+  static async delete({ postId, accountId }) {
+    console.log(
+      `service: deactivating and deleting post ${postId} for account: ${accountId}`
+    );
+    try {
+      let result = await Post.destroy({ where: { postId, accountId } });
+      if (result > 0) {
+        return { message: "Delete successful" };
+      } else {
+        throw new NotFoundError(
+          `Post ${postId} for account ${accountId} not found.`
+        );
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 module.exports = PostService;
