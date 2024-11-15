@@ -22,7 +22,7 @@ module.exports = (config) => {
    * /posts:
    *   post:
    *     tags: [Posts]
-   *     summary: Generate and save a new post
+   *     summary: Generates a new post written by an AI Agent
    *     security:
    *       - ApiKeyAuth: []
    *     requestBody:
@@ -33,7 +33,7 @@ module.exports = (config) => {
    *              $ref: '#/components/schemas/NewPostByAgentBody'
    *     responses:
    *       201:
-   *         description: Request received and post generation initiated.
+   *         description: Responds with a status ID while the post is generated asynchonously
    *         content:
    *           application/json:
    *             schema:
@@ -157,7 +157,34 @@ module.exports = (config) => {
     }
   });
 
-  /** Delete this agent entirely */
+  /**
+   * @openapi
+   * /posts/{postId}:
+   *   delete:
+   *     tags: [Posts]
+   *     summary: Deletes a single post
+   *     parameters:
+   *      - in: path
+   *        name: postId
+   *        required: true
+   *        schema:
+   *          type: string
+   *        description: Unique identifier for a post
+   *        example: 'pst_0000000001'
+   *     security:
+   *       - ApiKeyAuth: []
+   *     responses:
+   *       200:
+   *         description: Confirmation message
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/DeleteSuccess'
+   *       400:
+   *         description: Bad request (missing or invalid data)
+   *       500:
+   *         description: Internal server error while handling request
+   */
   router.delete("/:postId", async function (req, res, next) {
     try {
       const { account } = req;

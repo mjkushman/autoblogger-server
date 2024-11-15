@@ -7,20 +7,6 @@ const router = express.Router();
 const path = require("path");
 
 
-// # 1) Define the key name and location
-// components:
-//   securitySchemes:
-//     ApiKeyAuth: # arbitrary name for the security scheme
-//       type: apiKey
-//       in: header # can be "header", "query" or "cookie"
-//       name: X-API-KEY # name of the header, query parameter or cookie
-
-// # 2) Apply the API key globally to all operations
-// security:
-//   - ApiKeyAuth: [] # use the same name as under securitySchemes
-
-
-
 
 
 const options = {
@@ -49,11 +35,6 @@ const options = {
         },
       },
     },
-    security: [
-      {
-        ApiKeyAuth: [],
-      },
-    ],
     tags: [
       {
         name: "Posts",
