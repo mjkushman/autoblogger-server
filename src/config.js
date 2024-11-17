@@ -1,10 +1,13 @@
 "use strict";
 
 /** Shared config for application; can be required many places. */
+const dotenv = require("dotenv");
+dotenv.config();
 
 require("colors");
 
-const {name, version } = require('./package.json')
+const version = 1
+const name = "Autoblogger"
 const SECRET_KEY = process.env.SECRET_KEY || "secret-dev";
 const PORT = +process.env.PORT || 3001;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;

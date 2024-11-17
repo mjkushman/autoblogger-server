@@ -3,8 +3,8 @@
  *
  */
 
-const Post = require("../models/post");
-const User = require("../models/user");
+const Post = require("../models/Post");
+const User = require("../models/User");
 const { ExpressError } = require("./expressError");
 
 const { OPEN_AI_KEY } = require("../config");

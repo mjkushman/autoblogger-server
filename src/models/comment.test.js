@@ -1,7 +1,7 @@
 "use strict";
 
-const db = require('../db.js')
-const Comment = require('./comment.js'
+const db = require('../../db.js')
+const Comment = require('./Comment.js'
 )
 const {commonBeforeAll, 
     commonAfterAll, 

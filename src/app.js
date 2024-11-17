@@ -1,7 +1,6 @@
-"use strict";
+// "use strict";
 
 /** Express app for AUTOBLOGGER. */
-
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
@@ -14,14 +13,10 @@ const swaggerUI = require('swagger-ui-express')
 const swaggerSpec = require('./utilities/api_docs/swagger')
 const formatResponse = require('./middleware/responseHandler')
 
-
-
 const app = express();
 
-const routes = require("./routes");
-
-
 module.exports = (config) => {
+  const routes = require("./routes");
   app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec))
   
   app.use(cors());

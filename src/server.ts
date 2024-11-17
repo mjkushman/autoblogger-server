@@ -1,7 +1,8 @@
-"use strict";
+// "use strict";
+const dotenv = require("dotenv");
+dotenv.config();
 
 const createApp = require("./app");
-
 
 const { PORT, NODE_ENV } = require("./config");
 const config = require("./config")[NODE_ENV];
