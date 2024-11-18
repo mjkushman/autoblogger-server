@@ -1,5 +1,5 @@
-const { NODE_ENV } = require("../config");
-const config = require("../config")[NODE_ENV];
+import config from "../config"
+
 
 const Sequelize = require("sequelize");
 const {

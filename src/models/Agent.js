@@ -3,9 +3,12 @@ const { nanoid } = require("nanoid");
 const IdGenerator = require("../utilities/IdGenerator");
 const cronstrue = require("cronstrue");
 const cron = require("node-cron");
-const config = require("../config")["development"];
-const {cronEncode, cronDecode} = require('../utilities/cronEncoder' )
 
+const {cronEncode, cronDecode} = require('../utilities/cronEncoder' )
+import config from "../config"
+
+
+// const sequelize = new Sequelize(config.database.options);
 const sequelize = new Sequelize(config.database.options);
 
 const validLLMs = ["chatgpt", "claude"];

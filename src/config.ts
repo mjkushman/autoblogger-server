@@ -1,10 +1,11 @@
 "use strict";
 
 /** Shared config for application; can be required many places. */
-const dotenv = require("dotenv");
+import dotenv from"dotenv";
 dotenv.config();
 
-require("colors");
+import "colors";
+import { Config } from "./types/Config.type";
 
 const version = 1
 const name = "Autoblogger"
@@ -19,7 +20,7 @@ const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD
 const majorVersion = version[0]
 
 // Use dev database, testing database, or via env var, production database
-function getDatabaseUri() {
+function getDatabaseUri(): string {
   return (process.env.NODE_ENV === "test")
       ? "autoblogger_test"
       : process.env.DATABASE_URL || "autoblogger";
@@ -27,8 +28,6 @@ function getDatabaseUri() {
 
 // Speed up bcrypt during tests, since the algorithm safety isn't being tested
 const BCRYPT_WORK_FACTOR = process.env.NODE_ENV === "test" ? 1 : 12;
-
-
 
 
 console.log("==============================");
@@ -45,7 +44,7 @@ console.log("Database User:".yellow, DATABASE_USERNAME);
 console.log("==============================");
 
 
-module.exports = {
+const config:Config = {
   NODE_ENV,
   SECRET_KEY,
   PORT,
@@ -91,5 +90,13 @@ module.exports = {
       },
       client:null
     },
+    SECRET_KEY,
+    PORT,
+    BCRYPT_WORK_FACTOR,
+    OPENAI_API_KEY,
+    ANTHROPIC_KEY,
+    UNSPLASH_CLIENT_ID,
   }
 };
+
+export default config[NODE_ENV]

@@ -6,7 +6,7 @@ export type Config = {
     OPENAI_API_KEY: string,
     ANTHROPIC_KEY: string,
     UNSPLASH_CLIENT_ID: string,
-    getDatabaseUri: string,
+    getDatabaseUri: ()=> string ,
     development: {
       name: string,
       version: number,
@@ -15,7 +15,7 @@ export type Config = {
         options:{
           host: string,
           port: string,
-          database: () => string,
+          database: string,
           dialect: string,
           username: string,
           password: string,
@@ -37,7 +37,7 @@ export type Config = {
           options:{
             host: string,
             port: string,
-            database: () => string,
+            database: string,
             dialect: string,
             username: string,
             password: string,
