@@ -1,17 +1,16 @@
 // "use strict";
-const dotenv = require("dotenv");
+import dotenv from "dotenv";
 dotenv.config();
 
-const createApp = require("./app");
+import { Express } from "express";
+import createApp from "./app";
 
 const { PORT, NODE_ENV } = require("./config");
 const config = require("./config")[NODE_ENV];
 
-
 // CREATE THE APP
-const app = createApp(config);
+const app: Express = createApp(config);
 
 app.listen(PORT, function () {
   console.log(`Started on http://localhost:${PORT}`);
-
 });
