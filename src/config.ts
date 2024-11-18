@@ -8,6 +8,7 @@ import "colors";
 import { Config } from "./types/Config.type";
 
 const version = 1
+const majorVersion = 1
 const name = "Autoblogger"
 const SECRET_KEY = process.env.SECRET_KEY || "secret-dev";
 const PORT = +process.env.PORT || 3001;
@@ -17,7 +18,6 @@ const UNSPLASH_CLIENT_ID = process.env.UNSPLASH_CLIENT_ID;
 const NODE_ENV = process.env.NODE_ENV;
 const DATABASE_USERNAME = process.env.DATABASE_USERNAME
 const DATABASE_PASSWORD = process.env.DATABASE_PASSWORD
-const majorVersion = version[0]
 
 // Use dev database, testing database, or via env var, production database
 function getDatabaseUri(): string {
@@ -45,14 +45,6 @@ console.log("==============================");
 
 
 const config:Config = {
-  NODE_ENV,
-  SECRET_KEY,
-  PORT,
-  BCRYPT_WORK_FACTOR,
-  OPENAI_API_KEY,
-  ANTHROPIC_KEY,
-  UNSPLASH_CLIENT_ID,
-  getDatabaseUri,
   development: {
     name,
     version,

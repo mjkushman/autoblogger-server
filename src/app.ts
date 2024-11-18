@@ -31,12 +31,12 @@ const createApp = (config: Config): Express => {
 
   app.use("/", formatResponse, routes(config)); // All the routes
 
+  // New error handler
+  app.use(errorHandler);
   /** Handle 404 errors -- this matches everything */
   app.use(function (req: Request, res: Response, next: NextFunction) {
     return next(new NotFoundError());
   });
-  // New error handler
-  app.use(errorHandler);
   return app;
 };
 

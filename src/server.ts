@@ -5,15 +5,16 @@ dotenv.config();
 import { Express } from "express";
 import createApp from "./app";
 
-const { PORT, NODE_ENV } = require("./config");
 import config from "./config";
+
 
 
 // const config = require("./config")[NODE_ENV];
 
 // CREATE THE APP
+console.log('creating app with config: ',config )
 const app: Express = createApp(config);
 
-app.listen(PORT, function () {
-  console.log(`Started on http://localhost:${PORT}`);
+app.listen(config.PORT, function () {
+  console.log(`Started on http://localhost:${config.PORT}`);
 });

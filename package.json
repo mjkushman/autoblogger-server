@@ -11,7 +11,8 @@
   "jest": {
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "config.js"
+      "config.js",
+      "config.ts"
     ],
     "setupFiles": [
       "dotenv/config"

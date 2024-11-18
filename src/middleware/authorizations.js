@@ -62,10 +62,11 @@ async function validateApiKey(req, res, next) {
       apiKey: "01.123456789012345678901234567890",
     });
 
-    console.log("continuing in dev environment", devAccount);
+    console.log("continuing in dev environment" );
+    // console.log(devAccount);
     req.account = devAccount;
-    console.log(req.account);
-    console.log(req);
+    // console.log(req.account);
+    // console.log(req);
     cache.set(apiKey, devAccount);
     return next();
   }

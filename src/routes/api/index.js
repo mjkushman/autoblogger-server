@@ -16,7 +16,7 @@ const rateLimiter = require("../../middleware/rateLimiter");
 
 module.exports = (config) => {
   // API Routes
-
+console.log("CONFIG MAJORVERSION", config.majorVersion)
   router.get("/", (req, res) => {
     res.send("Welcome to autoblogger");
   });

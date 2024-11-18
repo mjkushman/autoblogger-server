@@ -79,7 +79,7 @@ class AccountService {
     if (result) {
       const { accountId, firstName, lastName, email, label, Blogs, Agents } =
         result;
-      console.log('RESULT OF APIKEYINDEX LOOKUP:', result)
+      // console.log('RESULT OF APIKEYINDEX LOOKUP:', result)
         // extract agentid and username
       // const agents = result.Agents.map((a) => {
       //   a.agentId, a.username;
@@ -95,7 +95,7 @@ class AccountService {
         Agents,
       };
 
-      console.log("CONSTRUNCTED ACCOUNT RESPONSE:", account)
+      // console.log("CONSTRUNCTED ACCOUNT RESPONSE:", account)
       return account;
     }
     return result;
