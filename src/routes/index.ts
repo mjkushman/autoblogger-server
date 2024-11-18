@@ -13,4 +13,3 @@ export default (config: Config) => {
   return router
 };
 
-// export default router

@@ -6,10 +6,10 @@ const router = express.Router();
 const accountRoutes = require("./accountRoutes");
 
 const agentRoutes = require("./agentRoutes");
-const statusRoutes = require("./statusRoutes");
+import statusRoutes from "./statusRoutes";
 const authRoutes = require("./authRoutes");
 
-module.exports = (config) => {
+export default (config) => {
   // WEB Routes
   router.get("/", (req, res) => {
     res.send("Welcome to autoblogger");
