@@ -13,12 +13,12 @@ import swaggerUI from "swagger-ui-express";
 import swaggerSpec from "./utilities/api_docs/swagger";
 import formatResponse from "./middleware/responseHandler";
 import { Config } from "./types/Config.type";
+import routes from "./routes";
 
 
 const createApp = (config: Config): Express => {
   const app: Express = express();
   
-  const routes = require("./routes");
   
   // Set up swagger documentation
   app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
