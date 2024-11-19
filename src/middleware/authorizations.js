@@ -1,15 +1,15 @@
 "use strict";
 
-const jwt = require("jsonwebtoken");
-const { SECRET_KEY } = require("../config");
-const {
+import jwt from"jsonwebtoken";
+import config from "../config";
+import {
   ExpressError,
   UnauthorizedError,
   NotFoundError,
-} = require("../utilities/expressError");
-const AccountService = require("../services/AccountService");
-const { cache } = require("../cache");
-const bcrypt = require("bcrypt");
+} from "../utilities/expressError";
+import AccountService from "../services/AccountService";
+import { cache } from "../cache";
+import bcrypt from "bcrypt";
 
 /** Middleware for requiring authorizations
  *
@@ -20,20 +20,23 @@ const bcrypt = require("bcrypt");
  * If no token, also return next
  * Token is not needed. But it will only store res.locals.user if a valid token is provided.
  */
-function verifyJWT(req, res, next) {
+export function verifyJWT(req, res, next) {
   try {
     const authHeader = req.headers?.authorization;
     if (authHeader) {
       console.log("found header: ", authHeader);
+      console.log('ABOUT TO JWT VERIFY WITH SECRET KEY:', config.SECRET_KEY)
       let token = authHeader
         .replace(/^[Bb]earer\s+["']?([^"']+)["']?$/, "$1")
         .trim(); // strip "bearer" and any quotes from the token
-
-      req.user = jwt.verify(token, SECRET_KEY);
+      console.log('TOKEN:', token)
+      console.log('VERIFYING', jwt.verify(token, config.SECRET_KEY))
+        req.user = jwt.verify(token, config.SECRET_KEY);
       console.log("stored user token to req.user", req.user);
     }
     return next();
   } catch (error) {
+    console.log(error)
     return next();
   }
 }
@@ -41,7 +44,7 @@ function verifyJWT(req, res, next) {
 /** Makes sure a user is logged in by checking for a user object on res.locals
  * The function above, verifyJWT, will set res.locals.user if a valid token is provided
  */
-function requireAuth(req, res, next) {
+export function requireAuth(req, res, next) {
   try {
     if (req.user == null) throw new UnauthorizedError();
     return next();
@@ -51,7 +54,7 @@ function requireAuth(req, res, next) {
 }
 
 // Validate the API key and attached the retrieved account to the request
-async function validateApiKey(req, res, next) {
+export async function validateApiKey(req, res, next) {
   const apiKey = req.headers["X-API-KEY"] || req.headers["x-api-key"];
   const hostname = req.hostname; // host from headers
   const host = req.headers.host; // host from headers
@@ -113,4 +116,4 @@ async function validateApiKey(req, res, next) {
   }
 }
 
-module.exports = { requireAuth, verifyJWT, validateApiKey };
+// module.exports = { requireAuth, verifyJWT, validateApiKey };

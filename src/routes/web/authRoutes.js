@@ -9,7 +9,7 @@ const registerSchema = require("../../schemas/userRegister.json");
 const userAuthSchema = require("../../schemas/userAuthenticate.json");
 const { BadRequestError } = require("../../utilities/expressError");
 const { createToken } = require("../../utilities/jwtoken");
-const AuthService = require("../../services/AuthService");
+import AuthService from "../../services/AuthService";
 
 const router = express.Router({ mergeParams: true });
 

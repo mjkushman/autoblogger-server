@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
-const { BCRYPT_WORK_FACTOR } = require("../config");
+const config = require("../config");
 const IdGenerator = require("../utilities/IdGenerator");
 
 module.exports = (sequelize) => {
@@ -52,26 +52,36 @@ module.exports = (sequelize) => {
         beforeCreate: async (record) => {
           // create Id upon new record
           record.accountId = IdGenerator.accountId();
-  
+
           // hash password key before saving
           if (record.password) {
-            record.password = await bcrypt.hash(
+            bcrypt.hash(
               record.password,
-              BCRYPT_WORK_FACTOR
+              config.BCRYPT_WORK_FACTOR,
+              (err, hashedPassword) => {
+                record.password = hashedPassword;
+              }
             );
           }
           // hash api key before saving
           if (record.apiKey) {
-            bcrypt.hash(record.apiKey, BCRYPT_WORK_FACTOR, (err, hash) => {
-              record.apiKey = hash;
-            });
+            bcrypt.hash(
+              record.apiKey,
+              config.BCRYPT_WORK_FACTOR,
+              (err, hashedApiKey) => {
+                record.apiKey = hashedApiKey;
+              }
+            );
           }
         },
         beforeUpdate: async (record) => {
           if (record.changed("password")) {
-            record.password = await bcrypt.hash(
+            bcrypt.hash(
               record.password,
-              BCRYPT_WORK_FACTOR
+              config.BCRYPT_WORK_FACTOR,
+              (err, hashedPassword) => {
+                record.password = hashedPassword
+              }
             );
           }
         },
@@ -87,8 +97,14 @@ module.exports = (sequelize) => {
 
   // Associations
   Account.associate = (models) => {
-    Account.hasMany(models.Blog, { foreignKey: "accountId",onDelete: 'CASCADE' });
-    Account.hasMany(models.Agent, { foreignKey: "accountId",onDelete: 'CASCADE' });
+    Account.hasMany(models.Blog, {
+      foreignKey: "accountId",
+      onDelete: "CASCADE",
+    });
+    Account.hasMany(models.Agent, {
+      foreignKey: "accountId",
+      onDelete: "CASCADE",
+    });
   };
 
   return Account;

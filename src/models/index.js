@@ -41,7 +41,7 @@ const models = {
   Comment: require("./Comment")(sequelize),
   // more models...
 };
-console.log("MODELS", models);
+// console.log("MODELS", models);
 
 // Call associate methods
 Object.keys(models).forEach((modelName) => {

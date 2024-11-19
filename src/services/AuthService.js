@@ -5,9 +5,10 @@ const {
 } = require("../utilities/expressError");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-import { SECRET_KEY } from "../config";
+import config from "../config";
 
-class AuthService {
+console.log('SECRET KEY AUTH SERVICE', config.SECRET_KEY)
+export class AuthService {
   static async generateToken(account) {
     // strip unecessary items from the token
 
@@ -25,7 +26,7 @@ class AuthService {
     console.log(
       `Returning cleaned account info: ${JSON.stringify(cleanedAccount)}`
     );
-    return jwt.sign(cleanedAccount, SECRET_KEY, { expiresIn: "1d" });
+    return jwt.sign(cleanedAccount, config.SECRET_KEY, { expiresIn: "1d" });
   }
 
   // Accepts email, password. Returns signed JWT.

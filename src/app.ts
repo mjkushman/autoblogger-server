@@ -1,7 +1,7 @@
 // "use strict";
 
 /** Express app for AUTOBLOGGER. */
-import express, { Express, Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import morgan from "morgan";
 
@@ -10,24 +10,31 @@ import { verifyJWT } from "./middleware/authorizations";
 import errorHandler from "./middleware/errorHandler";
 
 import swaggerUI from "swagger-ui-express";
-import swaggerSpec from "./utilities/api_docs/swagger";
+import {
+  spec,
+  swaggerUiOptions,
+  makeSwaggerDocs,
+} from "./utilities/api_docs/swagger";
 import formatResponse from "./middleware/responseHandler";
 import { Config } from "./types/Config.type";
 import routes from "./routes";
 
-
 const createApp = (config: Config): Express => {
   const app: Express = express();
-  
-  
   // Set up swagger documentation
-  app.use("/docs", swaggerUI.serve, swaggerUI.setup(swaggerSpec));
+  app.use(
+    "/docs",
+    swaggerUI.serve,
+    swaggerUI.setup(spec, swaggerUiOptions)
+  );
+
+  // app.use(makeSwaggerDocs(config));
 
   app.use(cors());
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(morgan("tiny"));
-  app.use(verifyJWT); // stores decoded token on res.locals.user, if one is provided
+  app.use(verifyJWT); // stores decoded token on res.user, if one is provided
 
   app.use("/", formatResponse, routes(config)); // All the routes
 
@@ -40,4 +47,4 @@ const createApp = (config: Config): Express => {
   return app;
 };
 
-export default createApp
+export default createApp;

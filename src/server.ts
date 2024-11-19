@@ -8,9 +8,6 @@ import createApp from "./app";
 import config from "./config";
 
 
-
-// const config = require("./config")[NODE_ENV];
-
 // CREATE THE APP
 console.log('creating app with config: ',config )
 const app: Express = createApp(config);
