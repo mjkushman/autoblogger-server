@@ -3,7 +3,7 @@ const { randomUUID } = require("crypto");
 
 class IdGenerator {
   static agentId() {
-    return `agt_${randomUUID()}`; // 40 char total
+    return `agt_${nanoid(10)}`; // 14 char total
   };
   static blogId() {
     return `blg_${nanoid(10)}`; // 14 char total

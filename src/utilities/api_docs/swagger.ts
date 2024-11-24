@@ -70,9 +70,8 @@ export const swaggerUiOptions: SwaggerUiOptions = {
   customCss: ".swagger-ui .topbar { display: none }",
 };
 
-console.log("CONFIG", config)
 export function serveApiDocs(config: Config) {
-  router.use("/docs", swaggerUi.serve, swaggerUi.setup(spec, swaggerUiOptions));
+  router.get("/docs", swaggerUi.serve, swaggerUi.setup(spec, swaggerUiOptions));
 
   router.get("/docs.json", (req: Request, res: Response) => {
     res.setHeader("Content-Type", "application/json");
