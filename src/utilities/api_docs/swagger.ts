@@ -5,16 +5,16 @@ import swaggerUi, {
 } from "swagger-ui-express";
 
 import config from "../../config";
-import express from "express";
+import express, { Request, Response } from "express";
+import { Config } from "../../types/Config.type";
 const router = express.Router();
-
 
 const options: OAS3Options = {
   definition: {
     openapi: "3.0.0",
     info: {
       title: "Autoblogger API docs",
-      version: config.version,
+      version: String(config.version),
     },
     servers: [
       {
@@ -60,7 +60,6 @@ const options: OAS3Options = {
   ],
 };
 
-
 export const spec = swaggerJsdoc(options);
 // console.log("SWAGGER OPTIONS");
 // console.dir(options);
@@ -69,15 +68,16 @@ export const spec = swaggerJsdoc(options);
 
 export const swaggerUiOptions: SwaggerUiOptions = {
   customCss: ".swagger-ui .topbar { display: none }",
-
 };
 
-export function makeSwaggerDocs(config) {
-  router.use(
-    "/docs",
-    swaggerUi.serve,
-    swaggerUi.setup(spec, swaggerUiOptions)
-  );
+console.log("CONFIG", config)
+export function serveApiDocs(config: Config) {
+  router.use("/docs", swaggerUi.serve, swaggerUi.setup(spec, swaggerUiOptions));
+
+  router.get("/docs.json", (req: Request, res: Response) => {
+    res.setHeader("Content-Type", "application/json");
+    res.send(spec);
+  });
 
   console.log(`Docs available at http://localhost:${config.PORT}`);
 }

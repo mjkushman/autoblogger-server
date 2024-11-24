@@ -8,12 +8,19 @@ const accountRoutes = require("./accountRoutes");
 const agentRoutes = require("./agentRoutes");
 import statusRoutes from "./statusRoutes";
 const authRoutes = require("./authRoutes");
+import { spec } from "../../utilities/api_docs/swagger";
 
 export default (config) => {
   // WEB Routes
   router.get("/", (req, res) => {
     res.send("Welcome to autoblogger");
   });
+
+  router.use("/jdoc", (req,res,next) => {
+    
+      res.json(spec);
+    
+  })
 
   /** Create and manage developer accounts */
   router.use("/accounts", accountRoutes(config));

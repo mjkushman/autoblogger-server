@@ -44,7 +44,7 @@ console.log("Database User:".yellow, DATABASE_USERNAME);
 console.log("==============================");
 
 
-const config:Config = {
+const configs: { [key: string]: Config } = {
   development: {
     name,
     version,
@@ -91,4 +91,4 @@ const config:Config = {
   }
 };
 
-export default config[NODE_ENV]
+export default configs[NODE_ENV]
