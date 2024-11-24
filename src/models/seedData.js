@@ -1,29 +1,35 @@
 // developer accounts
+
+import config from'../config'
+
 const accountSeed = [
   {
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     firstName: "Mandor",
     lastName: "Shebang",
     email: "org1@org1.com",
     apiKey: "01.123456789012345678901234567890",
+    openAiApiKey: config.OPENAI_API_KEY,
     apiKeyIndex: "01.123456",
     password: "hashedpassword",
   },
   {
-    accountId: "act_00000000-0000-0000-0000-000000000002",
+    accountId: "act_0000000002",
     firstName: "Marigold",
     lastName: "Moonbeam",
     email: "org2@org2.com",
     apiKey: "02.123456789012345678901234567890",
+    openAiApiKey: config.OPENAI_API_KEY,
     apiKeyIndex: "02.123456",
     password: "hashedpassword",
   },
   {
-    accountId: "act_00000000-0000-0000-0000-000000000003",
+    accountId: "act_0000000003",
     firstName: "Momo",
     lastName: "Grifter",
     email: "org3@org3.com",
     apiKey: "03.123456789012345678901234567890",
+    openAiApiKey: config.OPENAI_API_KEY,
     apiKeyIndex: "03.123456",
     password: "hashedpassword",
   },
@@ -35,17 +41,17 @@ const statusSeed = {
 const blogSeed = [
   {
     blogId: "blg_0000000001",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     label: "My First Blog for org 1",
   },
   {
     blogId: "blg_0000000002",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     label: "My Second Blog for org 1",
   },
   {
     blogId: "blg_0000000003",
-    accountId: "act_00000000-0000-0000-0000-000000000002",
+    accountId: "act_0000000002",
     label: "My First Blog for org 2",
   },
 ];
@@ -55,7 +61,7 @@ const commentSeed = [
     authorId: "user_123",
     agentId: null,
     postId: "pst_0000000001",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     content: "This is a comment.",
     parentId: null
   },
@@ -63,7 +69,7 @@ const commentSeed = [
     commentId: 101,
     authorId: "user_456",
     postId: "pst_0000000001",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     content: "This is a child comment.",
     parentId: 100
   },
@@ -71,7 +77,7 @@ const commentSeed = [
     commentId: 102,
     authorId: "user_123",
     postId: "pst_0000000002",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     content: "This is another comment",
     parentId: null
   },
@@ -81,7 +87,7 @@ const commentSeed = [
 const userSeed = [
   {
     userId: "usr_00000000-0000-0000-0000-000000000001",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     blogId: "blg_0000000001",
     email: "user1@gmail.com",
     password: "hashedpassword",
@@ -92,7 +98,7 @@ const userSeed = [
   },
   {
     userId: "usr_00000000-0000-0000-0000-000000000002",
-    accountId: "act_00000000-0000-0000-0000-000000000002",
+    accountId: "act_0000000002",
     blogId: "blg_0000000001",
     email: "user2@gmail.com",
     password: "hashedpassword",
@@ -103,7 +109,7 @@ const userSeed = [
   },
   {
     userId: "usr_00000000-0000-0000-0000-000000000003",
-    accountId: "act_00000000-0000-0000-0000-000000000003",
+    accountId: "act_0000000003",
     blogId: "blg_0000000002",
     email: "user3@gmail.com",
     password: "hashedpassword",
@@ -114,7 +120,7 @@ const userSeed = [
   },
   {
     userId: "usr_00000000-0000-0000-0000-000000000004",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     blogId: "blg_0000000002",
     email: "user4@gmail.com",
     password: "hashedpassword",
@@ -125,7 +131,7 @@ const userSeed = [
   },
   {
     userId: "usr_00000000-0000-0000-0000-000000000005",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     blogId: "blg_0000000002",
     email: "user5@gmail.com",
     password: "hashedpassword",
@@ -139,7 +145,7 @@ const userSeed = [
 const agentSeed = [
   {
     agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     blogId: "blg_0000000001",
     email: "agent001@gmail.com",
     firstName: "User",
@@ -157,7 +163,7 @@ const agentSeed = [
   },
   {
     agentId: "agt_00000000-0000-0000-00000000000b",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     blogId: "blg_0000000001",
     email: "agent00b@gmail.com",
     firstName: "User",
@@ -179,7 +185,7 @@ const postSeed = [
     postId: "pst_0000000001",
     authorId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
     agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     blogId: "blg_0000000001",
     titlePlaintext: "Post Title 1",
     titleHtml: "<h1>Post Title 1</h1>",
@@ -255,7 +261,7 @@ const postSeed = [
     blogId: "blg_0000000001",
     authorId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
     agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    accountId: "act_00000000-0000-0000-0000-000000000001",
+    accountId: "act_0000000001",
     titlePlaintext: "Post Title 2",
     titleHtml: "<h1>Post Title 2</h1>",
     bodyPlaintext: `Hey there, paw-some pals and internet enthusiasts!

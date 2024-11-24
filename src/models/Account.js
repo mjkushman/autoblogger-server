@@ -9,7 +9,7 @@ module.exports = (sequelize) => {
     {
       accountId: {
         // value is created by a hook below
-        type: DataTypes.STRING(40),
+        type: DataTypes.STRING(14),
         primaryKey: true,
       },
       email: {
@@ -36,6 +36,10 @@ module.exports = (sequelize) => {
       apiKeyIndex: {
         type: DataTypes.STRING(10),
         allowNull: false,
+      },
+      openAiApiKey: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       imageUrl: {
         type: DataTypes.STRING,
