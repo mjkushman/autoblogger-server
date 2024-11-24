@@ -128,7 +128,8 @@ class AccountService {
       throw new Error(error);
     }
   }
-  static async update(accountId) {
+  
+  static async update({accountId, body}) {
     console.log("account service update");
     try {
       console.log("trying");
