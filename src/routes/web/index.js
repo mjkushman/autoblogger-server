@@ -16,8 +16,8 @@ export default (config) => {
     res.send("Welcome to autoblogger");
   });
 
-  router.use("/jdoc", (req,res,next) => {
-    
+  router.use("/api.json", (req,res,next) => {
+      res.contentType("application/json")
       res.json(spec);
     
   })

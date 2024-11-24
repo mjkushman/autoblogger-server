@@ -77,7 +77,7 @@ class AccountService {
       include: [Blog, Agent],
     });
     if (result) {
-      const { accountId, firstName, lastName, email, label, Blogs, Agents } =
+      const { accountId, firstName, lastName, email, label, Blogs, Agents, openAiApiKey } =
         result;
       // console.log('RESULT OF APIKEYINDEX LOOKUP:', result)
         // extract agentid and username
@@ -91,6 +91,7 @@ class AccountService {
         email,
         label,
         apiKey,
+        openAiApiKey,
         Blogs,
         Agents,
       };
@@ -116,11 +117,28 @@ class AccountService {
     console.log("account service findOne");
     try {
       console.log("trying");
-      let account = await Account.findOne({
+      const account = await Account.findOne({
         where: { accountId },
         include: [Blog, Agent]
       });
       if (!account) throw new NotFoundError("Account not found.");
+      return account;
+    } catch (error) {
+      console.log("catching");
+      throw new Error(error);
+    }
+  }
+  static async update(accountId) {
+    console.log("account service update");
+    try {
+      console.log("trying");
+      const account = await Account.findOne({
+        where: { accountId }
+      });
+      if (!account) throw new NotFoundError("Account not found.");
+      console.log('Attempting account update with body: ', body)
+      await account.update(body);
+      await account.save(); // triggers hooks
       return account;
     } catch (error) {
       console.log("catching");

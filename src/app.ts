@@ -10,7 +10,11 @@ import { verifyJWT } from "./middleware/authorizations";
 import errorHandler from "./middleware/errorHandler";
 
 import swaggerUI from "swagger-ui-express";
-import { spec, swaggerUiOptions } from "./utilities/api_docs/swagger";
+import {
+  spec,
+  swaggerUiOptions,
+  serveApiDocs,
+} from "./utilities/api_docs/swagger";
 import formatResponse from "./middleware/responseHandler";
 import { Config } from "./types/Config.type";
 import routes from "./routes";
@@ -18,9 +22,9 @@ import routes from "./routes";
 const createApp = (config: Config): Express => {
   const app: Express = express();
   // Set up swagger documentation
-  app.use("/docs", swaggerUI.serve, swaggerUI.setup(spec, swaggerUiOptions));
+  // app.use("/docs", swaggerUI.serve, swaggerUI.setup(spec, swaggerUiOptions));
 
-  // app.use(makeSwaggerDocs(config));
+  // app.use(serveApiDocs(config));
 
   app.use(cors());
   app.use(express.urlencoded({ extended: true }));
