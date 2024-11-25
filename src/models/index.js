@@ -1,4 +1,5 @@
 import config from "../config"
+console.log('MODELS INDEX')
 
 
 const Sequelize = require("sequelize");
@@ -28,20 +29,22 @@ async function connectToPostgres() {
   return sequelize;
 }
 
-connectToPostgres();
+// connectToPostgres()
 
 const models = {
   // Add models below:
   Account: require("./Account")(sequelize),
   Blog: require("./Blog")(sequelize),
   User: require("./User")(sequelize),
-  Agent: require("./Agent"),
+  Agent: require("./Agent")(sequelize),
   Status: require("./Status")(sequelize),
   Post: require("./Post")(sequelize),
   Comment: require("./Comment")(sequelize),
   // more models...
 };
-// console.log("MODELS", models);
+// console.log("REGISTERED MODELS AGENT", models.Agent);
+// console.dir( models.Agent);
+
 
 // Call associate methods
 Object.keys(models).forEach((modelName) => {
@@ -56,13 +59,26 @@ Object.keys(models).forEach((modelName) => {
   }
 });
 
+// Sync
+async function syncModels() {
+  console.log('SYNCING MODELS')
+  try {
+    
+    await sequelize.sync({ force: true });
+    console.log('SYNCED MODELS')
+  } catch (error) {
+    console.log('ERROR SYNCING: ',error)
+  }
+}
+
 // What are these two lines even for?
 models.sequelize = sequelize;
 models.Sequelize = Sequelize;
 
 // Add seed data
 async function seedData() {
-  await sequelize.sync({ force: true });
+  console.log('Begin SEEDING')
+  // await sequelize.sync({ force: true });
   try {
     // Seed Accounts
     for (const account of accountSeed) {
@@ -70,11 +86,6 @@ async function seedData() {
     }
     console.log("Upserted seed data for accounts.");
 
-    // let existingAccounts = await models.Account.findAll();
-    // if (existingAccounts.length === 0) {
-    //   await models.Account.bulkCreate(accountSeed);
-    //   console.log("Loaded seed data for accounts.");
-    // }
     // Seed Blogs
     for (const blog of blogSeed) {
       await models.Blog.upsert(blog);
@@ -107,6 +118,13 @@ async function seedData() {
     console.log("Error seeding:", error);
   }
 }
-seedData();
+connectToPostgres()
+.then(()=>syncModels())
+.then( () => {
+  console.log('AGENT AFTER SYNC, before SEED');
+  // console.dir(models.Agent);
+  seedData()}, (e)=> console.log("Error syncing or seeding:", e))
+.catch(e => console.log("Error syncing or seeding:", e))
+
 
 module.exports = models;

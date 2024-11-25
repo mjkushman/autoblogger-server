@@ -1,23 +1,21 @@
+console.log('AGENT MODEL')
 const { DataTypes, ValidationError, Sequelize, Model } = require("sequelize");
 const { nanoid } = require("nanoid");
 const IdGenerator = require("../utilities/IdGenerator");
 const cronstrue = require("cronstrue");
 const cron = require("node-cron");
 
-const {cronEncode, cronDecode} = require('../utilities/cronEncoder' )
-import config from "../config"
-
-
+const { cronEncode, cronDecode } = require("../utilities/cronEncoder");
+import config from "../config";
+console.log('AGENT MODEL CONFIG', config)
 // const sequelize = new Sequelize(config.database.options);
-const sequelize = new Sequelize(config.database.options);
+// const sequelize = new Sequelize(config.database.options);
 
-const validLLMs = ["chatgpt", "claude"];
-
-
-
-
+const validModels = ["chatgpt", "claude"];
 
 class Agent extends Model {}
+module.exports = (sequelize) => {
+
 
 Agent.init(
   {
@@ -48,12 +46,30 @@ Agent.init(
         isEmail: true,
       },
     },
+    llm: {
+      type: DataTypes.JSONB,
+      defaultValue: {
+        model: "chatgpt",
+        apiKey: null,
+      },
+      validate: {
+        isValidModel(value) {
+          if (value.model && !validModels.includes(value.model))
+            throw new ValidationError(
+              `Model must be one of: ${validModels.join(", ")}`
+            );
+        },
+        isValidApiKey(value) {
+          if (value.apiKey && typeof value.apiKey != "string")
+            throw new ValidationError(`Invalid API Key for LLM`);
+        },
+      },
+    },
     isEnabled: { type: DataTypes.BOOLEAN, defaultValue: false },
     postSettings: {
       type: DataTypes.JSONB,
       defaultValue: {
         isEnabled: false,
-        llm: "chatgpt",
         maxWords: 10000,
         cronSchedule: null,
         displaySchedule: null,
@@ -64,21 +80,16 @@ Agent.init(
       },
       validate: {
         hasValidPersonality(value) {
-          if (value.personality && typeof value.personality !== 'string')
-            throw new ValidationError(
-              `personality must be a valid string`
-            );
+          if (value.personality && typeof value.personality !== "string")
+            throw new ValidationError(`personality must be a valid string`);
         },
         hasScheduleIfEnabled(value) {
-          if (value.isEnabled && (!value.time || !value.timezone || !value.daysOfWeek))
+          if (
+            value.isEnabled &&
+            (!value.time || !value.timezone || !value.daysOfWeek)
+          )
             throw new ValidationError(
               `Time, days of week, and timezone must be supplied if enabling posting for an agent.`
-            );
-        },
-        isValidLLM(value) {
-          if (value.llm && !validLLMs.includes(value.llm))
-            throw new ValidationError(
-              `llm must be one of: ${validLLMs.join(", ")}`
             );
         },
         maxWordCount(value) {
@@ -97,22 +108,13 @@ Agent.init(
       type: DataTypes.JSONB,
       defaultValue: {
         isEnabled: false,
-        llm: "chatgpt",
         maxWords: 200,
-        personality: null
+        personality: null,
       },
       validate: {
         hasValidPersonality(value) {
-          if (value.personality && typeof value.personality !== 'string')
-            throw new ValidationError(
-              `personality must be a valid string`
-            );
-        },
-        isValidLLM(value) {
-          if (value.llm && !validLLMs.includes(value.llm))
-            throw new ValidationError(
-              `llm must be one of: ${validLLMs.join(", ")}`
-            );
+          if (value.personality && typeof value.personality !== "string")
+            throw new ValidationError(`personality must be a valid string`);
         },
       },
     },
@@ -120,16 +122,9 @@ Agent.init(
       type: DataTypes.JSONB,
       defaultValue: {
         isEnabled: false,
-        llm: "chatgpt",
         maxWords: 100,
       },
       validate: {
-        isValidLLM(value) {
-          if (value.llm && !validLLMs.includes(value.llm))
-            throw new ValidationError(
-              `llm must be one of: ${validLLMs.join(", ")}`
-            );
-        },
         maxWordCount(value) {
           if (value && value.maxWords) {
             const wordLimit = 500;
@@ -157,19 +152,18 @@ Agent.init(
     hooks: {
       beforeUpdate: async (record) => {
         // create a valid cron expression from time and days
-        if(record.postSettings?.daysOfWeek && record.postSettings?.time) {
+        if (record.postSettings?.daysOfWeek && record.postSettings?.time) {
           try {
-            
-            let encodedCron =cronEncode({
+            let encodedCron = cronEncode({
               time: record.postSettings.time,
               daysOfWeek: record.postSettings.daysOfWeek,
             });
-  
-            record.postSettings.cronSchedule = encodedCron
+
+            record.postSettings.cronSchedule = encodedCron;
           } catch (error) {
-            throw new Error(error)
+            throw new Error(error);
           }
-        };
+        }
         // set the human readable schedule string
         if (record.postSettings.cronSchedule) {
           record.postSettings.displaySchedule = cronstrue.toString(
@@ -194,7 +188,9 @@ Agent.associate = (models) => {
   Agent.belongsTo(models.Blog, { foreignKey: "blogId" });
   Agent.belongsTo(models.Account, { foreignKey: "accountId" });
   // Agent.hasMany(models.Post);
-  Agent.hasMany(models.Post, { foreignKey: "agentId", onDelete: 'CASCADE' });
+  Agent.hasMany(models.Post, { foreignKey: "agentId", onDelete: "CASCADE" });
 };
 
-module.exports = Agent;
+return Agent
+}
+// module.exports = Agent;

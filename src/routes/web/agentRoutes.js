@@ -10,7 +10,6 @@ const router = express.Router({ mergeParams: true });
 const {
   UnauthorizedError,
 } = require("../../utilities/expressError");
-// const Agent = require("./models/Agent");
 const AgentService = require("../../services/AgentService");
 const PostService = require("../../services/PostService");
 

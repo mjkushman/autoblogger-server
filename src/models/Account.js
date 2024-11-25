@@ -103,11 +103,11 @@ module.exports = (sequelize) => {
   Account.associate = (models) => {
     Account.hasMany(models.Blog, {
       foreignKey: "accountId",
-      onDelete: "CASCADE",
+      // onDelete: "CASCADE",
     });
     Account.hasMany(models.Agent, {
       foreignKey: "accountId",
-      onDelete: "CASCADE",
+      // onDelete: "CASCADE",
     });
   };
 

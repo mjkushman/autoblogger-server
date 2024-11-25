@@ -12,7 +12,6 @@ const {
   ExpressError,
   UnauthorizedError,
 } = require("../../utilities/expressError");
-// const Agent = require("./models/Agent");
 const AgentService = require("../../services/AgentService");
 const PostService = require("../../services/PostService");
 

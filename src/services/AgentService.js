@@ -1,12 +1,12 @@
 // Define the ai agent class. Final naming tbd. Could be agent or author or something else. This is the new aiBlogger.js
-
+console.log('AGENT SERVICE')
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
 const PostService = require("../services/PostService");
 const { LLMs } = require("../utilities/Chat");
 const { Agent, Blog, Post } = require("../models");
-const {cronEncode, cronDecode} = require('../utilities/cronEncoder' )
+
 
 const StatusService = require("./StatusService");
 const cron = require("node-cron");
@@ -24,7 +24,9 @@ class ActiveAgent {
 }
 
 class AgentService {
-  constructor() {}
+  constructor() {
+  }
+  
 
   // === STATIC METHODS ===
 
@@ -87,18 +89,6 @@ class AgentService {
     }
   }
 
-  // static async findAuthor({ postId }) {
-  //   console.log(`Finding author of post ${postId}`);
-  //   console.log(await Post.findOne({where: {postId}, include: [Agent]} ))
-  //   try {
-  //     const post = await Post.findOne({where: {postId}, include: Agent} );
-  //     const {Agent} = post
-  //     console.log(`The whole agent is ${Agent}`)
-  //     return post // Recorded as authorId in Post model. But this is agentId.
-  //   } catch (error) {
-  //     return error
-  //   }
-  // }
 
   static async findOne({ agentId, accountId }) {
     console.log(
@@ -447,5 +437,8 @@ class AgentService {
     }
   }
 }
+
+// NEED TO MOVE THIS FUNCTION UNTIL AFTER DB IS DONE LOADING
 AgentService.loadActive(); // Upon server start, schedule all active agent tasks
+
 module.exports = AgentService;

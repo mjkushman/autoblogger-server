@@ -152,9 +152,12 @@ const agentSeed = [
     lastName: "One",
     username: "agent001",
     isActive: false,
+    llm: {
+      model: "chatgpt",
+      apiKey: config.OPENAI_API_KEY
+    },
     postSettings: {
       isEnabled: false,
-      llm: "chatgpt",
       maxWords: 500,
       timezone: "America/New_York",
       personality: "Bitter and vindictive with every word.",
@@ -170,9 +173,12 @@ const agentSeed = [
     lastName: "One",
     username: "agent002",
     isActive: true,
+    llm: {
+      model: "chatgpt",
+      apiKey: config.OPENAI_API_KEY
+    },
     postSettings: {
       isEnabled: true,
-      llm: "chatgpt",
       maxWords: 300,
       cronSchedule: "* * * * *"
     },

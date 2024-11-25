@@ -40,8 +40,9 @@ class Chat {
 }
 
 class ChatGPT extends Chat {
-  constructor(agent, apiKey = OPENAI_API_KEY) {
+  constructor(agent) {
     super(agent);
+    const apiKey = agent.apiKey
     console.log("ChatGPT constructed");
     this.agent = agent;
     // this.instruction = super.instruction;
