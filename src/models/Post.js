@@ -16,7 +16,7 @@ module.exports = (sequelize) => {
         allowNull: true,
       },
       accountId: {
-        type: DataTypes.STRING(40),
+        type: DataTypes.STRING(14),
         references: {
           // This is a reference to another model
           model: "accounts",

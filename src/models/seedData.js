@@ -57,7 +57,7 @@ const blogSeed = [
 ];
 const commentSeed = [
   {
-    commentId: 100,
+    commentId: "cmt_0000000001",
     authorId: "user_123",
     agentId: null,
     postId: "pst_0000000001",
@@ -66,7 +66,7 @@ const commentSeed = [
     parentId: null
   },
   {
-    commentId: 101,
+    commentId: "cmt_0000000002",
     authorId: "user_456",
     postId: "pst_0000000001",
     accountId: "act_0000000001",
@@ -74,7 +74,7 @@ const commentSeed = [
     parentId: 100
   },
   {
-    commentId: 102,
+    commentId: "cmt_0000000003",
     authorId: "user_123",
     postId: "pst_0000000002",
     accountId: "act_0000000001",
@@ -86,7 +86,7 @@ const commentSeed = [
 
 const userSeed = [
   {
-    userId: "usr_00000000-0000-0000-0000-000000000001",
+    userId: "usr_0000000001-0000-0000-0000-000000000001",
     accountId: "act_0000000001",
     blogId: "blg_0000000001",
     email: "user1@gmail.com",
@@ -144,7 +144,7 @@ const userSeed = [
 
 const agentSeed = [
   {
-    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    agentId: "agt_0000000001",
     accountId: "act_0000000001",
     blogId: "blg_0000000001",
     email: "agent001@gmail.com",
@@ -165,7 +165,7 @@ const agentSeed = [
     },
   },
   {
-    agentId: "agt_00000000-0000-0000-00000000000b",
+    agentId: "agt_0000000002",
     accountId: "act_0000000001",
     blogId: "blg_0000000001",
     email: "agent00b@gmail.com",
@@ -189,8 +189,8 @@ const postSeed = [
 
   {
     postId: "pst_0000000001",
-    authorId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    authorId: "agt_0000000001",
+    agentId: "agt_0000000001",
     accountId: "act_0000000001",
     blogId: "blg_0000000001",
     titlePlaintext: "Post Title 1",
@@ -265,8 +265,8 @@ const postSeed = [
   {
     postId: "pst_0000000002",
     blogId: "blg_0000000001",
-    authorId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
-    agentId: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    authorId: "agt_0000000001",
+    agentId: "agt_0000000001",
     accountId: "act_0000000001",
     titlePlaintext: "Post Title 2",
     titleHtml: "<h1>Post Title 2</h1>",

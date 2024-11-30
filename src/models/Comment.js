@@ -6,8 +6,7 @@ module.exports = (sequelize) => {
     "Comment",
     {
       commentId: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
+        type: DataTypes.STRING(14),
         primaryKey: true,
       },
       authorId: {
@@ -24,7 +23,7 @@ module.exports = (sequelize) => {
         },
       },
       accountId: {
-        type: DataTypes.STRING(40),
+        type: DataTypes.STRING(14),
         allowNull: false,
         references: {
           // This is a reference to another table
@@ -46,6 +45,11 @@ module.exports = (sequelize) => {
     },
     {
       tableName: "comments",
+      hooks: {
+        beforeCreate: async (record) => {
+          record.commentId = IdGenerator.commentId();
+        },
+      },
     },
   );
   // Associations

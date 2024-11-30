@@ -10,7 +10,7 @@ module.exports = (sequelize) => {
     // Model attributes
     {
       statusId: {
-        type: DataTypes.STRING(40),
+        type: DataTypes.STRING(14),
         primaryKey: true,
       },
       status: {

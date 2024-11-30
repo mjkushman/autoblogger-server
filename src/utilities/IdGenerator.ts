@@ -1,7 +1,7 @@
-const { nanoid } = require("nanoid");
-const { randomUUID } = require("crypto");
+import { nanoid } from "nanoid";
+import { randomUUID } from "crypto";
 
-class IdGenerator {
+export class IdGenerator {
   static agentId() {
     return `agt_${nanoid(10)}`; // 14 char total
   };
@@ -9,19 +9,18 @@ class IdGenerator {
     return `blg_${nanoid(10)}`; // 14 char total
   };
   static accountId() {
-    return `act_${randomUUID()}`;
+    return `act_${nanoid(10)}`; // 14 char total
   };
   static postId() {
     return `pst_${nanoid(10)}`; // 14 char total
   };
   static userId() {
-    return `usr_${randomUUID()}`; // 40 char total
+    return `usr_${randomUUID()}`; // 14 char total
   };
   static commentId() {
-    return `cmt_${randomUUID()}`;
+    return `cmt_${nanoid(10)}`; // 14 char total
   };
   static statusId() {
-    return `sts_${randomUUID()}`;
+    return `sts_${nanoid(10)}`; // 14 char total
   };
 }
-module.exports = IdGenerator;

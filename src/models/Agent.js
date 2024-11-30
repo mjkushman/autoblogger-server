@@ -21,11 +21,11 @@ Agent.init(
   {
     // model attributes
     agentId: {
-      type: DataTypes.STRING(40),
+      type: DataTypes.STRING(14),
       primaryKey: true,
     },
     accountId: {
-      type: DataTypes.STRING(40),
+      type: DataTypes.STRING(14),
       references: {
         model: "accounts",
         key: "accountId",

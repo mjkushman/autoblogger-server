@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
         unique: true,
       },
       accountId: {
-        type: DataTypes.STRING(40),
+        type: DataTypes.STRING(14),
         references: {
           model: "accounts",
           key: "accountId",

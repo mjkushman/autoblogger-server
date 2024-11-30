@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
 const { BCRYPT_WORK_FACTOR } = require("../config");
-const IdGenerator = require('../utilities/IdGenerator')
+const IdGenerator = require("../utilities/IdGenerator");
 
 module.exports = (sequelize) => {
   // console.log(sequelize)
@@ -9,12 +9,11 @@ module.exports = (sequelize) => {
     "User",
     {
       userId: {
-        type: DataTypes.STRING(40),
-        defaultValue: IdGenerator.userId(),
+        type: DataTypes.STRING(), // userId can be supplied by 3rd party so we don't know length
         primaryKey: true,
       },
       accountId: {
-        type: DataTypes.STRING(40),
+        type: DataTypes.STRING(14),
         references: {
           // This is a reference to another model
           model: "accounts",
@@ -71,21 +70,22 @@ module.exports = (sequelize) => {
       tableName: "users",
       hooks: {
         beforeCreate: async (record) => {
+          record.userId = IdGenerator.userId();
           if (record.password) {
+            record.password = await bcrypt.hash(
+              record.password,
+              BCRYPT_WORK_FACTOR
+            );
+          };
+        },
+        beforeUpdate: async (record) => {
+          if (record.changed("password")) {
             record.password = await bcrypt.hash(
               record.password,
               BCRYPT_WORK_FACTOR
             );
           }
         },
-      },
-      beforeUpdate: async (record) => {
-        if (record.changed("password")) {
-          record.password = await bcrypt.hash(
-            record.password,
-            BCRYPT_WORK_FACTOR
-          );
-        }
       },
     },
     {
