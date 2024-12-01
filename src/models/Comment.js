@@ -1,4 +1,5 @@
 const { DataTypes } = require("sequelize");
+import IdGenerator from "../utilities/IdGenerator";
 
 module.exports = (sequelize) => {
   // console.log(sequelize)
@@ -36,7 +37,7 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
       },
       parentId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         references: {
           model: "comments",
           key: "commentId"

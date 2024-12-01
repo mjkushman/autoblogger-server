@@ -1,5 +1,4 @@
 const { DataTypes } = require("sequelize");
-const { nanoid } = require("nanoid");
 const slug = require("slug");
 const IdGenerator = require("../utilities/IdGenerator");
 

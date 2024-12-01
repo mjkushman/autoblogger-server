@@ -71,7 +71,7 @@ const commentSeed = [
     postId: "pst_0000000001",
     accountId: "act_0000000001",
     content: "This is a child comment.",
-    parentId: 100
+    parentId: "cmt_0000000001"
   },
   {
     commentId: "cmt_0000000003",
