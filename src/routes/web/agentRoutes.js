@@ -33,7 +33,7 @@ module.exports = (config) => {
   router.get("/hello", async function (req, res, next) {
     try {
       console.log("saying hello");
-      const { accountId } = req.account;
+      const { accountId } = req.locals.account;
       const result = await AgentService.sayHello({ accountId });
       return res.sendResponse({data:result, status:200})
     } catch (error) {
@@ -46,7 +46,7 @@ module.exports = (config) => {
   router.get("/:agentId", async function (req, res, next) {
     try {
       console.log("route: finding one agent");
-      const { accountId } = req.account;
+      const { accountId } = req.locals.account;
       const { agentId } = req.params;
       const result = await AgentService.findOne({ agentId, accountId });
       return res.sendResponse({data:result, status:200})
@@ -59,7 +59,7 @@ module.exports = (config) => {
   router.get("/:agentId/titles", async function (req, res, next) {
     try {
       console.log("route: finding titles for one agent");
-      const { accountId } = req.account;
+      const { accountId } = req.locals.account;
       const { agentId } = req.params;
       const agent = await AgentService.findOne({ accountId, agentId });
       if (!agent) throw new NotFoundError("Unable to find agent");

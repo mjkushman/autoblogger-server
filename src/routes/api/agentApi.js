@@ -21,7 +21,7 @@ module.exports = (config) => {
    */
   router.get("/", async function (req, res, next) {
     try {
-      const { accountId } = req.account;
+      const { accountId } = req.locals.account;
       const agents = await AgentService.findAll({ accountId });
       return res.sendResponse({status:200, data: agents})
     } catch (error) {
@@ -34,7 +34,7 @@ module.exports = (config) => {
   router.get("/hello", async function (req, res, next) {
     try {
       console.log("saying hello");
-      const { accountId } = req.account;
+      const { accountId } = req.locals.account;
       const result = await AgentService.sayHello({ accountId });
       return res.sendResponse({status:200, data: result})
     } catch (error) {
@@ -46,7 +46,7 @@ module.exports = (config) => {
    */
   router.get("/:agentId", async function (req, res, next) {
     try {
-      const { accountId } = req.account;
+      const { accountId } = req.locals.account;
       const { agentId } = req.params;
       const agent = await AgentService.findOne({ agentId, accountId });
       return res.sendResponse({status:200, data: agent})
@@ -58,7 +58,7 @@ module.exports = (config) => {
   // Mostly just used to test the service for getting titles.
   router.get("/:agentId/titles", async function (req, res, next) {
     try {
-      const { accountId } = req.account;
+      const { accountId } = req.locals.account;
       const { agentId } = req.params;
       const agent = await AgentService.findOne({ accountId, agentId });
       if (!agent) throw new NotFoundError("Unable to find agent");

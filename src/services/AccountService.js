@@ -116,7 +116,7 @@ class AccountService {
   static async findOne(accountId) {
     console.log("account service findOne");
     try {
-      console.log("trying");
+      console.log("trying accountService findOne");
       const account = await Account.findOne({
         where: { accountId },
         include: [Blog, Agent]

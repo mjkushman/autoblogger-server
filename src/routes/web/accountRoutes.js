@@ -6,7 +6,7 @@ const express = require("express");
 const router = express.Router({ mergeParams: true });
 const accountService = require("../../services/AccountService");
 const authService = require("../../services/AuthService");
-const IdGenerator = require("../../utilities/IdGenerator");
+import {IdGenerator} from "../../utilities/IdGenerator";
 
 const { BadRequestError, UnauthorizedError } = require("../../utilities/expressError");
 const { validateApiKey } = require("../../middleware/authorizations");
@@ -27,8 +27,10 @@ module.exports = (config) => {
    *
    */
   router.get("/", async function (req, res, next) {
-    let { accountId } = req.user;
+    // req.user may not have accountId
+    console.log('accountRoute findOne req.locals: ', req.locals)
     try {
+      let { accountId } = req.locals.account;
       let result = await accountService.findOne(accountId);
       return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
@@ -100,8 +102,8 @@ module.exports = (config) => {
   });
 
   router.get("/protected", validateApiKey, async function (req, res, next) {
-    console.log("Developer gained access. Dev:", req.account);
-    return res.json({ msg: "This is a protected route", account: req.account });
+    console.log("Developer gained access. Dev:", req.locals.account);
+    return res.json({ msg: "This is a protected route", account: req.locals.account });
   });
 
   return router;

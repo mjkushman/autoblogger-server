@@ -6,8 +6,16 @@ export type DefaultResponseBody = {
   data: any;
 };
 
-declare module "express" {
-    export interface Response<ResBody = DefaultResponseBody> {
+declare global {
+  namespace Express {
+    interface Request {
+      locals?: {
+        account?: any; // TODO: Update this to the Account model
+      };
+    }
+
+    interface Response<ResBody = DefaultResponseBody> {
       send: (body: ResBody) => this;
     }
   }
+}
