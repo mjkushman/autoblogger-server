@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { randomUUID } from "crypto";
 
-export class IdGenerator {
+class IdGenerator {
   static agentId() {
     return `agt_${nanoid(10)}`; // 14 char total
   };
@@ -24,3 +24,4 @@ export class IdGenerator {
     return `sts_${nanoid(10)}`; // 14 char total
   };
 }
+export default IdGenerator

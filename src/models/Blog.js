@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { nanoid } = require("nanoid");
-const IdGenerator = require("../utilities/IdGenerator");
+import IdGenerator from "../utilities/IdGenerator";
 
 module.exports = (sequelize) => {
   // console.log(sequelize)

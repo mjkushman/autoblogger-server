@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
 const config = require("../config");
-const IdGenerator = require("../utilities/IdGenerator");
+import IdGenerator from "../utilities/IdGenerator";
 
 module.exports = (sequelize) => {
   const Account = sequelize.define(
@@ -55,6 +55,7 @@ module.exports = (sequelize) => {
       hooks: {
         beforeCreate: async (record) => {
           // create Id upon new record
+          console.log("CREATING ACCOUNT: ",record)
           record.accountId = IdGenerator.accountId();
 
           // hash password key before saving
