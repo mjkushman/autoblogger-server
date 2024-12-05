@@ -68,7 +68,7 @@ export async function verifyJWT(
  */
 export function requireAuth(req, res, next) {
   try {
-    if (req.user == null) throw new UnauthorizedError();
+    if (req.locals.account == null) throw new UnauthorizedError();
     return next();
   } catch (error) {
     return next(error);
