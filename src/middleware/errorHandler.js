@@ -12,7 +12,7 @@ const {
 } = require("../utilities/expressError");
 
 const errorHandler = (err, req, res, next) => {
-  console.log(`On request to ${req.url}`)
+  console.log(`Error on request to ${req.url}`)
   console.log(`Middleware caught this error: ${err}
     
      `);

@@ -8,7 +8,7 @@ import jwt, { Jwt, JwtPayload } from "jsonwebtoken";
 
 import config from "../config";
 
-export class AuthService {
+class AuthService {
   static async generateToken(accountId: string): Promise<string> {
     const payload: JwtPayload = {
       accountId,
@@ -28,7 +28,8 @@ export class AuthService {
 
     const isValidPassword = bcrypt.compare(password, account.password);
     if (!isValidPassword) return new UnauthorizedError("Invalid password");
-
+    console.log("generating token")
     return await this.generateToken(account.accountId);
   }
 }
+export default AuthService

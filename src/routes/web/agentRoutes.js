@@ -7,9 +7,7 @@ const router = express.Router({ mergeParams: true });
 // const jsonschema = require("jsonschema");
 // const agentCreateSchema = require("./agentCreateSchema.json");
 
-const {
-  UnauthorizedError,
-} = require("../../utilities/expressError");
+const { UnauthorizedError } = require("../../utilities/expressError");
 const AgentService = require("../../services/AgentService");
 const PostService = require("../../services/PostService");
 
@@ -18,11 +16,11 @@ module.exports = (config) => {
    *
    */
   router.get("/", async function (req, res, next) {
+    console.log("route: finding all agents");
     try {
-      console.log("route: finding all agents");
-      const { accountId } = req.user;
+      const { accountId } = req.locals.account;
       const result = await AgentService.findAll({ accountId });
-      return res.sendResponse({data:result, status:200})
+      return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
     }
@@ -35,7 +33,7 @@ module.exports = (config) => {
       console.log("saying hello");
       const { accountId } = req.locals.account;
       const result = await AgentService.sayHello({ accountId });
-      return res.sendResponse({data:result, status:200})
+      return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
     }
@@ -49,7 +47,7 @@ module.exports = (config) => {
       const { accountId } = req.locals.account;
       const { agentId } = req.params;
       const result = await AgentService.findOne({ agentId, accountId });
-      return res.sendResponse({data:result, status:200})
+      return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
     }
@@ -66,13 +64,13 @@ module.exports = (config) => {
       const result = await PostService.findRecentTitles({
         agentId: agent.agentId,
       });
-      return res.sendResponse({data:result, status:200})
+      return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
     }
   });
 
-  /** Creates a new AI Agent.
+  /** Creates a new Agent.
    *
    * Expects the request to have necessary information to create a new author
    */
@@ -83,11 +81,11 @@ module.exports = (config) => {
     // Upon valid schema, attempt to create the agent
     try {
       console.log("trying: agent post route");
-      const { body, user } = req;
-      const { accountId } = user;
+      const { body } = req;
+      const { accountId } = req.locals.account;
       const agent = await AgentService.create({ body, accountId });
 
-      return res.sendResponse({data:agent, status:201});
+      return res.sendResponse({ data: agent, status: 201 });
     } catch (error) {
       console.log("catching error:", error);
       next(error);
@@ -105,8 +103,8 @@ module.exports = (config) => {
     console.log("HIT AGENT PATCH '/'");
     try {
       // Verify that the agent being updated belongs to the same org as the user making the update
-      const { body, user } = req;
-      const { accountId } = user;
+      const { body } = req;
+      const { accountId } = req.locals.account;
       const { agentId } = req.body;
       console.log("agentId", agentId);
       // const ownedAgents = account.Agents.map((a) => a.agentId)
@@ -119,78 +117,18 @@ module.exports = (config) => {
     }
   });
 
-  // convenience method for easy activation / deactivation
-  router.post("/:agentId/activate", async function (req, res, next) {
-    try {
-      const { account } = req;
-      const { accountId } = account;
-      const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId);
-      if (!ownedAgents.includes(agentId))
-        throw new UnauthorizedError(
-          "You may only modify agents that belong to your account."
-        );
-      // const agent = await AgentService.activate({ accountId, agentId });
-      return res.sendResponse({data:agent, status:201})
-    } catch (error) {
-      next(error);
-    }
-  });
-  // convenience method for easy activation / deactivation
-  router.post("/:agentId/deactivate", async function (req, res, next) {
-    try {
-      const { account } = req;
-      const { accountId } = account;
-      const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId);
-      if (!ownedAgents.includes(agentId))
-        throw new UnauthorizedError(
-          "You may only modify agents that belong to your account."
-        );
-      // const agent = await AgentService.deactivate({ accountId, agentId });
-      return res.sendResponse({data:agent, status:201, message: "Agent deactivated"});
-    } catch (error) {
-      next(error);
-    }
-  });
-
   /** Delete this agent entirely */
   router.delete("/", async function (req, res, next) {
     try {
-      const { accountId } = req.user;
+      const { accountId } = req.locals.account;
       const { agentId } = req.body;
-      // const ownedAgents = account.Agents.map((a) => a.agentId)
-      // if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+
       const result = await AgentService.delete({ accountId, agentId });
-      return res.sendResponse({data:result, status:200}) 
+      return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
     }
   });
-
-  // DEPRECATE THIS METHOD
-  // Instead, hit /post with agentid in payload to have that agent invoke writePost
-
-  /** Manually trigger agent to create a new blog post
-   * @Param options exptects a JSON object { llm, maxWords, topic,
-   * }
-   */
-  router.post("/:agentId/post", async function (req, res, next) {
-    console.log("AGENT POST request received");
-    try {
-      const { account } = req;
-      const { accountId } = account;
-      const { agentId } = req.params;
-      let { body: options } = req;
-      let post = await AgentService.writePost({ agentId, options });
-      return res.sendResponse({data:post, status:201});
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  /** Manually create a new social post */
-  router.post("/:agentId/social", async function (req, res, next) {return});
 
   return router;
 };

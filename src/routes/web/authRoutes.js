@@ -4,9 +4,7 @@
 
 // const {User} = require('../models') // import blog model from models folder
 const express = require("express");
-const jsonschema = require("jsonschema");
-const registerSchema = require("../../schemas/userRegister.json");
-const userAuthSchema = require("../../schemas/userAuthenticate.json");
+
 const { BadRequestError } = require("../../utilities/expressError");
 import AuthService from "../../services/AuthService";
 
@@ -23,6 +21,8 @@ module.exports = (config) => {
       return next(error);
     }
   });
+  
+  
   // Returns a valid token
   router.post("/", async function (req, res, next) {
     console.log("authentication request recieved");
@@ -31,7 +31,7 @@ module.exports = (config) => {
       const { email, password } = req.body;
       if (!email || !password)
         throw new BadRequestError("Request must contain email and password");
-
+      console.log('continuing with email and pw:', email, password)
       const token = await AuthService.authenticate({ email, password });
       console.log("route, token", token);
       return res.sendResponse({ status: 201, data: token });

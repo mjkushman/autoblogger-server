@@ -4,19 +4,16 @@
 
 const express = require("express");
 const router = express.Router({ mergeParams: true });
-const accountService = require("../../services/AccountService");
-const authService = require("../../services/AuthService");
-import {IdGenerator} from "../../utilities/IdGenerator";
+const accountService = require("../../services/AccountService"); 
+// const accountService = require("@/services/AccountService");
+const AuthService = require("../../services/AuthService");
+
 
 const { BadRequestError, UnauthorizedError } = require("../../utilities/expressError");
 const { validateApiKey } = require("../../middleware/authorizations");
 
 module.exports = (config) => {
-  // This is a temporary utility route
-  router.get("/idgen", async function (req, res, next) {
-    let id = IdGenerator.agentId();
-    return res.sendResponse({ data: id, message: "Generated Id", status: 200 });
-  });
+
 
   router.get("/all", async function (req, res, next) {
     let result = await accountService.findAll();
@@ -27,8 +24,6 @@ module.exports = (config) => {
    *
    */
   router.get("/", async function (req, res, next) {
-    // req.user may not have accountId
-    console.log('accountRoute findOne req.locals: ', req.locals)
     try {
       let { accountId } = req.locals.account;
       let result = await accountService.findOne(accountId);
@@ -42,7 +37,7 @@ module.exports = (config) => {
   router.post("/", async function (req, res, next) {
     try {
       const account = await accountService.create(req);
-      const token = await authService.generateToken(account);
+      const token = await AuthService.generateToken(account);
 
       return res.sendResponse({ data: token, status: 201 });
     } catch (error) {
@@ -52,10 +47,10 @@ module.exports = (config) => {
 
   // Update an account
   router.patch("/", async function (req, res, next) {
-    const { body, user } = req;
-    const { accountId } = user;
+    const { body } = req;
+    const { accountId } = req.locals.account;
     // make sure the account being updated is also the one sending the request
-    if(user.accountId != body.accountId) throw UnauthorizedError(`You can't do that.`)
+    if(!body) throw BadRequestError(`Must provide body in request.`)
     try {
       const account = await accountService.update({ accountId, body });
 
@@ -70,9 +65,9 @@ module.exports = (config) => {
     console.log("HIT AGENT PATCH '/'");
     try {
       // Verify that the agent being updated belongs to the same org as the user making the update
-      const { body, user } = req;
-      const { accountId } = user;
-      const { agentId } = req.body;
+      const { body } = req;
+      const { accountId } = req.locals.account;
+      const { agentId } = body;
       console.log("agentId", agentId);
       // const ownedAgents = account.Agents.map((a) => a.agentId)
 
@@ -89,7 +84,7 @@ module.exports = (config) => {
   // Handle delete account
   router.delete("/", async function (req, res, next) {
     try {
-      const result = await accountService.destroy(req.user.accountId);
+      const result = await accountService.destroy(req.locals.account.accountId);
 
       return res.sendResponse({
         data: result,

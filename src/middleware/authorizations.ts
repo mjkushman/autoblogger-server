@@ -2,13 +2,14 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import config from "../config";
+// import config from "@/config";
 import {
   ExpressError,
   UnauthorizedError,
   NotFoundError,
 } from "../utilities/expressError";
 import AccountService from "../services/AccountService";
-import { cache } from "../cache";
+import { cache } from "@/cache";
 import bcrypt from "bcrypt";
 
 /** Middleware for requiring authorizations
@@ -23,7 +24,7 @@ import bcrypt from "bcrypt";
 export async function verifyJWT(
   // req: Request & {locals?: {account?: any}},
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) {
   console.log("inside verifyJWT");
@@ -49,6 +50,7 @@ export async function verifyJWT(
         await AccountService.findOne(decoded.accountId).then((account) => {
           if (!req.locals) req.locals = {};
           req.locals.account = account;
+          console.log('STORED ACCOUNT:', req.locals.account)
           return next();
         }, (err) => {
           console.log('Error retrieving account:, ', err);

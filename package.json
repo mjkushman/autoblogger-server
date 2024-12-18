@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/server.js",
   "scripts": {
-    "test": "NODE_ENV=testing jest --runInBand --colors --detectOpenHandles",
+    "test": "VITE_NODE_ENV=testing jest --runInBand --colors --detectOpenHandles",
     "dev": "nodemon -r dotenv/config src/server.ts",
     "build": "npx tsc"
   },
