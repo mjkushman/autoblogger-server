@@ -18,7 +18,7 @@ module.exports = (config) => {
   router.get("/", async function (req, res, next) {
     console.log("route: finding all agents");
     try {
-      const { accountId } = req.locals.account;
+      const { accountId } = res.locals;
       const result = await AgentService.findAll({ accountId });
       return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
@@ -31,7 +31,7 @@ module.exports = (config) => {
   router.get("/hello", async function (req, res, next) {
     try {
       console.log("saying hello");
-      const { accountId } = req.locals.account;
+      const { accountId } = res.locals;
       const result = await AgentService.sayHello({ accountId });
       return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
@@ -44,7 +44,7 @@ module.exports = (config) => {
   router.get("/:agentId", async function (req, res, next) {
     try {
       console.log("route: finding one agent");
-      const { accountId } = req.locals.account;
+      const { accountId } = res.locals;
       const { agentId } = req.params;
       const result = await AgentService.findOne({ agentId, accountId });
       return res.sendResponse({ data: result, status: 200 });
@@ -57,7 +57,7 @@ module.exports = (config) => {
   router.get("/:agentId/titles", async function (req, res, next) {
     try {
       console.log("route: finding titles for one agent");
-      const { accountId } = req.locals.account;
+      const { accountId } = res.locals;
       const { agentId } = req.params;
       const agent = await AgentService.findOne({ accountId, agentId });
       if (!agent) throw new NotFoundError("Unable to find agent");
@@ -82,7 +82,7 @@ module.exports = (config) => {
     try {
       console.log("trying: agent post route");
       const { body } = req;
-      const { accountId } = req.locals.account;
+      const { accountId } = res.locals;
       const agent = await AgentService.create({ body, accountId });
 
       return res.sendResponse({ data: agent, status: 201 });
@@ -104,7 +104,7 @@ module.exports = (config) => {
     try {
       // Verify that the agent being updated belongs to the same org as the user making the update
       const { body } = req;
-      const { accountId } = req.locals.account;
+      const { accountId } = res.locals;
       const { agentId } = req.body;
       console.log("agentId", agentId);
       // const ownedAgents = account.Agents.map((a) => a.agentId)
@@ -120,7 +120,7 @@ module.exports = (config) => {
   /** Delete this agent entirely */
   router.delete("/", async function (req, res, next) {
     try {
-      const { accountId } = req.locals.account;
+      const { accountId } = res.locals;
       const { agentId } = req.body;
 
       const result = await AgentService.delete({ accountId, agentId });

@@ -9,7 +9,7 @@ import {
   NotFoundError,
 } from "../utilities/expressError";
 import AccountService from "../services/AccountService";
-import { cache } from "@/cache";
+import { cache } from "../cache";
 import bcrypt from "bcrypt";
 
 /** Middleware for requiring authorizations
@@ -24,53 +24,43 @@ import bcrypt from "bcrypt";
 export async function verifyJWT(
   // req: Request & {locals?: {account?: any}},
   req: Request,
-  _res: Response,
+  res: Response,
   next: NextFunction
 ) {
-  console.log("inside verifyJWT");
-  console.log(req.headers);
   const authHeader = req.headers?.authorization;
   if (authHeader) {
     try {
       let token = authHeader
         .replace(/^[Bb]earer\s+["']?([^"']+)["']?$/, "$1")
         .trim(); // strip "bearer" and any quotes from the token
-
-      // lookup account by accountId
-
+      // Verify the JWT
       jwt.verify(token, config.SECRET_KEY, async (err, decoded: JwtPayload) => {
         if (err) {
           console.log("Error decoding token: ", err);
           return next();
         }
-        console.log("Decoded token ", decoded);
-        // TODO: check cache for account before looking up in db
+        console.log("Decoded token: ", decoded);
 
-        // look up account in db
-        await AccountService.findOne(decoded.accountId).then((account) => {
-          if (!req.locals) req.locals = {};
-          req.locals.account = account;
-          console.log('STORED ACCOUNT:', req.locals.account)
-          return next();
-        }, (err) => {
-          console.log('Error retrieving account:, ', err);
-          return next();
-        });
+        res.locals = {
+          ...res.locals,
+          accountId: decoded.accountId,
+          isAuthorized: true,
+        };
+        return next();
       });
     } catch (error) {
       console.log(error);
       return next();
     }
-  }
-  else return next();
+  } else return next();
 }
 
 /** Makes sure a user is logged in by checking for a user object on res.locals
  * The function above, verifyJWT, will set res.locals.user if a valid token is provided
  */
-export function requireAuth(req, res, next) {
+export function requireAuth(_req: Request, res: Response, next: NextFunction) {
   try {
-    if (req.locals.account == null) throw new UnauthorizedError();
+    if (!res.locals.isAuthorized) throw new UnauthorizedError();
     return next();
   } catch (error) {
     return next(error);
@@ -82,7 +72,7 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
   const apiKey = req.headers["X-API-KEY"] || req.headers["x-api-key"];
   const hostname = req.hostname; // host from headers
   const host = req.headers.host; // host from headers
-  if(!req.locals) req.locals = {}
+  if (!req.locals) req.locals = {};
 
   // If this is a dev environment, provide a dev account
   if (process.env.NODE_ENV == "development" && apiKey == "dev") {
@@ -93,6 +83,7 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
     console.log("continuing in dev environment");
     // console.log(devAccount);
     req.locals.account = devAccount;
+    res.locals.isAuthorized = true;
     cache.set(apiKey, devAccount);
     return next();
   }
@@ -108,6 +99,7 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
     const cachedAccount = cache.get(apiKey);
     if (cachedAccount) {
       req.locals.account = cachedAccount;
+      res.locals.isAuthorized = true;
       return next();
     }
 
@@ -129,6 +121,7 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
 
           // This must is a valid developer
           req.locals.account = account;
+          res.locals.isAuthorized = true;
         }
       });
     }
