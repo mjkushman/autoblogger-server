@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const slug = require("slug");
-const IdGenerator = require("../utilities/IdGenerator");
+import IdGenerator from "../utilities/IdGenerator";
 
 module.exports = (sequelize) => {
   const Post = sequelize.define(

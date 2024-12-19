@@ -162,7 +162,7 @@ const agentSeed = [
       timezone: "America/New_York",
       daysOfWeek: ["mon", "tue", "wed", "thu", "fri"],
       personality: "Bitter and vindictive with every word.",
-      cronSchedule: "*/2 * * * * *"
+      cronSchedule: "*/3 * * * *"
     },
   },
   {
@@ -183,8 +183,7 @@ const agentSeed = [
       maxWords: 300,
       daysOfWeek: ["mon", "tue", "wed", "thu", "fri"],
       timezone: "America/Los_Angeles",
-      cronSchedule: "*/2 * * * *"
-
+      cronSchedule: "*/5 * * * *"
     },
   },
 ];

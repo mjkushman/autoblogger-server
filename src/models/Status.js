@@ -1,5 +1,5 @@
 const { Model, Sequelize, DataTypes } = require("sequelize");
-const IdGenerator = require("../utilities/IdGenerator");
+import IdGenerator from"../utilities/IdGenerator";
 
 
 // const sequelize = new Sequelize(config.database.options);

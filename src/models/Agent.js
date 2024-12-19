@@ -1,7 +1,7 @@
 console.log('AGENT MODEL')
 const { DataTypes, ValidationError, Sequelize, Model } = require("sequelize");
 
-import IdGenerator from"../utilities/IdGenerator";
+import IdGenerator from "../utilities/IdGenerator";
 const cronstrue = require("cronstrue");
 const cron = require("node-cron");
 

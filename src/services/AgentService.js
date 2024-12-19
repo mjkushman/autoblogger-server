@@ -44,6 +44,11 @@ class AgentService {
       console.log(`LOADED ACTIVE AGENT: ${agent.username}`);
     }
     console.log(`Initially loaded ACTIVE AGENTS:`);
+    ACTIVE_AGENTS.forEach((tasks) => {
+      console.dir(tasks.blogTask.options.name);
+      console.log(tasks?.blogTask?._scheduler.timeMatcher);
+    });
+
     console.dir(ACTIVE_AGENTS);
   }
 
@@ -278,13 +283,17 @@ class AgentService {
     console.log(`${agent.username} invoked ${options.llm}.`);
 
     // Parse and format html resposne from llm
-    let post = htmlParser(response); // TODO: update this parser function. It's more like a formatter. Possibly ask the LLM to return a specific format.
+    let post = htmlParser(response); // TODO: update this parser function. It's more like a formatter. Possibly ask the LLM to return in JSON instead.
 
     // Get a random image based on the post title
     let imageUrl = "";
     await getUnsplashImage(post.titlePlaintext).then(
-      (val) => {imageUrl = val},
-      (err) => {console.log("Error fetching image:", err)}
+      (val) => {
+        imageUrl = val;
+      },
+      (err) => {
+        console.log("Error fetching image:", err);
+      }
     );
 
     // Assemble the post for response
@@ -294,6 +303,7 @@ class AgentService {
       agentId: agent.agentId,
       authorId: agent.agentId,
       blogId: agent.blogId,
+      accountId: agent.accountId
     };
     // console.dir(generatedPost);
     console.log(`${agent.username} generated a new post.`);
@@ -348,7 +358,7 @@ class AgentService {
       // Turn off current blogTask
       if (!agent.postSettings.isEnabled && tasks.blogTask) {
         tasks.blogTask.stop(); // stop cron
-        console.log("task stopped")
+        console.log("task stopped");
         delete tasks.blogTask;
         if (tasks == {}) ACTIVE_AGENTS.delete(agentId);
         else ACTIVE_AGENTS.set(agentId, tasks);
@@ -358,19 +368,18 @@ class AgentService {
       const blogTask = cron.schedule(
         cronSchedule,
         async () => {
-          console.log('task: before gen')
+          console.log("task: before gen");
           const generatedPost = await AgentService.writePost({
             agentId: agent.agentId,
-          })
-          console.log('task: after gen')
+          });
+          console.log("task: after gen");
           await PostService.create(generatedPost);
-          console.log('task: exiting task')
+          console.log("task: exiting task");
         },
-        { timezone }
+        { scheduled: true, timezone, name: agentId }
       );
       // store task to actives
       ACTIVE_AGENTS.set(agentId, { ...tasks, blogTask });
-
     } catch (error) {
       throw new Error(error.message);
     }

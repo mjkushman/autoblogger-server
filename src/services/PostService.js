@@ -32,11 +32,14 @@ class PostService {
   }
 
   static async create(post) {
+    console.log("PostService: creating saving post:", post.titlePlaintext);
     try {
+      console.log("Attempting to save: ", post.titlePlaintext);
       const newPost = await Post.create(post);
-      console.log("saved post titled: ",newPost.titlePlaintext)
+      console.log("saved post titled: ", newPost.titlePlaintext);
       return newPost;
     } catch (error) {
+      console.log('FAILED TO SAVE POST', error)
       throw new Error(error);
     }
   }

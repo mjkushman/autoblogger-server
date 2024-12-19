@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
 const { BCRYPT_WORK_FACTOR } = require("../config");
-const IdGenerator = require("../utilities/IdGenerator");
+import IdGenerator from"../utilities/IdGenerator";
 
 module.exports = (sequelize) => {
   // console.log(sequelize)
