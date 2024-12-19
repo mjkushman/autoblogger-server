@@ -1,5 +1,6 @@
 const axios = require('axios')
-const {UNSPLASH_CLIENT_ID} = require('../config')
+// const {UNSPLASH_CLIENT_ID} = require('../config')
+import config from "../config";
 /**
  * Get a single image from unsplash.
  * Uses the first n words from title as search query
@@ -8,7 +9,7 @@ const {UNSPLASH_CLIENT_ID} = require('../config')
  */
 
 async function getImage(titlePlaintext) {
-    const clientId = UNSPLASH_CLIENT_ID
+    const clientId = config.UNSPLASH_CLIENT_ID
 
     let response = await axios.get(`https://api.unsplash.com/search/photos`,{
     params:{

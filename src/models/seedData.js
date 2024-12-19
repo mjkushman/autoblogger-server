@@ -157,11 +157,12 @@ const agentSeed = [
       apiKey: config.OPENAI_API_KEY
     },
     postSettings: {
-      isEnabled: false,
+      isEnabled: true,
       maxWords: 500,
       timezone: "America/New_York",
+      daysOfWeek: ["mon", "tue", "wed", "thu", "fri"],
       personality: "Bitter and vindictive with every word.",
-      cronSchedule: "* * * * *"
+      cronSchedule: "*/2 * * * * *"
     },
   },
   {
@@ -180,7 +181,10 @@ const agentSeed = [
     postSettings: {
       isEnabled: true,
       maxWords: 300,
-      cronSchedule: "* * * * *"
+      daysOfWeek: ["mon", "tue", "wed", "thu", "fri"],
+      timezone: "America/Los_Angeles",
+      cronSchedule: "*/2 * * * *"
+
     },
   },
 ];

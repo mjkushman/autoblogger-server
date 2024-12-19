@@ -1,12 +1,12 @@
 // Define the ai agent class. Final naming tbd. Could be agent or author or something else. This is the new aiBlogger.js
-console.log('AGENT SERVICE')
+console.log("AGENT SERVICE");
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
 const PostService = require("../services/PostService");
 const { LLMs } = require("../utilities/Chat");
 const { Agent, Blog, Post } = require("../models");
-
+const { Op } = require("sequelize");
 
 const StatusService = require("./StatusService");
 const cron = require("node-cron");
@@ -24,9 +24,7 @@ class ActiveAgent {
 }
 
 class AgentService {
-  constructor() {
-  }
-  
+  constructor() {}
 
   // === STATIC METHODS ===
 
@@ -34,12 +32,15 @@ class AgentService {
     console.log(`LOADING ACTIVE AGENTS...`);
     const agents = await Agent.findAll({
       where: {
-        isEnabled: true,
+        [Op.or]: [
+          { postSettings: { isEnabled: true } },
+          { socialSettings: { isEnabled: true } },
+        ],
       },
     });
     for (let agent of agents) {
-      if (agent.postSettings.isEnabled) this.#startBlogTask(agent);
-      if (agent.socialSettings.isEnabled) this.#startSocialTask(agent);
+      if (agent.postSettings.isEnabled) this.#setBlogTask(agent);
+      if (agent.socialSettings.isEnabled) this.#setSocialTask(agent);
       console.log(`LOADED ACTIVE AGENT: ${agent.username}`);
     }
     console.log(`Initially loaded ACTIVE AGENTS:`);
@@ -82,13 +83,12 @@ class AgentService {
           { model: Blog },
         ],
       });
-      if(!agent) throw new NotFoundError()
+      if (!agent) throw new NotFoundError();
       return agent;
     } catch (error) {
       throw error;
     }
   }
-
 
   static async findOne({ agentId, accountId }) {
     console.log(
@@ -116,27 +116,28 @@ class AgentService {
       });
       if (!agent) throw new NotFoundError("Agent not found.");
 
-      console.log('Attempting update with body: ', body)
+      const oldPostSettings = agent.postSettings;
+      const oldSocialSettings = agent.socialSettings;
+
+      console.log("Attempting update with body: ", body);
       await agent.update(body);
       await agent.save(); // trigger the beforeUpdate hook
 
-      // Logic for if agent should be activated or deactivated based on update
-      if (agent.isEnabled) {
-        if (agent.postSettings.isEnabled) this.#startBlogTask(agent);
-        if (agent.socialSettings.isEnabled) this.#startSocialTask(agent);
+      const newPostSettings = agent.postSettings;
+      const newSocialSettings = agent.socialSettings;
+
+      // If post settings have changed, update task
+      if (JSON.stringify(oldPostSettings) !== JSON.stringify(newPostSettings)) {
+        // update blog task
+        this.#setBlogTask(agent);
       }
-
-      if (!agent.isEnabled) {
-        // stop any active tasks
-        // remove from ACTIVE AGENTS
-        this.#stopBlogTask(agent);
-        this.#stopSocialTask(agent);
-        ACTIVE_AGENTS.delete(agentId);
-        // this.#deactivateAgent(agent);
-      } else if (!agent.postSettings.isEnabled) {
-        this.#stopBlogTask(agent);
-      } else if (!agent.socialSettings.isEnabled) this.#stopSocialTask(agent);
-
+      // If social settings have changed, update task
+      if (
+        JSON.stringify(oldSocialSettings) !== JSON.stringify(newSocialSettings)
+      ) {
+        // update social task
+        this.#setSocialTask(agent);
+      }
       return agent;
     } catch (error) {
       throw error;
@@ -168,20 +169,20 @@ class AgentService {
     return;
   }
 
-  static async generateComment({agent, comment}) {
-    console.log(`Inside AgentService generateComment`)
+  static async generateComment({ agent, comment }) {
+    console.log(`Inside AgentService generateComment`);
     // accept a newly created comment (id, ) and an agent
 
-    const defaultOptions = { 
+    const defaultOptions = {
       llm: "chatgpt",
       maxWords: 200,
-    }
-    const { username, firstName, lastName } = comment.User
-    let options = {...defaultOptions, ...agent.commentSettings}
-    console.log(`comment options ${{...options}}`)
+    };
+    const { username, firstName, lastName } = comment.User;
+    let options = { ...defaultOptions, ...agent.commentSettings };
+    console.log(`comment options ${{ ...options }}`);
 
-  // instantiate a chat
-    const chat = new LLMs[options.llm](agent)
+    // instantiate a chat
+    const chat = new LLMs[options.llm](agent);
 
     chat.addMessage(
       `user`,
@@ -191,18 +192,16 @@ class AgentService {
     chat.addMessage(
       `user`,
       `- The user's comment: ${comment.content} \n
-       - The user's info: ${{...comment.User}} \n
+       - The user's info: ${{ ...comment.User }} \n
        
        Your original article text: \n
        "${comment.Post.titlePlaintext}"\n\n
        "${comment.Post.bodyPlaintext}"
        `
     );
-    const completion = await chat.sendPrompt()
-    console.log(completion)
-    return completion
-
-
+    const completion = await chat.sendPrompt();
+    console.log(completion);
+    return completion;
   }
 
   /** WRITE BLOG POST
@@ -230,12 +229,10 @@ class AgentService {
     console.log("Options:");
     console.dir(options);
 
-    // Look for agent in Map. Else look in DB. Else throw error
-    const activeAgent = ACTIVE_AGENTS.get(agentId);
-    let agent = activeAgent
-      ? activeAgent.agent
-      : await Agent.findByPk(agentId, { include: Blog });
-    console.log("Agent being used: ", agent);
+    // Get Agent from DB
+
+    const agent = await Agent.findByPk(agentId, { include: Blog });
+    // console.log("Agent being used: ", agent);
     if (!agent) return new NotFoundError("Agent not found.");
 
     console.log(`${agent.username} started writing a blog post.
@@ -284,7 +281,11 @@ class AgentService {
     let post = htmlParser(response); // TODO: update this parser function. It's more like a formatter. Possibly ask the LLM to return a specific format.
 
     // Get a random image based on the post title
-    const imageUrl = await getUnsplashImage(post.titlePlaintext);
+    let imageUrl = "";
+    await getUnsplashImage(post.titlePlaintext).then(
+      (val) => {imageUrl = val},
+      (err) => {console.log("Error fetching image:", err)}
+    );
 
     // Assemble the post for response
     const generatedPost = {
@@ -334,37 +335,48 @@ class AgentService {
     }
   }
 
-  static async #startBlogTask(agent) {
+  static async #setBlogTask(agent) {
     console.log(`${agent.username} setting Blog Task`);
     try {
       const { agentId, postSettings } = agent;
       const { cronSchedule, timezone } = postSettings;
-      const activeAgent = ACTIVE_AGENTS.get(agentId) || {}; // Retrieve current agent or instantiate empty object
+      const tasks = ACTIVE_AGENTS.get(agentId);
 
-      const task = cron.schedule(
+      if (!agent.postSettings.isEnabled && !tasks.blogTask) {
+        return; // nothing needs changing
+      }
+      // Turn off current blogTask
+      if (!agent.postSettings.isEnabled && tasks.blogTask) {
+        tasks.blogTask.stop(); // stop cron
+        console.log("task stopped")
+        delete tasks.blogTask;
+        if (tasks == {}) ACTIVE_AGENTS.delete(agentId);
+        else ACTIVE_AGENTS.set(agentId, tasks);
+      }
+
+      // create the cron
+      const blogTask = cron.schedule(
         cronSchedule,
         async () => {
+          console.log('task: before gen')
           const generatedPost = await AgentService.writePost({
             agentId: agent.agentId,
-          });
-          PostService.create(generatedPost); // save the post
+          })
+          console.log('task: after gen')
+          await PostService.create(generatedPost);
+          console.log('task: exiting task')
         },
         { timezone }
       );
-      // create a new ActiveAgent to replace the current one
-      const updatedAgent = new ActiveAgent(activeAgent);
-      updatedAgent.agent = agent;
-      updatedAgent.blogTask = task;
+      // store task to actives
+      ACTIVE_AGENTS.set(agentId, { ...tasks, blogTask });
 
-      ACTIVE_AGENTS.set(agentId, updatedAgent);
-      console.log("CURRENT ACTIVE AGENTS:");
-      console.dir(ACTIVE_AGENTS);
     } catch (error) {
       throw new Error(error.message);
     }
   }
   // Automated social is not meant to be accessed yet.
-  static async #startSocialTask(agent) {
+  static async #setSocialTask(agent) {
     return; // does nothing for now
     console.log(`${agent.username} setting Social Task`);
     try {

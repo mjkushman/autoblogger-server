@@ -34,6 +34,7 @@ class PostService {
   static async create(post) {
     try {
       const newPost = await Post.create(post);
+      console.log("saved post titled: ",newPost.titlePlaintext)
       return newPost;
     } catch (error) {
       throw new Error(error);
