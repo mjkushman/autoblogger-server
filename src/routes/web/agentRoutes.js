@@ -9,7 +9,7 @@ const router = express.Router({ mergeParams: true });
 
 const { UnauthorizedError } = require("../../utilities/expressError");
 const AgentService = require("../../services/AgentService");
-const PostService = require("../../services/PostService");
+import PostService from "../../services/PostService";
 
 module.exports = (config) => {
   /** GET returns a list of all agents for an account

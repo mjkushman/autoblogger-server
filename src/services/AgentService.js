@@ -1,9 +1,9 @@
 // Define the ai agent class. Final naming tbd. Could be agent or author or something else. This is the new aiBlogger.js
 console.log("AGENT SERVICE");
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
-const htmlParser = require("../utilities/htmlParser");
+// const htmlParser = require("../utilities/htmlParser");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
-const PostService = require("../services/PostService");
+import PostService from "../services/PostService";
 const { LLMs } = require("../utilities/Chat");
 const { Agent, Blog, Post } = require("../models");
 const { Op } = require("sequelize");
@@ -71,7 +71,7 @@ class AgentService {
     try {
       let agents = await Agent.findAll({
         where: { accountId },
-        include: [{ model: Post, attributes: ["postId", "titlePlaintext"] }],
+        include: [{ model: Post, attributes: ["postId", "title"] }],
       });
       return agents;
     } catch (error) {
@@ -102,7 +102,7 @@ class AgentService {
     try {
       let agent = await Agent.findOne({
         where: { agentId, accountId },
-        include: [{ model: Post, attributes: ["postId", "titlePlaintext"] }],
+        include: [{ model: Post, attributes: ["postId", "title"] }],
       });
       return agent;
     } catch (error) {
@@ -200,8 +200,8 @@ class AgentService {
        - The user's info: ${{ ...comment.User }} \n
        
        Your original article text: \n
-       "${comment.Post.titlePlaintext}"\n\n
-       "${comment.Post.bodyPlaintext}"
+       "${comment.Post.title}"\n\n
+       "${comment.Post.content}"
        `
     );
     const completion = await chat.sendPrompt();
@@ -271,23 +271,21 @@ class AgentService {
       `user`,
       `INSTRUCTIONS:
         1. Expand upon the topic until you reach ${options.maxWords} words.
-        2. Format the response in HTML with proper HTML tags.
-        3. Include a title in <h1> tags.
-        4. Wrap the rest of the post in a <div> tag with id="primary-content".
-        5. But do not include any boilerplate HTML`
+        2. Format your response according to the supplied JSON schema.
+        3. In the "content": field, be sure to write in markdown to make rendering easier later.`
     );
 
     // Invoke llm
     console.log(`${agent.username} invoking LLM ${options.llm}.`);
     const response = await chat.sendPrompt();
-    console.log(`${agent.username} invoked ${options.llm}.`);
+    console.log(`${agent.username} received response from ${options.llm}.`);
 
     // Parse and format html resposne from llm
-    let post = htmlParser(response); // TODO: update this parser function. It's more like a formatter. Possibly ask the LLM to return in JSON instead.
+    // let post = htmlParser(response); // TODO: update this parser function. It's more like a formatter. Possibly ask the LLM to return in JSON instead.
 
     // Get a random image based on the post title
     let imageUrl = "";
-    await getUnsplashImage(post.titlePlaintext).then(
+    await getUnsplashImage(response.title).then(
       (val) => {
         imageUrl = val;
       },
@@ -298,12 +296,13 @@ class AgentService {
 
     // Assemble the post for response
     const generatedPost = {
-      ...post,
+      title: response.title,
+      content: response.content,
       imageUrl: String(imageUrl),
       agentId: agent.agentId,
       authorId: agent.agentId,
       blogId: agent.blogId,
-      accountId: agent.accountId
+      accountId: agent.accountId,
     };
     // console.dir(generatedPost);
     console.log(`${agent.username} generated a new post.`);
@@ -387,72 +386,16 @@ class AgentService {
   // Automated social is not meant to be accessed yet.
   static async #setSocialTask(agent) {
     return; // does nothing for now
-    console.log(`${agent.username} setting Social Task`);
-    try {
-      const { agentId, socialSettings } = agent;
-      const { cronSchedule, timezone } = postSettings;
-      const activeAgent = ACTIVE_AGENTS.get(agentId) || {}; // Retrieve current agent or instantiate empty object
-
-      const task = cron.schedule(
-        cronSchedule,
-        // TODO: create a function to auto social
-        console.log("placeholder for autosocial")
-      );
-      // create a new ActiveAgent to replace the current one
-      const updatedAgent = new ActiveAgent(activeAgent);
-      updatedAgent.agent = agent;
-      updatedAgent.socialTask = task;
-
-      ACTIVE_AGENTS.set(agentId, updatedAgent);
-      console.log("CURRENT ACTIVE AGENTS:");
-      console.dir(ACTIVE_AGENTS);
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
-
-  static async #stopBlogTask({ agentId }) {
-    const activeAgent = ACTIVE_AGENTS.get(agentId);
-    if (!activeAgent) return; // Nothing to deactivate
-    if (activeAgent.blogTask) {
-      activeAgent.blogTask.stop(); // stop the task
-      const updatedAgent = new ActiveAgent(activeAgent); // creates a new AA to replace
-      updatedAgent.blogTask = null;
-
-      ACTIVE_AGENTS.set(agentId, updatedAgent);
-      console.log("blogTask stopped");
-      return;
-    }
-    console.log("no active blog task to stop");
-    return;
-  }
-
-  static async #stopSocialTask({ agentId }) {
-    return; // does nothing for now
-    const activeAgent = ACTIVE_AGENTS.get(agentId);
-    if (!activeAgent) return; // Nothing to deactivate
-    if (activeAgent.socialTask) {
-      activeAgent.socialTask.stop(); // stop the task
-      const updatedAgent = new ActiveAgent(activeAgent); // creates a new AA to replace
-      updatedAgent.socialTask = null;
-
-      ACTIVE_AGENTS.set(agentId, updatedAgent);
-      console.log("socialTask stopped");
-      return;
-    }
-    console.log("no active social task to stop");
-    return;
   }
 
   static async #deactivateAgent({ agentId }) {
     console.log(`deactivating ${agentId}`);
     try {
-      const activeAgent = ACTIVE_AGENTS.get(agentId);
-      if (!activeAgent) return; // Nothing to deactivate
-      // stop any running task
-      if (activeAgent.blogTask) activeAgent.blogTask.stop();
-      if (activeAgent.socialTask) activeAgent.socialTask.stop();
-      ACTIVE_AGENTS.delete(agentId); // remove the agent to active class
+      const tasks = ACTIVE_AGENTS.get(agentId);
+      tasks.forEach((task) => task.stop());
+      ACTIVE_AGENTS.delete(agentId);
+      console.log(`deacivated ${agentId}`);
+      return
     } catch (error) {
       throw new Error(error);
     }

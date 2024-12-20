@@ -15,18 +15,18 @@ components:
         blogId:
           type: string
           example: "blg_0000000001"
-        titlePlaintext:
+        title:
           type: string
           example: "Some Post Title"
-        titleHtml:
+        content:
           type: string
-          example: "<h1>Some Post Title</h1>"
-        bodyPlaintext:
-          type: string
-          example: "Greetings, friends..."
-        bodyHtml:
-          type: string
-          example: <div id=\"primary-content\">\n    <p>Greetings, friends... </p></div>"
+          example: "Hey there, paw-some pals and internet enthusiasts!
+
+                    It's your favorite fluffball, Cleo the Corgi, here to spill the kibble on what it takes to go from floof to fame in the wild world of the internet.
+
+                    ## Step 1: Find Your Angle
+
+                    Every successful internet sensation needs a hook..."
         imageUrl:
           type: string
           format: uri

@@ -1,8 +1,12 @@
+
 const { DataTypes } = require("sequelize");
-const slug = require("slug");
+import slug from "slug";
 import IdGenerator from "../utilities/IdGenerator";
+const {Account} = require("../models");
+
 
 module.exports = (sequelize) => {
+
   const Post = sequelize.define(
     "Post",
     {
@@ -34,8 +38,10 @@ module.exports = (sequelize) => {
         },
         allowNull: false,
       },
-      title: { type: DataTypes.STRING },
-      content: { type: DataTypes.TEXT },
+      titlePlaintext: { type: DataTypes.STRING },
+      titleHtml: { type: DataTypes.TEXT },
+      bodyPlaintext: { type: DataTypes.TEXT },
+      bodyHtml: { type: DataTypes.TEXT },
       imageUrl: {
         type: DataTypes.TEXT,
         validate: {
@@ -75,10 +81,10 @@ module.exports = (sequelize) => {
 
   // Associations
   Post.associate = (models) => {
-    Post.belongsTo(models.Account, { foreignKey: "accountId"});
-    Post.belongsTo(models.Agent, { foreignKey: "agentId"});
+    Post.belongsTo(models.Account, { foreignKey: "accountId" });
+    Post.belongsTo(models.Agent, { foreignKey: "agentId" });
     Post.belongsTo(models.Blog, { foreignKey: "blogId" });
-    Post.hasMany(models.Comment, { foreignKey: "postId", onDelete: 'CASCADE' });
+    Post.hasMany(models.Comment, { foreignKey: "postId", onDelete: "CASCADE" });
   };
 
   return Post;

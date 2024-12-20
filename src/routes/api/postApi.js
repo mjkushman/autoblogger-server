@@ -7,12 +7,10 @@ const { requireAuth } = require("../../middleware/authorizations");
 const express = require("express");
 
 const router = express.Router({ mergeParams: true });
-const PostService = require("../../services/PostService");
+import PostService from "../../services/PostService";
 const CommentService = require("../../services/CommentService");
 const AgentService = require("../../services/AgentService");
-const {
-  verifyAgentOwnership,
-} = require("../../middleware/verifyAgentOwnership");
+import verifyAgentOwnership from "../../middleware/verifyAgentOwnership";
 const { Status } = require("../../models");
 const StatusService = require("../../services/StatusService");
 
@@ -49,19 +47,21 @@ module.exports = (config) => {
     // USE THIS TO VERIFY REQUEST WITHOUT DOING FURTHER LOGIC
     // return res.status(201).json({message: "generate request received"})
 
-    const { body, account } = req;
+  
 
     // immediately send back a status
     const status = await StatusService.create("post");
     res.sendResponse({ status: 201, data: status });
-
+    console.log('about to enter try catch')
     try {
       const { agentId, options } = req.body;
+      console.log('about to generate')
       const generatedPost = await AgentService.writePost({
         agentId,
         options,
         status,
       });
+      console.log('generated, about to save post')
       const newPost = await PostService.create(generatedPost); // save the newly written post
 
       if (newPost) {
@@ -86,7 +86,14 @@ module.exports = (config) => {
    * /posts:
    *   get:
    *     tags: [Posts]
-   *     summary: Gets all posts
+   *     summary: Gets all posts for your account
+   *     parameters:
+   *      - in: query
+   *        name: comments
+   *        schema:
+   *          type: boolean
+   *        description: Whether or not to include comments in the response. Defaults to false.
+   *        default: false  
    *     security:
    *       - ApiKeyAuth: []
    *     responses:
@@ -104,11 +111,10 @@ module.exports = (config) => {
    *         description: Internal server error while handling request
    */
   router.get("/", async function (req, res, next) {
-    const { account } = req;
-
-    const blogIds = account.Blogs.map((blog) => blog.blogId);
+    const { accountId } = res.locals.account;
+    const { comments = false } = req.query;
     try {
-      const posts = await PostService.findAll(blogIds);
+      const posts = await PostService.findAll({accountId, comments});
 
       return res.sendResponse({ status: 200, data: posts });
     } catch (error) {
@@ -130,6 +136,13 @@ module.exports = (config) => {
    *          type: string
    *        description: Unique identifier for a post
    *        example: 'pst_0000000001'
+   *      - in: query
+   *        name: comments
+   *        schema:
+   *          type: boolean
+   *        description: Whether or not to include comments in the response. Defaults to false.
+   *        default: false  
+   * 
    *     security:
    *       - ApiKeyAuth: []
    *     responses:
@@ -146,10 +159,10 @@ module.exports = (config) => {
    */
   router.get("/:postId", async function (req, res, next) {
     const { postId } = req.params;
-    const { account } = req;
-    const blogIds = account.Blogs.map((blog) => blog.blogId);
+    const { accountId } = res.locals.account;
+    const { comments = false } = req.query;
     try {
-      const post = await PostService.findOne({ postId, blogIds });
+      const post = await PostService.findOne({ postId, accountId, comments });
 
       return res.sendResponse({ status: 200, data: post });
     } catch (error) {
@@ -187,7 +200,7 @@ module.exports = (config) => {
    */
   router.delete("/:postId", async function (req, res, next) {
     try {
-      const { account } = req;
+      const { account } = res.locals;
       const { accountId } = account;
       const { postId } = req.params;
 
@@ -221,7 +234,7 @@ module.exports = (config) => {
         // add a new comment to the post
 
         const { postId } = req.params;
-        const { orgId } = req;
+        const { orgId } = res.locals;
         const comment = await CommentService.create({
           orgId,
           postId,

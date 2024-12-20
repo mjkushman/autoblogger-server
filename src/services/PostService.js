@@ -1,23 +1,31 @@
+import { NotFoundError } from "../utilities/expressError";
+
 const { Post, Comment, Agent } = require("../models");
 const { Op } = require("sequelize");
 
 class PostService {
   /** GET all posts */
-  static async findAll(blogIds) {
-    console.log(`Getting all posts for blogIds ${blogIds}`);
-    return await Post.findAll({
-      where: { blogId: { [Op.or]: blogIds } },
-    });
+  static async findAll({ accountId, comments, agentId=null }) {
+    console.log(`Getting all posts for accountId ${accountId}`);
+    const options = {
+      where: { 
+        accountId, 
+        ...(agentId && { agentId }) },
+    };
+    if (comments) options.include = [{ model: Comment, as: "comments" }];
+
+    return await Post.findAll(options);
   }
 
-  static async findOne({ postId, blogIds }) {
-    console.log(`Getting one post for postId ${postId} and blogIds ${blogIds}`);
-    return await Post.findOne({
-      where: { postId, blogId: { [Op.or]: blogIds } },
-      include: {
-        model: Comment,
-      },
-    });
+  static async findOne({ postId, accountId, comments }) {
+    console.log(`Getting one post for postId ${postId}`);
+
+    const options = {
+      where: { postId, accountId },
+    };
+    if (comments) options.include = [{ model: Comment, as: "comments" }];
+
+    return await Post.findOne(options);
   }
 
   static async findRecentTitles({ agentId }) {
@@ -26,20 +34,18 @@ class PostService {
       where: { authorId: agentId },
       order: [["updatedAt", "DESC"]],
     });
-    const titles = posts.map((post) => post.titlePlaintext);
+    const titles = posts.map((post) => post.title);
     console.log(`Titles: ${titles}`);
     return titles;
   }
 
   static async create(post) {
-    console.log("PostService: creating saving post:", post.titlePlaintext);
     try {
-      console.log("Attempting to save: ", post.titlePlaintext);
       const newPost = await Post.create(post);
-      console.log("saved post titled: ", newPost.titlePlaintext);
+      console.log("saved post titled: ", newPost.title);
       return newPost;
     } catch (error) {
-      console.log('FAILED TO SAVE POST', error)
+      console.log("FAILED TO SAVE POST", error);
       throw new Error(error);
     }
   }
@@ -62,4 +68,4 @@ class PostService {
     }
   }
 }
-module.exports = PostService;
+export default PostService;

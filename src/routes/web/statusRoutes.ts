@@ -10,15 +10,9 @@ const { NotFoundError } = require("../../utilities/expressError");
 
 const router: Router = Router({ mergeParams: true });
 
-export default (config) => {
-  // Define response type
-  type StatusResponse = {
-    status: number;
-    data: any | null;
-    message: string;
-  };
+export default () => {
 
-  // Properly typed route
+
   router.get(
     "/",
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {

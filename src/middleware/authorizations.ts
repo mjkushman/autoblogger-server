@@ -72,7 +72,7 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
   const apiKey = req.headers["X-API-KEY"] || req.headers["x-api-key"];
   const hostname = req.hostname; // host from headers
   const host = req.headers.host; // host from headers
-  if (!req.locals) req.locals = {};
+
 
   // If this is a dev environment, provide a dev account
   if (process.env.NODE_ENV == "development" && apiKey == "dev") {
@@ -82,7 +82,7 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
 
     console.log("continuing in dev environment");
     // console.log(devAccount);
-    req.locals.account = devAccount;
+    res.locals.account = devAccount;
     res.locals.isAuthorized = true;
     cache.set(apiKey, devAccount);
     return next();
@@ -98,7 +98,7 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
     // Check the cache for this api key. If found, return early.
     const cachedAccount = cache.get(apiKey);
     if (cachedAccount) {
-      req.locals.account = cachedAccount;
+      res.locals.account = cachedAccount;
       res.locals.isAuthorized = true;
       return next();
     }
@@ -120,7 +120,7 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
           //   console.log(`CACHED!:`, developer)
 
           // This must is a valid developer
-          req.locals.account = account;
+          res.locals.account = account;
           res.locals.isAuthorized = true;
         }
       });

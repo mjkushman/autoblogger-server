@@ -9,6 +9,7 @@ const agentRoutes = require("./agentRoutes");
 import statusRoutes from "./statusRoutes";
 const authRoutes = require("./authRoutes");
 import { spec } from "../../utilities/api_docs/swagger";
+import postRoutes from "./postRoutes";
 
 export default (config) => {
   // WEB Routes
@@ -31,7 +32,11 @@ export default (config) => {
   router.use("/auth", authRoutes(config));
 
   /** Status for agent tasks */
-  router.use("/status", statusRoutes(config));
+  router.use("/status", statusRoutes());
+  
+  
+  /** retrieve posts for agent tasks */
+  router.use("/posts", postRoutes());
 
   return router;
 };

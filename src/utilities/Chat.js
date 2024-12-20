@@ -1,5 +1,5 @@
 const OpenAI = require("openai");
-const { OPENAI_API_KEY } = require("../config");
+const completionPostSchema = require("./completionPostSchema.json");
 
 
 class Message {
@@ -9,20 +9,18 @@ class Message {
   }
 }
 
-// I think this will replace LLMService.
 class Chat {
   constructor(agent) {
     this.messages = [];
     this.instruction = `
-        You're the author of a popular blog${
+        You're a talented writer for a popular publication ${
           agent.Blog.label ? ` named "${agent.Blog.label}"` : ""
         }. 
         ${
           agent.postSettings.personality
-            ? `This is your personality: ${agent.postSettings.personality}`
+            ? `This is your personality: "${agent.postSettings.personality}"`
             : ``
         }`;
-      console.log(`Initial personality: ${agent.postSettings.personality}`)
       console.log(`Initial instruction: ${this.instruction}`)
   }
   addMessage(role, content) {
@@ -62,12 +60,12 @@ class ChatGPT extends Chat {
       const response = await this.llm.chat.completions.create({
         messages: this.getMessages(),
         model: "gpt-4o-mini",
-        // response_format: {"type":"json_object"},
+        response_format: {"type":"json_schema", "json_schema": completionPostSchema},
       });
-      let completion = response.choices[0].message.content;
+      let completion = JSON.parse(response.choices[0].message.content);
       // For debugging:
-      // console.log("COMPLETION:");
-      // console.log(completion);
+      console.log("COMPLETION:");
+      console.log(completion);
       return completion;
     } catch (error) {
       throw new Error(error);
@@ -75,27 +73,12 @@ class ChatGPT extends Chat {
   }
 }
 
-class Claude extends Chat {}
 // TODO
-// function createPostPromptMessages (agent, topic){
-//         const bio = agent.bio;
-//         const maxWords = agent.postSettings.maxWords;
-//         const messages = []
-
-//         messages.push(new Message(`system`,`You are the author of a popular blog. This is your author bio: ${bio}` ))
-//         messages.push(new Message(`user`,`Write a new blog post about the following topic: ${topic}` ))
-//         messages.push(new Message(`user`,
-//             `Make sure you follow these instructions:
-//             1. Expand upon the topic until you reach ${maxWords} words.
-//             2. Format the response in HTML with proper HTML tags.
-//             3. Include a title in <h1> tags.
-//             4. Wrap the rest of the post in a <div> tag with id="primary-content".
-//             5. But do not include any boilerplate HTML`, ))
-// }
+class Claude extends Chat {}
 
 const LLMs = {
   chatgpt: ChatGPT,
-  claude: Claude,
+  // claude: Claude,
 };
 
 module.exports = { ChatGPT, LLMs };
