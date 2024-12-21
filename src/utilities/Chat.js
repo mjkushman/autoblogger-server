@@ -13,9 +13,7 @@ class Chat {
   constructor(agent) {
     this.messages = [];
     this.instruction = `
-        You're a talented writer for a popular publication ${
-          agent.Blog.label ? ` named "${agent.Blog.label}"` : ""
-        }. 
+        You're a talented writer for a popular publication. 
         ${
           agent.postSettings.personality
             ? `This is your personality: "${agent.postSettings.personality}"`

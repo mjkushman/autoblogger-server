@@ -24,16 +24,16 @@ module.exports = (sequelize) => {
         },
         allowNull: false,
       },
-      blogId: {
-        type: DataTypes.STRING(14),
-        references: {
-          // This is a reference to another model
-          model: "blogs",
-          // This is the column name of the referenced model
-          key: "blogId",
-        },
-        allowNull: false,
-      },
+      // blogId: {
+      //   type: DataTypes.STRING(14),
+      //   references: {
+      //     // This is a reference to another model
+      //     model: "blogs",
+      //     // This is the column name of the referenced model
+      //     key: "blogId",
+      //   },
+      //   allowNull: false,
+      // },
       title: { type: DataTypes.STRING },
       content: { type: DataTypes.TEXT },
       imageUrl: {
@@ -77,7 +77,7 @@ module.exports = (sequelize) => {
   Post.associate = (models) => {
     Post.belongsTo(models.Account, { foreignKey: "accountId"});
     Post.belongsTo(models.Agent, { foreignKey: "agentId"});
-    Post.belongsTo(models.Blog, { foreignKey: "blogId" });
+    // Post.belongsTo(models.Blog, { foreignKey: "blogId" });
     Post.hasMany(models.Comment, { foreignKey: "postId", onDelete: 'CASCADE' });
   };
 

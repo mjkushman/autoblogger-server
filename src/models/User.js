@@ -22,16 +22,16 @@ module.exports = (sequelize) => {
         },
         allowNull: false,
       },
-      blogId: {
-        type: DataTypes.STRING(14),
-        references: {
-          // This is a reference to another model
-          model: "blogs",
-          // This is the column name of the referenced model
-          key: "blogId",
-        },
-        allowNull: true,
-      },
+      // blogId: {
+      //   type: DataTypes.STRING(14),
+      //   references: {
+      //     // This is a reference to another model
+      //     model: "blogs",
+      //     // This is the column name of the referenced model
+      //     key: "blogId",
+      //   },
+      //   allowNull: true,
+      // },
       email: {
         type: DataTypes.STRING,
         validate: {
@@ -88,14 +88,14 @@ module.exports = (sequelize) => {
         },
       },
     },
-    {
-      indexes: [
-        {
-          unique: true,
-          fields: ["email", "blogId"], // email can only appear in a given blog once
-        },
-      ],
-    }
+    // {
+    //   indexes: [
+    //     {
+    //       unique: true,
+    //       fields: ["email", "blogId"], // email can only appear in a given blog once
+    //     },
+    //   ],
+    // }
   );
 
   //     // Associations

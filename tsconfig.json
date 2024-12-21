@@ -120,5 +120,5 @@
     "src/types/*",
     "src/types/**/*.d.ts",
     "../archive/ARCHIVEjwtoken.ts"
-, "../archive/_deprecated_htmlParser.js"  ]
+, "../archive/_deprecated_htmlParser.js", "../archive/deprecatedBlog.js"  ]
 }

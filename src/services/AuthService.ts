@@ -13,6 +13,8 @@ class AuthService {
     const payload: JwtPayload = {
       accountId,
     };
+    console.log('AuthService.generateToken. payload and accountId:', payload, accountId)
+
     return jwt.sign(payload, config.SECRET_KEY, {
       expiresIn: "1d",
       subject: accountId,

@@ -5,9 +5,6 @@ class IdGenerator {
   static agentId() {
     return `agt_${nanoid(10)}`; // 14 char total
   };
-  static blogId() {
-    return `blg_${nanoid(10)}`; // 14 char total
-  };
   static accountId() {
     return `act_${nanoid(10)}`; // 14 char total
   };

@@ -1,6 +1,6 @@
 // import the org model
 
-const { Comment, User, Post, Blog } = require("../models");
+const { Comment, User, Post } = require("../models");
 const { NotFoundError } = require("../utilities/expressError");
 const { accountId } = require("../utilities/IdGenerator");
 

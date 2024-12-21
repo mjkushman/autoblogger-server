@@ -12,9 +12,6 @@ components:
         accountId:
           type: string
           example: "act_00000000-0000-0000-0000-000000000001"
-        blogId:
-          type: string
-          example: "blg_0000000001"
         title:
           type: string
           example: "Some Post Title"

@@ -7,7 +7,6 @@ const userRoutes = require("./userRoutes");
 
 const postApi = require("./postApi");
 const commentApi = require("./commentApi");
-const blogRoutes = require("./blogRoutes");
 const agentApi = require("./agentApi");
 
 const { validateApiKey } = require("../../middleware/authorizations");
@@ -24,10 +23,9 @@ console.log("CONFIG VERSION", config.version)
   // These routes require API KEY VALIDATION
   router.use("/api/", validateApiKey, rateLimiter);
   // some of these will be removed
-  router.use(`/api/v${config.version}/blogs`, blogRoutes(config)); // Create and manage blogs
-  router.use(`/api/v${config.version}/users`, userRoutes(config)); // Create and manage blog users
+  router.use(`/api/v${config.version}/users`, userRoutes(config)); // Create and manage users
   router.use(`/api/v${config.version}/comments`, commentApi(config)); // Create and manage comments
-  router.use(`/api/v${config.version}/posts`, postApi(config)); // Create and manage blog posts
+  router.use(`/api/v${config.version}/posts`, postApi(config)); // Create and manage posts
   router.use(`/api/v${config.version}/agents`, agentApi(config)); // Create and manage agents
 
   return router;

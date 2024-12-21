@@ -1,11 +1,12 @@
 // Define the ai agent class. Final naming tbd. Could be agent or author or something else. This is the new aiBlogger.js
 console.log("AGENT SERVICE");
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
-// const htmlParser = require("../utilities/htmlParser");
+
 const getUnsplashImage = require("../utilities/getUnsplashImage");
+import { cronEncode } from "../utilities/cronEncoder";
 import PostService from "../services/PostService";
 const { LLMs } = require("../utilities/Chat");
-const { Agent, Blog, Post } = require("../models");
+const { Agent, Post } = require("../models");
 const { Op } = require("sequelize");
 
 const StatusService = require("./StatusService");
@@ -13,15 +14,6 @@ const cron = require("node-cron");
 
 // Holds active agent cron tasks
 const ACTIVE_AGENTS = new Map();
-
-class ActiveAgent {
-  constructor(agent) {
-    this.agent = agent;
-    this.agentId = agent.agentId; // I think this is redundant with the line above
-    this.blogTask = null;
-    this.socialTask = null; // TODO: nodecron task
-  }
-}
 
 class AgentService {
   constructor() {}
@@ -59,8 +51,20 @@ class AgentService {
   static async create({ accountId, body }) {
     console.log("service: creating a new agent");
     try {
+      let cronSchedule = cronEncode({
+        time: body.postSettings.time,
+        daysOfWeek: body.postSettings.daysOfWeek,
+      });
       let newAgent = { ...body, accountId };
-      return await Agent.create(newAgent);
+      newAgent.postSettings.cronSchedule = cronSchedule;
+      console.log("CREATING AGENT:");
+      console.dir(newAgent);
+      const createdAgent = await Agent.create(newAgent);
+      this.#setBlogTask(createdAgent);
+
+      console.log("CREATED AGENT POST SETTINGS:");
+      console.dir(createdAgent.postSettings);
+      return createdAgent;
     } catch (error) {
       throw error;
     }
@@ -85,7 +89,6 @@ class AgentService {
       const agent = await Agent.findOne({
         include: [
           { model: Post, attributes: ["postId"], where: { postId: postId } },
-          { model: Blog },
         ],
       });
       if (!agent) throw new NotFoundError();
@@ -117,14 +120,20 @@ class AgentService {
     try {
       const agent = await Agent.findOne({
         where: { agentId, accountId },
-        include: Blog,
       });
       if (!agent) throw new NotFoundError("Agent not found.");
 
       const oldPostSettings = agent.postSettings;
       const oldSocialSettings = agent.socialSettings;
 
+      let cronSchedule = cronEncode({
+        time: body.postSettings.time,
+        daysOfWeek: body.postSettings.daysOfWeek,
+      });
+
+      body.postSettings.cronSchedule = cronSchedule;
       console.log("Attempting update with body: ", body);
+
       await agent.update(body);
       await agent.save(); // trigger the beforeUpdate hook
 
@@ -216,7 +225,7 @@ class AgentService {
    * @returns a blog in string formatted HTML
    */
   static async writePost({ agentId, options, status }) {
-    console.log("Inside writePost");
+    console.log(`${agentId} is starting writePost`);
     // update the status to in progress
     if (status) {
       StatusService.updateInstance(status, { status: "in_progress" });
@@ -236,7 +245,7 @@ class AgentService {
 
     // Get Agent from DB
 
-    const agent = await Agent.findByPk(agentId, { include: Blog });
+    const agent = await Agent.findByPk(agentId);
     // console.log("Agent being used: ", agent);
     if (!agent) return new NotFoundError("Agent not found.");
 
@@ -248,17 +257,18 @@ class AgentService {
 
     // If no topic is provided, decide one
 
+    console.log(`${agent.username} is about to create a topic`);
     const topicBlock =
       options.topic ??
       (await this.#decideBlogTopic({ agent, llm: options.llm }));
-    // console.log(`Blog topic: ${topicBlock}`);
+    console.log(`${agent.username}'s Blog topic: ${topicBlock}`);
 
     // Instantiate a new Chat
     const chat = new LLMs[options.llm](agent);
     // First instruction
     chat.addMessage(
       `user`,
-      `Write a new blog post using the following outline and instructions.`
+      `Write a new article using the following outline and instructions.`
     );
     // Next instruction
     chat.addMessage(
@@ -281,7 +291,6 @@ class AgentService {
     console.log(`${agent.username} received response from ${options.llm}.`);
 
     // Parse and format html resposne from llm
-    // let post = htmlParser(response); // TODO: update this parser function. It's more like a formatter. Possibly ask the LLM to return in JSON instead.
 
     // Get a random image based on the post title
     let imageUrl = "";
@@ -301,7 +310,6 @@ class AgentService {
       imageUrl: String(imageUrl),
       agentId: agent.agentId,
       authorId: agent.agentId,
-      blogId: agent.blogId,
       accountId: agent.accountId,
     };
     // console.dir(generatedPost);
@@ -316,25 +324,28 @@ class AgentService {
    * @returns Topic.: An outline of the next article to write when calling writePost
    */
   static async #decideBlogTopic({ agent, llm }) {
+    console.log('entered #decideBlogTopic. agent, llm:', agent, llm)
     const { agentId } = agent;
     const titles = await PostService.findRecentTitles({
       agentId: agentId,
     });
-    let recentWork = titles
-      ? [
-          `Here are the titles of some of your recent work:`,
-          ...titles.slice(0, 9),
-        ].join("\n - ")
-      : `You havent written anything yet.`;
-
+    let recentWork =
+      titles.length > 0
+        ? [
+            `Here are the titles of some of your recent work:`,
+            ...titles.slice(0, 9),
+          ].join("\n - ")
+        : `You havent written anything yet.`;
+    console.log("resolved recentWork:", recentWork);
     const chat = new LLMs[llm](agent); // Get the appropriate Chat LLM
+    console.log("created chat: ", chat);
     chat.addMessage(`user`, recentWork);
     chat.addMessage(
       `user`,
       `Given your author bio and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still adhere to your bio. For each section of the blog post, write a brief summary of the planned content.`
     );
-    // console.log(`MESSAGES: `);
-    // console.dir(chat.getMessages());
+    console.log(`MESSAGES: `);
+    console.dir(chat.getMessages());
 
     try {
       const completion = await chat.sendPrompt(); // returns the completion response
@@ -379,6 +390,9 @@ class AgentService {
       );
       // store task to actives
       ACTIVE_AGENTS.set(agentId, { ...tasks, blogTask });
+      console.log(
+        `Added ${agentId} and task ${blogTask} to ACTIVE_AGENTS. Number of actives: ${ACTIVE_AGENTS.size}`
+      );
     } catch (error) {
       throw new Error(error.message);
     }
@@ -395,7 +409,7 @@ class AgentService {
       tasks.forEach((task) => task.stop());
       ACTIVE_AGENTS.delete(agentId);
       console.log(`deacivated ${agentId}`);
-      return
+      return;
     } catch (error) {
       throw new Error(error);
     }

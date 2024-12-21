@@ -1,6 +1,6 @@
 "use strict";
 
-// Routes for blog posts
+// Routes for posts
 
 const Comment = require("../../models/Comment"); // import comment model from models folder
 const { requireAuth } = require("../../middleware/authorizations");

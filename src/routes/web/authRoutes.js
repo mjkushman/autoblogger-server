@@ -2,7 +2,6 @@
 
 // Routes for the users
 
-// const {User} = require('../models') // import blog model from models folder
 const express = require("express");
 
 const { BadRequestError } = require("../../utilities/expressError");

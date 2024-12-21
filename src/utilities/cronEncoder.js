@@ -22,6 +22,7 @@ const validDaysOfWeek = new Map([
  * @returns string valid crontab expression
  * */
 function cronEncode({ time, daysOfWeek }) {
+  console.log('ENCODING CRON')
   const [hour, minute] = time.split(":").map((string) => Number(string));
 
   if (!Number.isInteger(minute) || minute < 0 || minute > 59)

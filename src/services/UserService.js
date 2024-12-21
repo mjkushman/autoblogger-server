@@ -46,7 +46,6 @@ class UserService {
 
     const {
       email,
-      blogId,
       orgId,
       firstName,
       lastName,
@@ -58,7 +57,6 @@ class UserService {
     try {
       const user = await User.create({
         email,
-        blogId,
         orgId,
         firstName,
         lastName,
@@ -70,14 +68,13 @@ class UserService {
 
       const newUser = (({
         orgId,
-        blogId,
         firstName,
         lastName,
         username,
         email,
         role,
         imageUrl,
-      }) => ({ blogId, username, firstName, lastName, email, role, imageUrl, orgId }))(
+      }) => ({ username, firstName, lastName, email, role, imageUrl, orgId }))(
         user
       );
 

@@ -5,8 +5,7 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const AccountService = require("../../services/AccountService"); 
-// const accountService = require("@/services/AccountService");
-const AuthService = require("../../services/AuthService");
+import AuthService from "../../services/AuthService";
 
 
 const { BadRequestError, UnauthorizedError } = require("../../utilities/expressError");
@@ -32,7 +31,7 @@ module.exports = (config) => {
   router.post("/", async function (req, res, next) {
     try {
       const account = await AccountService.create(req);
-      const token = await AuthService.generateToken(account);
+      const token = await AuthService.generateToken(account.accountId);
 
       return res.sendResponse({ data: token, status: 201 });
     } catch (error) {

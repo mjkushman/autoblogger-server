@@ -5,7 +5,7 @@ console.log('MODELS INDEX')
 const Sequelize = require("sequelize");
 const {
   accountSeed,
-  blogSeed,
+  // blogSeed,
   userSeed,
   postSeed,
   agentSeed,
@@ -34,7 +34,7 @@ async function connectToPostgres() {
 const models = {
   // Add models below:
   Account: require("./Account")(sequelize),
-  Blog: require("./Blog")(sequelize),
+  // Blog: require("./Blog")(sequelize),
   User: require("./User")(sequelize),
   Agent: require("./Agent")(sequelize),
   Status: require("./Status")(sequelize),
@@ -87,10 +87,10 @@ async function seedData() {
     console.log("Upserted seed data for accounts.");
 
     // Seed Blogs
-    for (const blog of blogSeed) {
-      await models.Blog.upsert(blog);
-    }
-    console.log("Upserted seed data for blogs.");
+    // for (const blog of blogSeed) {
+    //   await models.Blog.upsert(blog);
+    // }
+    // console.log("Upserted seed data for blogs.");
 
     // Seed Users
     for (const user of userSeed) {

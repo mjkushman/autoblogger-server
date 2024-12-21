@@ -1,13 +1,12 @@
 // import the org model
 
-const { Account, Blog, Agent } = require("../models");
+const { Account, Agent } = require("../models");
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const crypto = require("crypto");
 const { cache } = require("../cache");
-const BlogService = require("./BlogService");
 
 class AccountService {
-  /** POST creates a new developer account, blog, and first user */
+  /** POST creates a new developer account, and first user */
 
   static async create({ body }) {
     console.log(
@@ -38,15 +37,8 @@ class AccountService {
       });
       console.log(`STORED NEW Account`);
       console.dir(newAccount);
-
-      // Create their first blog
-      const newBlog = await BlogService.create({
-        accountId: newAccount.accountId,
-        label: label,
-      });
-      // get account blogs. Should just be one right now.
       
-      const blogList = await newAccount.getBlogs(); // getBlogs is a getter method provided by sequelize models
+      
       // store new account in cache
       const account = {
         accountId: newAccount.accountId,
@@ -54,10 +46,9 @@ class AccountService {
         lastName: newAccount.lastName,
         email: newAccount.email,
         apiKey,
-        blogs: await blogList.map(({ blogId, label }) => ({ blogId, label })),
       };
       cache.set(apiKey, account);
-      // TODO: Send email to developer with their api key await blogList.map(({blogId, label}) => blogId, label)
+      // TODO: Send email to developer with their api key
 
       return account;
     } catch (error) {
@@ -74,10 +65,10 @@ class AccountService {
       where: {
         apiKeyIndex,
       },
-      include: [Blog, Agent],
+      include: [Agent],
     });
     if (result) {
-      const { accountId, firstName, lastName, email, label, Blogs, Agents, openAiApiKey } =
+      const { accountId, firstName, lastName, email, label, Agents, openAiApiKey } =
         result;
       // console.log('RESULT OF APIKEYINDEX LOOKUP:', result)
         // extract agentid and username
@@ -92,7 +83,6 @@ class AccountService {
         label,
         apiKey,
         openAiApiKey,
-        Blogs,
         Agents,
       };
 
@@ -119,7 +109,7 @@ class AccountService {
       console.log("trying accountService findOne");
       const account = await Account.findOne({
         where: { accountId },
-        include: [Blog, Agent]
+        include: [Agent]
       });
       if (!account) throw new NotFoundError("Account not found.");
       return account;

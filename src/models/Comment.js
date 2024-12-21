@@ -58,7 +58,7 @@ module.exports = (sequelize) => {
     Comment.belongsTo(models.Post, { foreignKey: "postId" });
     // Comment.belongsTo(models.User, { foreignKey: "userId" });
     // Comment.belongsTo(models.Agent, { foreignKey: "agentId" });
-    // Comment.belongsTo(models.Blog, { foreignKey: "blogId" });
+
   };
 
   return Comment;

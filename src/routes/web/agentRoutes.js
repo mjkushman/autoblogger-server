@@ -25,19 +25,7 @@ module.exports = (config) => {
       next(error);
     }
   });
-  /** GET returns a list of all agents for an account
-   *
-   */
-  router.get("/hello", async function (req, res, next) {
-    try {
-      console.log("saying hello");
-      const { accountId } = res.locals;
-      const result = await AgentService.sayHello({ accountId });
-      return res.sendResponse({ data: result, status: 200 });
-    } catch (error) {
-      next(error);
-    }
-  });
+
   /** GET returns one agent for an account
    *
    */
@@ -47,23 +35,6 @@ module.exports = (config) => {
       const { accountId } = res.locals;
       const { agentId } = req.params;
       const result = await AgentService.findOne({ agentId, accountId });
-      return res.sendResponse({ data: result, status: 200 });
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  // Mostly just used to test the service for getting titles.
-  router.get("/:agentId/titles", async function (req, res, next) {
-    try {
-      console.log("route: finding titles for one agent");
-      const { accountId } = res.locals;
-      const { agentId } = req.params;
-      const agent = await AgentService.findOne({ accountId, agentId });
-      if (!agent) throw new NotFoundError("Unable to find agent");
-      const result = await PostService.findRecentTitles({
-        agentId: agent.agentId,
-      });
       return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
@@ -111,6 +82,7 @@ module.exports = (config) => {
 
       // if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.update({ accountId, agentId, body });
+      console.log('PATCH result:', result)
       return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
