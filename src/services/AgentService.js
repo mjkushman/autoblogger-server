@@ -392,13 +392,13 @@ class AgentService {
         const blogTask = cron.schedule(
           cronSchedule,
           async () => {
-            console.log("task: before gen");
+            console.log("Initiated scheduled blog task");
             const generatedPost = await AgentService.writePost({
               agentId: agent.agentId,
             });
-            console.log("task: after gen");
+            
             await PostService.create(generatedPost);
-            console.log("task: exiting task");
+            console.log("Completed scheduled blog task");
           },
           { scheduled: true, timezone, name: agentId }
         );
@@ -409,8 +409,7 @@ class AgentService {
           `Added ${agentId} and task ${blogTask} to ACTIVE_AGENTS. Number of actives: ${ACTIVE_AGENTS.size}`
         );
       }
-      console.log('setBlogTask: ACTIVE AGENTS:')
-      console.dir(ACTIVE_AGENTS)
+
     } catch (error) {
       throw new Error(error.message);
     }
