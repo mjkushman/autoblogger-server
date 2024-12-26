@@ -3,7 +3,7 @@ console.log("AGENT SERVICE");
 const { ExpressError, NotFoundError } = require("../utilities/expressError");
 
 const getUnsplashImage = require("../utilities/getUnsplashImage");
-import { cronEncode } from "../utilities/cronEncoder";
+import cronEncoder from "../utilities/cronEncoder";
 import PostService from "../services/PostService";
 const { LLMs } = require("../utilities/Chat");
 const { Agent, Post } = require("../models");
@@ -22,6 +22,9 @@ class AgentService {
 
   static async loadActive() {
     console.log(`LOADING ACTIVE AGENTS...`);
+    console.log(`imported Agent model:`, Agent);
+    console.log(`imported Post model:`, Post);
+
     const agents = await Agent.findAll({
       where: {
         [Op.or]: [
@@ -49,9 +52,12 @@ class AgentService {
   }
 
   static async create({ accountId, body }) {
-    console.log("service: creating a new agent");
+    console.log(
+      `AgentService: CREATE agent for accountId: ${accountId} with body ${body}`
+    );
+
     try {
-      let cronSchedule = cronEncode({
+      let cronSchedule = cronEncoder({
         time: body.postSettings.time,
         daysOfWeek: body.postSettings.daysOfWeek,
       });
@@ -60,7 +66,7 @@ class AgentService {
       console.log("CREATING AGENT:");
       console.dir(newAgent);
       const createdAgent = await Agent.create(newAgent);
-      this.#setBlogTask(createdAgent);
+      if (createdAgent.postSettings.isEnabled) this.#setBlogTask(createdAgent); // if enabled, set the task
 
       console.log("CREATED AGENT POST SETTINGS:");
       console.dir(createdAgent.postSettings);
@@ -71,7 +77,7 @@ class AgentService {
   }
 
   static async findAll({ accountId }) {
-    console.log(`service: finding all agents for accountId: ${accountId}`);
+    console.log(`AgentService: FINDALL agents for accountId: ${accountId}`);
     try {
       let agents = await Agent.findAll({
         where: { accountId },
@@ -100,7 +106,7 @@ class AgentService {
 
   static async findOne({ agentId, accountId }) {
     console.log(
-      `service: finding agent ${agentId} for accountId: ${accountId}`
+      `AgentService: FINDONE agent ${agentId} for accountId: ${accountId}`
     );
     try {
       let agent = await Agent.findOne({
@@ -115,7 +121,7 @@ class AgentService {
 
   static async update({ accountId, agentId, body }) {
     console.log(
-      `service: updating agent ${agentId} for accountId: ${accountId}`
+      `AgentService: UPDATE agent ${agentId} for accountId: ${accountId} with body ${body}`
     );
     try {
       const agent = await Agent.findOne({
@@ -126,7 +132,7 @@ class AgentService {
       const oldPostSettings = agent.postSettings;
       const oldSocialSettings = agent.socialSettings;
 
-      let cronSchedule = cronEncode({
+      let cronSchedule = cronEncoder({
         time: body.postSettings.time,
         daysOfWeek: body.postSettings.daysOfWeek,
       });
@@ -262,6 +268,7 @@ class AgentService {
       options.topic ??
       (await this.#decideBlogTopic({ agent, llm: options.llm }));
     console.log(`${agent.username}'s Blog topic: ${topicBlock}`);
+    console.dir(topicBlock);
 
     // Instantiate a new Chat
     const chat = new LLMs[options.llm](agent);
@@ -324,7 +331,7 @@ class AgentService {
    * @returns Topic.: An outline of the next article to write when calling writePost
    */
   static async #decideBlogTopic({ agent, llm }) {
-    console.log('entered #decideBlogTopic. agent, llm:', agent, llm)
+    console.log("entered #decideBlogTopic. agent, llm:", agent, llm);
     const { agentId } = agent;
     const titles = await PostService.findRecentTitles({
       agentId: agentId,
@@ -355,44 +362,55 @@ class AgentService {
     }
   }
 
+  /**
+   * This function gets invoked when agent.postSettings have changed for any reason.
+   *
+   */
   static async #setBlogTask(agent) {
     console.log(`${agent.username} setting Blog Task`);
     try {
       const { agentId, postSettings } = agent;
       const { cronSchedule, timezone } = postSettings;
-      const tasks = ACTIVE_AGENTS.get(agentId);
 
-      if (!agent.postSettings.isEnabled && !tasks.blogTask) {
-        return; // nothing needs changing
-      }
-      // Turn off current blogTask
-      if (!agent.postSettings.isEnabled && tasks.blogTask) {
-        tasks.blogTask.stop(); // stop cron
+      // Get, stop, and delete current task if it exists
+      let tasks = ACTIVE_AGENTS.get(agentId);
+      if (tasks && tasks.blogTask) {
+        tasks.blogTask.stop();
         console.log("task stopped");
         delete tasks.blogTask;
         if (tasks == {}) ACTIVE_AGENTS.delete(agentId);
+        // if no more tasks, remove agent from ACTIVE entirely
         else ACTIVE_AGENTS.set(agentId, tasks);
       }
 
-      // create the cron
-      const blogTask = cron.schedule(
-        cronSchedule,
-        async () => {
-          console.log("task: before gen");
-          const generatedPost = await AgentService.writePost({
-            agentId: agent.agentId,
-          });
-          console.log("task: after gen");
-          await PostService.create(generatedPost);
-          console.log("task: exiting task");
-        },
-        { scheduled: true, timezone, name: agentId }
-      );
-      // store task to actives
-      ACTIVE_AGENTS.set(agentId, { ...tasks, blogTask });
-      console.log(
-        `Added ${agentId} and task ${blogTask} to ACTIVE_AGENTS. Number of actives: ${ACTIVE_AGENTS.size}`
-      );
+      if (postSettings.isEnabled == false) {
+        // Return without creating task
+        return;
+      } else {
+        // create and set the task
+        // create the cron
+        const blogTask = cron.schedule(
+          cronSchedule,
+          async () => {
+            console.log("task: before gen");
+            const generatedPost = await AgentService.writePost({
+              agentId: agent.agentId,
+            });
+            console.log("task: after gen");
+            await PostService.create(generatedPost);
+            console.log("task: exiting task");
+          },
+          { scheduled: true, timezone, name: agentId }
+        );
+        // store task to actives
+        tasks ? tasks.blogTask = blogTask : tasks = { blogTask }; // handles if tasks is undefined
+        ACTIVE_AGENTS.set(agentId,tasks);
+        console.log(
+          `Added ${agentId} and task ${blogTask} to ACTIVE_AGENTS. Number of actives: ${ACTIVE_AGENTS.size}`
+        );
+      }
+      console.log('setBlogTask: ACTIVE AGENTS:')
+      console.dir(ACTIVE_AGENTS)
     } catch (error) {
       throw new Error(error.message);
     }
@@ -417,6 +435,6 @@ class AgentService {
 }
 
 // NEED TO MOVE THIS FUNCTION UNTIL AFTER DB IS DONE LOADING
-AgentService.loadActive(); // Upon server start, schedule all active agent tasks
+// AgentService.loadActive(); // Upon server start, schedule all active agent tasks
 
 module.exports = AgentService;
