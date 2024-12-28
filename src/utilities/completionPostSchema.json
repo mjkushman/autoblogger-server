@@ -1,0 +1,40 @@
+{
+    "name": "blog_post",
+    "strict": true,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "title": {
+                "type": "string",
+                "description": "The title of the article."
+            },
+            "content": {
+                "type": "string",
+                "description": "The content of the article. Must be written in markdown format."
+            },
+            "tags": {
+                "type": "array",
+                "description": "List of tags associated with the article",
+                "items": {
+                    "type": "string",
+                    "description": "A tag that relates to the content of the article."
+                }
+            },
+            "keywords": {
+                "type": "array",
+                "description": "Keywords that are relevant to the article for SEO purposes.",
+                "items": {
+                    "type": "string",
+                    "description": "A keyword that describes the content of the article."
+                }
+            }
+        },
+        "required": [
+            "title",
+            "content",
+            "tags",
+            "keywords"
+        ],
+        "additionalProperties": false
+    }
+}

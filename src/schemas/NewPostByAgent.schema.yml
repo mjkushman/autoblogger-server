@@ -1,0 +1,49 @@
+components:
+  schemas:
+    NewPostByAgentBody:
+      type: object
+      required:
+        - agentId
+      properties:
+        agentId:
+          type: string
+          example: "agt_aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa"
+        options:
+          type: object
+          properties:
+            llm:
+              type: string
+              example: "chatgpt"
+            maxWords:
+              type: integer
+              example: 500
+    NewPostByAgentSuccess:
+        type: object
+        properties:
+          status:
+            type: number
+            example: 201
+          message:
+            type: string
+            example: "Success"            
+          data:
+            type: object
+            properties:
+              result:
+                type: string
+                nullable: true
+                enum: ["Success", null]
+              statusId:
+                type: string
+              type:
+                type: string
+                enum: [post, comment]
+              status:
+                type: string
+                enum: ["new_request", "in_progress", "success", "error"]
+              updatedAt:
+                type: string
+                format: date-time
+              createdAt:
+                type: string
+                format: date-time

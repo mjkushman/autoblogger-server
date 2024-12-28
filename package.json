@@ -2,15 +2,18 @@
   "name": "autoblogger",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/server.js",
   "scripts": {
-    "test": "jest --runInBand --colors --detectOpenHandles",
-    "start_local": "nodemon -r dotenv/config --trace-warnings server.js"
+    "test": "NODE_ENV=testing jest --runInBand --colors --detectOpenHandles",
+    "dev": "nodemon -r dotenv/config src/server.ts",
+    "build": "npx tsc",
+    "start": "node dist/server.js"
   },
   "jest": {
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "config.js"
+      "config.js",
+      "config.ts"
     ],
     "setupFiles": [
       "dotenv/config"
@@ -19,26 +22,47 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.9",
     "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
+    "cron-parser": "^4.9.0",
+    "cronstrue": "^2.50.0",
     "express": "^4.18.2",
+    "express-rate-limit": "^7.3.1",
     "html-to-text": "^9.0.5",
     "jsonschema": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
+    "lru-cache": "^11.0.0",
     "morgan": "^1.10.0",
     "nanoid": "^3.3.7",
     "node-cron": "^3.0.3",
     "openai": "^4.27.0",
-    "pg": "^8.11.3",
+    "pg": "^8.12.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.3",
     "slug": "^8.2.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.9.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/sequelize": "^4.28.20",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.7",
+    "@typescript-eslint/parser": "^8.14.0",
     "dotenv": "^16.4.3",
     "jest": "^29.7.0",
-    "supertest": "^6.3.4"
+    "supertest": "^6.3.4",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3"
   }
 }
