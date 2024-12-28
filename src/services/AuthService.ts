@@ -13,7 +13,7 @@ class AuthService {
     const payload: JwtPayload = {
       accountId,
     };
-    console.log('AuthService.generateToken. payload and accountId:', payload, accountId)
+    console.log("AuthService.generateToken. payload and accountId:", payload, accountId);
 
     return jwt.sign(payload, config.SECRET_KEY, {
       expiresIn: "1d",
@@ -30,8 +30,8 @@ class AuthService {
 
     const isValidPassword = bcrypt.compare(password, account.password);
     if (!isValidPassword) return new UnauthorizedError("Invalid password");
-    console.log("generating token")
+    console.log("generating token");
     return await this.generateToken(account.accountId);
   }
 }
-export default AuthService
+export default AuthService;

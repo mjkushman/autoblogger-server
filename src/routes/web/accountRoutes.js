@@ -19,8 +19,8 @@ module.exports = (config) => {
    */
   router.get("/", async function (req, res, next) {
     try {
-      let { accountId } = res.locals;
-      let result = await AccountService.findOne(accountId);
+      const { accountId } = res.locals;
+      const result = await AccountService.findOne(accountId);
       return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       return next(error);
@@ -44,7 +44,7 @@ module.exports = (config) => {
     const { body } = req;
     const { accountId } = res.locals;
     // make sure the account being updated is also the one sending the request
-    if(!body) throw BadRequestError(`Must provide body in request.`)
+    if (!body) throw BadRequestError("Must provide body in request.");
     try {
       const account = await AccountService.update({ accountId, body });
 

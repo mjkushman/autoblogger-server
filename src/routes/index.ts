@@ -11,6 +11,6 @@ export default (config: Config) => {
   const router: Router = express.Router();
   router.use(webRoutes(config));
   router.use(apiRoutes(config));
-  return router
+  return router;
 };
 

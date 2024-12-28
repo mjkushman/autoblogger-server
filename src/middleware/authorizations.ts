@@ -30,7 +30,7 @@ export async function verifyJWT(
   const authHeader = req.headers?.authorization;
   if (authHeader) {
     try {
-      let token = authHeader
+      const token = authHeader
         .replace(/^[Bb]earer\s+["']?([^"']+)["']?$/, "$1")
         .trim(); // strip "bearer" and any quotes from the token
       // Verify the JWT

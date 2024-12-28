@@ -3,7 +3,7 @@
 // const db = require('../dborm')
 
 const { Org } = require("../models");
-const crypto = require('crypto')
+const crypto = require("crypto");
 class OrgService {
   /** GET all orgs */
   static async findAll() {
@@ -22,8 +22,8 @@ class OrgService {
     console.log("Orgs: Creating from payload:", payload);
 
 
-    let accessKey = crypto.randomBytes(64).toString('hex')
-    let newOrg = {
+    const accessKey = crypto.randomBytes(64).toString("hex");
+    const newOrg = {
       email: payload.email,
       name: payload.name,
       plan: payload.plan,

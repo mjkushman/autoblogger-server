@@ -55,7 +55,7 @@ module.exports = (sequelize) => {
       hooks: {
         beforeCreate: async (record) => {
           // create Id upon new record
-          console.log("CREATING ACCOUNT: ",record)
+          console.log("CREATING ACCOUNT: ",record);
           record.accountId = IdGenerator.accountId();
 
           // hash password key before saving
@@ -85,7 +85,7 @@ module.exports = (sequelize) => {
               record.password,
               config.BCRYPT_WORK_FACTOR,
               (err, hashedPassword) => {
-                record.password = hashedPassword
+                record.password = hashedPassword;
               }
             );
           }

@@ -14,7 +14,7 @@ const postRoutes = () => {
         const { accountId } = res.locals;
         const { agentId } = req.query;
 
-        let options = {
+        const options = {
           accountId,
           agentId,
           comments: false,

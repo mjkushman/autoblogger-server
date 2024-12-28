@@ -21,4 +21,4 @@ class IdGenerator {
     return `sts_${nanoid(10)}`; // 14 char total
   };
 }
-export default IdGenerator
+export default IdGenerator;

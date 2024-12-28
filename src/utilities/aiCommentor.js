@@ -26,7 +26,7 @@ async function createAiReply(postId) {
   // console.log(...postComments);
 
   // extract the most recent comment
-  let mostRecentComment = postComments
+  const mostRecentComment = postComments
     .sort((a, b) => a.createdAt - b.createdAt)
     .pop().body;
   // console.log("most recent comment:", mostRecentComment);
@@ -36,7 +36,7 @@ async function createAiReply(postId) {
   // const authorBio = author.authorBio;
 
   // Build the messages to send
-  let messages = [
+  const messages = [
     {
       role: "system",
       content: ` Your name is ${author.firstName} and you write for a popular blog. Your personality is described as:

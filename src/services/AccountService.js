@@ -17,8 +17,7 @@ class AccountService {
     const { host, email, firstName, lastName, label, password } = body;
 
     const existingAccount = await Account.findOne({ where: { email } });
-    if (existingAccount)
-      return new ExpressError("That email is already in use", 400);
+    if (existingAccount) return new ExpressError("That email is already in use", 400);
 
     // Generate a unique api key
     const apiKey = crypto.randomBytes(64).toString("hex");
@@ -35,7 +34,7 @@ class AccountService {
         apiKeyIndex,
         password,
       });
-      console.log(`STORED NEW Account`);
+      console.log("STORED NEW Account");
       console.dir(newAccount);
       
       
@@ -96,7 +95,7 @@ class AccountService {
     console.log("account service findall");
     try {
       console.log("trying");
-      let accounts = await Account.findAll();
+      const accounts = await Account.findAll();
       return accounts;
     } catch (error) {
       console.log("catching");
@@ -127,7 +126,7 @@ class AccountService {
         where: { accountId }
       });
       if (!account) throw new NotFoundError("Account not found.");
-      console.log('Attempting account update with body: ', body)
+      console.log("Attempting account update with body: ", body);
       await account.update(body);
       await account.save(); // triggers hooks
       return account;
@@ -142,12 +141,12 @@ class AccountService {
     console.log("deleting account");
     try {
       console.log("trying");
-      let rowsDeleted = await Account.destroy({
+      const rowsDeleted = await Account.destroy({
         where: { accountId }
       });
       
       if (!rowsDeleted) throw new Error(`Deleted ${rowsDeleted} rows`);
-      return rowsDeleted // expect: 1
+      return rowsDeleted; // expect: 1
     } catch (error) {
       console.log("catching");
       throw new Error(error);

@@ -58,7 +58,7 @@ module.exports = (config) => {
       const { body } = req;
       const { accountId } = res.locals;
 
-      if (!validatePostSettings(body.postSettings)){
+      if (!validatePostSettings(body.postSettings)) {
 
         res.status(400).send(new BadRequestError("Invalid post settings"));
       }
@@ -68,7 +68,7 @@ module.exports = (config) => {
       return res.sendResponse({ data: agent, status: 201 });
     } catch (error) {
       console.log("catching error:", error);
-     return next(error);
+      return next(error);
     }
 
   });

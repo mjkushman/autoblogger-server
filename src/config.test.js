@@ -27,7 +27,6 @@ describe("config can come from env", function () {
     expect(config.PORT).toEqual(5000);
     expect(config.getDatabaseUri()).toEqual("other");
     expect(config.BCRYPT_WORK_FACTOR).toEqual(12);
-    
 
 
     delete process.env.SECRET_KEY;
@@ -43,9 +42,9 @@ describe("config can come from env", function () {
   });
   test("loads env variables", function() {
 
-    expect(process.env.OPEN_AI_KEY).toEqual(expect.any(String))
-    expect(process.env.UNSPLASH_CLIENT_ID).toEqual(expect.any(String))
+    expect(process.env.OPEN_AI_KEY).toEqual(expect.any(String));
+    expect(process.env.UNSPLASH_CLIENT_ID).toEqual(expect.any(String));
     
   });
-})
+});
 

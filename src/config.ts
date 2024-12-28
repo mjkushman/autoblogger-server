@@ -1,8 +1,9 @@
 "use strict";
 
 /** Shared config for application; can be required many places. */
-import dotenv from "dotenv";
-dotenv.config();
+import dotenv from "dotenv"
+
+dotenv.config()
 
 import "colors";
 

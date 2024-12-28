@@ -53,7 +53,7 @@ class UserService {
       password,
       username,
     } = payload;
-    console.log('RECEIVED USER CREATE PAYLOAD: ', payload)
+    console.log("RECEIVED USER CREATE PAYLOAD: ", payload);
     try {
       const user = await User.create({
         email,
@@ -78,7 +78,7 @@ class UserService {
         user
       );
 
-      return newUser ;
+      return newUser;
     } catch (error) {
       return new ValidationError("user already exists", error); // should throw an error here instead
     }

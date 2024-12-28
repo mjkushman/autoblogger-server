@@ -19,12 +19,12 @@ type PostSettings = {
 const validatePostSettings = (postSettings: PostSettings): boolean => {
   const { time, daysOfWeek, timezone } = postSettings;
   if (!time || !daysOfWeek || !timezone) {
-    console.log('postSettigns are NOT valid')
-    return false
+    console.log("postSettigns are NOT valid");
+    return false;
   } else {
-    console.log('postSettigns ARE valid')
+    console.log("postSettigns ARE valid");
     return true;
   }
 };
 
-export default validatePostSettings
+export default validatePostSettings;

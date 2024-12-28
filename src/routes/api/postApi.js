@@ -46,22 +46,21 @@ module.exports = (config) => {
 
     // USE THIS TO VERIFY REQUEST WITHOUT DOING FURTHER LOGIC
     // return res.status(201).json({message: "generate request received"})
-
   
 
     // immediately send back a status
     const status = await StatusService.create("post");
     res.sendResponse({ status: 201, data: status });
-    console.log('about to enter try catch')
+    console.log("about to enter try catch");
     try {
       const { agentId, options } = req.body;
-      console.log('about to generate')
+      console.log("about to generate");
       const generatedPost = await AgentService.writePost({
         agentId,
         options,
         status,
       });
-      console.log('generated, about to save post')
+      console.log("generated, about to save post");
       const newPost = await PostService.create(generatedPost); // save the newly written post
 
       if (newPost) {
@@ -70,14 +69,14 @@ module.exports = (config) => {
           result: { post: newPost },
         });
       }
-      return;
+      
     } catch (error) {
       console.log(error);
       StatusService.updateInstance(status, {
         status: "error",
         result: "Unable to generate",
       });
-      return;
+      
     }
   });
 

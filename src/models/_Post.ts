@@ -70,10 +70,9 @@ module.exports = (sequelize) => {
     {
       validate: {
         mustHaveUserOrAgentId() {
-          if (!this.agentId && !this.userId)
-            throw new Error(
-              "At least one of userId or agentId must be provided."
-            );
+          if (!this.agentId && !this.userId) throw new Error(
+            "At least one of userId or agentId must be provided."
+          );
         },
       },
     }

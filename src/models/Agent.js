@@ -51,14 +51,12 @@ module.exports = (sequelize) => {
         },
         validate: {
           isValidModel(value) {
-            if (value.model && !validModels.includes(value.model))
-              throw new ValidationError(
-                `Model must be one of: ${validModels.join(", ")}`
-              );
+            if (value.model && !validModels.includes(value.model)) throw new ValidationError(
+              `Model must be one of: ${validModels.join(", ")}`
+            );
           },
           isValidApiKey(value) {
-            if (value.apiKey && typeof value.apiKey != "string")
-              throw new ValidationError(`Invalid API Key for LLM`);
+            if (value.apiKey && typeof value.apiKey !== "string") throw new ValidationError("Invalid API Key for LLM");
           },
         },
       },
@@ -68,7 +66,7 @@ module.exports = (sequelize) => {
         defaultValue: {
           isEnabled: false,
           maxWords: 10000,
-          cronSchedule: `* * * * *`,
+          cronSchedule: "* * * * *",
           displaySchedule: null,
           time: "12:00",
           daysOfWeek: ["mon"],
@@ -77,14 +75,13 @@ module.exports = (sequelize) => {
         },
         validate: {
           hasValidPersonality(value) {
-            if (value.personality && typeof value.personality !== "string")
-              throw new ValidationError(`personality must be a valid string`);
+            if (value.personality && typeof value.personality !== "string") throw new ValidationError("personality must be a valid string");
           },
           hasValidCronifEnabled(value) {
             console.log("Validating cron of:", value);
             console.log("cron validation result:", cron.validate(value.cronSchedule));
-            if(value.isEnabled && !cron.validate(value.cronSchedule)) {
-              throw new ValidationError(`Cannot enable without valid cron schedule.`);
+            if (value.isEnabled && !cron.validate(value.cronSchedule)) {
+              throw new ValidationError("Cannot enable without valid cron schedule.");
             } 
           },
           maxWordCount(value) {
@@ -108,8 +105,7 @@ module.exports = (sequelize) => {
         },
         validate: {
           hasValidPersonality(value) {
-            if (value.personality && typeof value.personality !== "string")
-              throw new ValidationError(`personality must be a valid string`);
+            if (value.personality && typeof value.personality !== "string") throw new ValidationError("personality must be a valid string");
           },
         },
       },

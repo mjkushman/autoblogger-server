@@ -102,7 +102,7 @@ module.exports = (config) => {
       const { accountId } = req.locals.account;
       const { postId } = req.body;
 
-      let response = { comment: null, reply: null }; // Placeholders for comment and agent reply
+      const response = { comment: null, reply: null }; // Placeholders for comment and agent reply
       // Create a new comment
       const comment = await CommentService.create({
         accountId,
@@ -191,8 +191,7 @@ module.exports = (config) => {
   router.delete("/", async function (req, res, next) {
     try {
       const { commentId } = req?.params;
-      if (!commentId || commentId <= 1)
-        throw new BadRequestError((message = "Valid commentId is required"));
+      if (!commentId || commentId <= 1) throw new BadRequestError((message = "Valid commentId is required"));
       const { accountId } = req.locals.account;
       const result = await CommentService.destroy({ commentId, accountId });
       return res.sendResponse({ status: 200, data: result });

@@ -28,9 +28,8 @@ module.exports = (config) => {
     // console.log('PRE AUTH RES LOCALS',{...res.locals})
     try {
       const { email, password } = req.body;
-      if (!email || !password)
-        throw new BadRequestError("Request must contain email and password");
-      console.log('continuing with email and pw:', email, password)
+      if (!email || !password) throw new BadRequestError("Request must contain email and password");
+      console.log("continuing with email and pw:", email, password);
       const token = await AuthService.authenticate({ email, password });
       console.log("route, token", token);
       return res.sendResponse({ status: 201, data: token });

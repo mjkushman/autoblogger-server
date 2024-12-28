@@ -15,4 +15,4 @@ app.listen(config.PORT, function () {
   console.log(`Application listening on port ${config.PORT}`);
 });
 
-export default app
+export default app;

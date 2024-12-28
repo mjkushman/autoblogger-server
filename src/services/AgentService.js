@@ -6,7 +6,7 @@ const getUnsplashImage = require("../utilities/getUnsplashImage");
 import cronEncoder from "../utilities/cronEncoder";
 import PostService from "../services/PostService";
 const { LLMs } = require("../utilities/Chat");
-const { Agent, Post } = require( "../models")
+const { Agent, Post } = require("../models");
 const { Op } = require("sequelize");
 
 const StatusService = require("./StatusService");
@@ -21,9 +21,9 @@ class AgentService {
   // === STATIC METHODS ===
 
   static async loadActive() {
-    console.log(`LOADING ACTIVE AGENTS...`);
-    console.log(`imported Agent model:`, Agent);
-    console.log(`imported Post model:`, Post);
+    console.log("LOADING ACTIVE AGENTS...");
+    console.log("imported Agent model:", Agent);
+    console.log("imported Post model:", Post);
 
     const agents = await Agent.findAll({
       where: {
@@ -33,12 +33,12 @@ class AgentService {
         ],
       },
     });
-    for (let agent of agents) {
+    for (const agent of agents) {
       if (agent.postSettings.isEnabled) this.#setBlogTask(agent);
       if (agent.socialSettings.isEnabled) this.#setSocialTask(agent);
       console.log(`LOADED ACTIVE AGENT: ${agent.username}`);
     }
-    console.log(`Initially loaded ACTIVE AGENTS:`);
+    console.log("Initially loaded ACTIVE AGENTS:");
     ACTIVE_AGENTS.forEach((tasks) => {
       console.dir(tasks.blogTask.options.name);
       console.log(tasks?.blogTask?._scheduler.timeMatcher);
@@ -54,11 +54,11 @@ class AgentService {
     );
 
     try {
-      let cronSchedule = cronEncoder({
+      const cronSchedule = cronEncoder({
         time: body.postSettings.time,
         daysOfWeek: body.postSettings.daysOfWeek,
       });
-      let newAgent = { ...body, accountId };
+      const newAgent = { ...body, accountId };
       newAgent.postSettings.cronSchedule = cronSchedule;
       console.log("CREATING AGENT:");
       console.dir(newAgent);
@@ -76,7 +76,7 @@ class AgentService {
   static async findAll({ accountId }) {
     console.log(`AgentService: FINDALL agents for accountId: ${accountId}`);
     try {
-      let agents = await Agent.findAll({
+      const agents = await Agent.findAll({
         where: { accountId },
         include: [{ model: Post, attributes: ["postId", "title"] }],
       });
@@ -106,7 +106,7 @@ class AgentService {
       `AgentService: FINDONE agent ${agentId} for accountId: ${accountId}`
     );
     try {
-      let agent = await Agent.findOne({
+      const agent = await Agent.findOne({
         where: { agentId, accountId },
         include: [{ model: Post, attributes: ["postId", "title"] }],
       });
@@ -129,7 +129,7 @@ class AgentService {
       const oldPostSettings = agent.postSettings;
       const oldSocialSettings = agent.socialSettings;
 
-      let cronSchedule = cronEncoder({
+      const cronSchedule = cronEncoder({
         time: body.postSettings.time,
         daysOfWeek: body.postSettings.daysOfWeek,
       });
@@ -166,7 +166,7 @@ class AgentService {
       `service: deactivating and deleting agent ${agentId} for account: ${accountId}`
     );
     try {
-      let result = await Agent.destroy({ where: { agentId, accountId } });
+      const result = await Agent.destroy({ where: { agentId, accountId } });
       if (result > 0) {
         await this.#deactivateAgent({ agentId }); // Deactivate
         return { message: "Delete successful" };
@@ -183,11 +183,11 @@ class AgentService {
   // TODO: Write a social media post
   static async writeSocial() {
     // do something
-    return;
+    
   }
 
   static async generateComment({ agent, comment }) {
-    console.log(`Inside AgentService generateComment`);
+    console.log("Inside AgentService generateComment");
     // accept a newly created comment (id, ) and an agent
 
     const defaultOptions = {
@@ -195,19 +195,19 @@ class AgentService {
       maxWords: 200,
     };
     const { username, firstName, lastName } = comment.User;
-    let options = { ...defaultOptions, ...agent.commentSettings };
+    const options = { ...defaultOptions, ...agent.commentSettings };
     console.log(`comment options ${{ ...options }}`);
 
     // instantiate a chat
     const chat = new LLMs[options.llm](agent);
 
     chat.addMessage(
-      `user`,
+      "user",
       `A user has commented on one of your articles. Write a thoughtful response in ${options.maxWords} words or less using the following information as context.`
     );
     // Next instruction
     chat.addMessage(
-      `user`,
+      "user",
       `- The user's comment: ${comment.content} \n
        - The user's info: ${{ ...comment.User }} \n
        
@@ -271,18 +271,18 @@ class AgentService {
     const chat = new LLMs[options.llm](agent);
     // First instruction
     chat.addMessage(
-      `user`,
-      `Write a new article using the following outline and instructions.`
+      "user",
+      "Write a new article using the following outline and instructions."
     );
     // Next instruction
     chat.addMessage(
-      `user`,
+      "user",
       `OUTLINE:
         ${topicBlock}`
     );
     // Next instruction
     chat.addMessage(
-      `user`,
+      "user",
       `INSTRUCTIONS:
         1. Expand upon the topic until you reach ${options.maxWords} words.
         2. Format your response according to the supplied JSON schema.
@@ -333,22 +333,20 @@ class AgentService {
     const titles = await PostService.findRecentTitles({
       agentId: agentId,
     });
-    let recentWork =
-      titles.length > 0
-        ? [
-            `Here are the titles of some of your recent work:`,
-            ...titles.slice(0, 9),
-          ].join("\n - ")
-        : `You havent written anything yet.`;
+    const recentWork =
+      titles.length > 0 ? [
+        "Here are the titles of some of your recent work:",
+        ...titles.slice(0, 9),
+      ].join("\n - ") : "You havent written anything yet.";
     console.log("resolved recentWork:", recentWork);
     const chat = new LLMs[llm](agent); // Get the appropriate Chat LLM
     console.log("created chat: ", chat);
-    chat.addMessage(`user`, recentWork);
+    chat.addMessage("user", recentWork);
     chat.addMessage(
-      `user`,
-      `Given your author bio and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still adhere to your bio. For each section of the blog post, write a brief summary of the planned content.`
+      "user",
+      "Given your author bio and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still adhere to your bio. For each section of the blog post, write a brief summary of the planned content."
     );
-    console.log(`MESSAGES: `);
+    console.log("MESSAGES: ");
     console.dir(chat.getMessages());
 
     try {
@@ -382,7 +380,7 @@ class AgentService {
 
       if (postSettings.isEnabled == false) {
         // Return without creating task
-        return;
+        
       } else {
         // create and set the task
         // create the cron
@@ -413,7 +411,7 @@ class AgentService {
   }
   // Automated social is not meant to be accessed yet.
   static async #setSocialTask(agent) {
-    return; // does nothing for now
+    // does nothing for now
   }
 
   static async #deactivateAgent({ agentId }) {
@@ -423,7 +421,7 @@ class AgentService {
       tasks.forEach((task) => task.stop());
       ACTIVE_AGENTS.delete(agentId);
       console.log(`deacivated ${agentId}`);
-      return;
+      
     } catch (error) {
       throw new Error(error);
     }

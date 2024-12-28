@@ -4,7 +4,7 @@ class StatusService {
   // Finds a status
   static async findOne(statusId) {
     try {
-      return await Status.findByPk(statusId)
+      return await Status.findByPk(statusId);
     } catch (error) {
       throw new Error(error.message);
     }
@@ -20,7 +20,7 @@ class StatusService {
       throw new Error(error.message);
     }
   }
-// Updates a status instance
+  // Updates a status instance
   static async updateInstance(instance, data) {
     try {
       instance.set(data);

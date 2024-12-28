@@ -15,7 +15,7 @@ async function verifyAgentOwnership(
 
   const agents = account.Agents || account.agents;
 
-  let ownedAgentIds = agents.map((agent) => agent.agentId);
+  const ownedAgentIds = agents.map((agent) => agent.agentId);
   try {
     console.log(`owned Ids: ${ownedAgentIds}`);
     if (ownedAgentIds.includes(agentId)) return next();

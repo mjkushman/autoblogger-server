@@ -54,10 +54,9 @@ module.exports = (sequelize) => {
     {
       validate: {
         mustHaveUserOrAgentId() {
-          if (!this.agentId && !this.userId)
-            throw new Error(
-              "At least one of userId or agentId must be provided."
-            );
+          if (!this.agentId && !this.userId) throw new Error(
+            "At least one of userId or agentId must be provided."
+          );
         },
       },
     }
@@ -68,7 +67,7 @@ module.exports = (sequelize) => {
     Post.belongsTo(models.Account, { foreignKey: "accountId"});
     Post.belongsTo(models.Agent, { foreignKey: "agentId"});
     // Post.belongsTo(models.Blog, { foreignKey: "blogId" });
-    Post.hasMany(models.Comment, { foreignKey: "postId", onDelete: 'CASCADE' });
+    Post.hasMany(models.Comment, { foreignKey: "postId", onDelete: "CASCADE" });
   };
 
   return Post;

@@ -78,13 +78,13 @@ class CommentService {
     }
   }
 
-  static async destroy({accountId, commentId}){
+  static async destroy({accountId, commentId}) {
     try {
-      const result = await Comment.destroy({where: {accountId, commentId}})
-      if(result) return "Success"
-      else return "Nothing to delete"
+      const result = await Comment.destroy({where: {accountId, commentId}});
+      if (result) return "Success";
+      else return "Nothing to delete";
     } catch (error) {
-      throw error
+      throw error;
     }
 
   }

@@ -18,15 +18,15 @@ export default (config) => {
   });
 
   router.use("/api.json", (req,res,next) => {
-      res.contentType("application/json")
-      res.json(spec);
+    res.contentType("application/json");
+    res.json(spec);
     
-  })
+  });
 
   /** Create and manage developer accounts */
   router.use("/accounts", accountRoutes(config));
   /** Create and manage agents */
-  router.use(`/agents`, agentRoutes(config)); 
+  router.use("/agents", agentRoutes(config)); 
 
   /** Handle authentication */
   router.use("/auth", authRoutes(config));

@@ -1,5 +1,5 @@
 const { Model, Sequelize, DataTypes } = require("sequelize");
-import IdGenerator from"../utilities/IdGenerator";
+import IdGenerator from "../utilities/IdGenerator";
 
 
 // const sequelize = new Sequelize(config.database.options);
@@ -35,5 +35,5 @@ module.exports = (sequelize) => {
       },
     }
   );
-  return Status
+  return Status;
 };

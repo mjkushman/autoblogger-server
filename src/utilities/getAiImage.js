@@ -11,25 +11,25 @@
  * 
  */
 const { OPENAI_API_KEY } = require("../config");
-const OpenAI = require("openai") 
+const OpenAI = require("openai"); 
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-async function genImage(){
+async function genImage() {
 
- const prompt = `A confident Pembroke Welsh Corgi standing tall with a proud expression, its short legs poised confidently, and its fluffy tail held high like it's walking a runway. Surrounding the corgi are various symbols of confidence and empowerment, such as a shining golden crown, a microphone representing speaking up, a group of admiring animals and humans, and paw prints leading towards a brighter future. The background features vibrant colors and dynamic patterns, evoking a sense of energy and positivity. The corgi exudes charisma and determination, embodying the spirit of embracing one's quirks and using confidence to make a difference.`
+  const prompt = "A confident Pembroke Welsh Corgi standing tall with a proud expression, its short legs poised confidently, and its fluffy tail held high like it's walking a runway. Surrounding the corgi are various symbols of confidence and empowerment, such as a shining golden crown, a microphone representing speaking up, a group of admiring animals and humans, and paw prints leading towards a brighter future. The background features vibrant colors and dynamic patterns, evoking a sense of energy and positivity. The corgi exudes charisma and determination, embodying the spirit of embracing one's quirks and using confidence to make a difference.";
 
 
   const response = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: prompt,
-        n: 1,
-        size: "1024x1024",
-      });
+    model: "dall-e-3",
+    prompt: prompt,
+    n: 1,
+    size: "1024x1024",
+  });
       
-      // image_url = response.data.data[0].url;
-      console.log(response)
+  // image_url = response.data.data[0].url;
+  console.log(response);
 
 }
 
-genImage()
+genImage();

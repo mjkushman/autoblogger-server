@@ -76,7 +76,7 @@ async function syncModels() {
 async function seedData() {
   if (isProduction) {
     console.log("Skipping seed in Production.");
-    return;
+    
   } else {
     console.log("Begin SEEDING");
     try {
@@ -123,11 +123,11 @@ connectToPostgres()
     (e) => console.log("Error syncing or seeding:", e)
   )
   .then(() =>
-    // Upon server start, schedule all active agent tasks
-    {
-      const AgentService = require("../services/AgentService");
-      AgentService.loadActive();
-    }
+  // Upon server start, schedule all active agent tasks
+  {
+    const AgentService = require("../services/AgentService");
+    AgentService.loadActive();
+  }
   )
   .catch((e) => console.log("Error syncing or seeding:", e));
 

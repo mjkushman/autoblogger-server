@@ -23,7 +23,7 @@ module.exports = (config) => {
     try {
       const { accountId } = req.locals.account;
       const agents = await AgentService.findAll({ accountId });
-      return res.sendResponse({status:200, data: agents})
+      return res.sendResponse({status:200, data: agents});
     } catch (error) {
       next(error);
     }
@@ -36,7 +36,7 @@ module.exports = (config) => {
       console.log("saying hello");
       const { accountId } = req.locals.account;
       const result = await AgentService.sayHello({ accountId });
-      return res.sendResponse({status:200, data: result})
+      return res.sendResponse({status:200, data: result});
     } catch (error) {
       next(error);
     }
@@ -49,7 +49,7 @@ module.exports = (config) => {
       const { accountId } = req.locals.account;
       const { agentId } = req.params;
       const agent = await AgentService.findOne({ agentId, accountId });
-      return res.sendResponse({status:200, data: agent})
+      return res.sendResponse({status:200, data: agent});
     } catch (error) {
       next(error);
     }
@@ -65,7 +65,7 @@ module.exports = (config) => {
       const titles = await PostService.findRecentTitles({
         agentId: agent.agentId,
       });
-      return res.sendResponse({status:200, data: titles})
+      return res.sendResponse({status:200, data: titles});
     } catch (error) {
       next(error);
     }
@@ -79,8 +79,8 @@ module.exports = (config) => {
     try {
       const { body, account } = req;
       const { accountId } = account;
-      const agent = await AgentService.create({ body, accountId })
-      return res.sendResponse({status:201, data: agent})
+      const agent = await AgentService.create({ body, accountId });
+      return res.sendResponse({status:201, data: agent});
     } catch (error) {
       next(error);
     }
@@ -101,11 +101,11 @@ module.exports = (config) => {
       const { body, account } = req;
       const { accountId } = req;
       const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId)
+      const ownedAgents = account.Agents.map((a) => a.agentId);
       
-      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+      if (!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.");
       const result = await AgentService.update({ accountId, agentId, body });
-      return res.sendResponse({status:200, data: result})
+      return res.sendResponse({status:200, data: result});
     } catch (error) {
       next(error);
     }
@@ -117,10 +117,10 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId)
-      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+      const ownedAgents = account.Agents.map((a) => a.agentId);
+      if (!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.");
       // const agent = await AgentService.activate({ accountId, agentId });
-      return res.sendResponse({status:201, data: agent})
+      return res.sendResponse({status:201, data: agent});
     } catch (error) {
       next(error);
     }
@@ -131,10 +131,10 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId)
-      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+      const ownedAgents = account.Agents.map((a) => a.agentId);
+      if (!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.");
       // const agent = await AgentService.deactivate({ accountId, agentId });
-      return res.sendResponse({status:201, data: agent})
+      return res.sendResponse({status:201, data: agent});
     } catch (error) {
       next(error);
     }
@@ -146,10 +146,10 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId)
-      if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
+      const ownedAgents = account.Agents.map((a) => a.agentId);
+      if (!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.");
       const result = await AgentService.delete({ accountId, agentId });
-      return res.sendResponse({status:200, data: result})
+      return res.sendResponse({status:200, data: result});
     } catch (error) {
       next(error);
     }
@@ -168,9 +168,9 @@ module.exports = (config) => {
       const { account } = req;
       const { accountId } = account;
       const { agentId } = req.params;
-      let { body: options } = req;
-      let post = await AgentService.writePost({ agentId, options });
-      return res.sendResponse({status:201, data: post})
+      const { body: options } = req;
+      const post = await AgentService.writePost({ agentId, options });
+      return res.sendResponse({status:201, data: post});
     } catch (error) {
       next(error);
     }

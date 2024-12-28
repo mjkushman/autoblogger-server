@@ -1,50 +1,50 @@
 "use strict";
 
-const db = require('../../db.js')
-const Comment = require('./Comment.js'
-)
+const db = require("../../db.js");
+const Comment = require("./Comment.js"
+);
 const {commonBeforeAll, 
-    commonAfterAll, 
-    commonBeforeEach, 
-    commonAfterEach, postIds, userIds} = require('./_testCommon.js')
+  commonAfterAll, 
+  commonBeforeEach, 
+  commonAfterEach, postIds, userIds} = require("./_testCommon.js");
 
 
 // Run setup
-beforeAll(commonBeforeAll)
-beforeEach(commonBeforeEach)
+beforeAll(commonBeforeAll);
+beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
 /** Run tests for Comments */
 describe("Get comments and GET methods", () => {
-    test("Get all comments for a post", async () => {
-        let commentResponse = await Comment.getComments(postIds[0]);
+  test("Get all comments for a post", async () => {
+    const commentResponse = await Comment.getComments(postIds[0]);
         
-        console.log("TYPE OF",typeof(commentResponse.comments[0].createdAt))
+    console.log("TYPE OF",typeof (commentResponse.comments[0].createdAt));
 
-        expect(Number(commentResponse.numComments.numComments)).toBeGreaterThan(0)
-        expect(commentResponse.comments[0].createdAt).toBeInstanceOf(Date)
-        expect(commentResponse.comments[0].userId).toBeDefined()
-    })
+    expect(Number(commentResponse.numComments.numComments)).toBeGreaterThan(0);
+    expect(commentResponse.comments[0].createdAt).toBeInstanceOf(Date);
+    expect(commentResponse.comments[0].userId).toBeDefined();
+  });
 
-    test("Get a single post", async () => {
-    })
-})
+  test("Get a single post", async () => {
+  });
+});
 
 
 describe("Comment POST methods", () => {
     
     
-    test('Can create a new comment', async () => {
-        const newTestComment = {
-            userId: userIds[0],
-            body: 'Test New Comment Body Title'
-        }
+  test("Can create a new comment", async () => {
+    const newTestComment = {
+      userId: userIds[0],
+      body: "Test New Comment Body Title"
+    };
 
-        let newCommentResponse = await Comment.addComment(postIds[1], newTestComment)
-        console.log(newCommentResponse)
+    const newCommentResponse = await Comment.addComment(postIds[1], newTestComment);
+    console.log(newCommentResponse);
         
-        expect(newCommentResponse.body).toBe('Test New Comment Body Title');
-        expect(newCommentResponse.comment_id).toBeDefined()
-    })
-})
+    expect(newCommentResponse.body).toBe("Test New Comment Body Title");
+    expect(newCommentResponse.comment_id).toBeDefined();
+  });
+});

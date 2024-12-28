@@ -15,11 +15,9 @@ class Chat {
     this.instruction = `
         You're a talented writer for a popular publication. 
         ${
-          agent.postSettings.personality
-            ? `This is your personality: "${agent.postSettings.personality}"`
-            : ``
-        }`;
-      console.log(`Initial instruction: ${this.instruction}`)
+  agent.postSettings.personality ? `This is your personality: "${agent.postSettings.personality}"` : ""
+}`;
+    console.log(`Initial instruction: ${this.instruction}`);
   }
   addMessage(role, content) {
     const message = new Message(role, content);
@@ -38,7 +36,7 @@ class Chat {
 class ChatGPT extends Chat {
   constructor(agent) {
     super(agent);
-    const apiKey = agent.apiKey
+    const apiKey = agent.apiKey;
     console.log("ChatGPT constructed");
     this.agent = agent;
     // this.instruction = super.instruction;
@@ -60,7 +58,7 @@ class ChatGPT extends Chat {
         model: "gpt-4o-mini",
         response_format: {"type":"json_schema", "json_schema": completionPostSchema},
       });
-      let completion = JSON.parse(response.choices[0].message.content);
+      const completion = JSON.parse(response.choices[0].message.content);
       // For debugging:
       console.log("COMPLETION:");
       console.log(completion);

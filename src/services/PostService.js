@@ -5,7 +5,7 @@ const { Op } = require("sequelize");
 
 class PostService {
   /** GET all posts */
-  static async findAll({ accountId, comments, agentId=null }) {
+  static async findAll({ accountId, comments, agentId = null }) {
     console.log(`Getting all posts for accountId ${accountId}`);
     const options = {
       where: { 
@@ -55,7 +55,7 @@ class PostService {
       `service: deactivating and deleting post ${postId} for account: ${accountId}`
     );
     try {
-      let result = await Post.destroy({ where: { postId, accountId } });
+      const result = await Post.destroy({ where: { postId, accountId } });
       if (result > 0) {
         return { message: "Delete successful" };
       } else {

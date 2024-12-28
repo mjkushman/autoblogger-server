@@ -15,14 +15,14 @@ module.exports = (config) => {
   router.get("/", async function (req, res, next) {
 
     const {username, userId} = req.query;
-    const {orgId} = req
-    console.log(`hit USER GET route. username: ${username}, userId: ${userId}, orgId: ${orgId} `)
+    const {orgId} = req;
+    console.log(`hit USER GET route. username: ${username}, userId: ${userId}, orgId: ${orgId} `);
 
-    if(userId){
+    if (userId) {
       const user = await UserService.findOneByUserId({orgId,userId});
       return res.sendResponse({ status: 200, data: user });
     }
-    if(username){
+    if (username) {
       const user = await UserService.findByUsername({orgId,username});
       
       return res.sendResponse({ status: 200, data: user });
@@ -33,14 +33,14 @@ module.exports = (config) => {
     
   });
 
-  router.post('/', async function (req, res, next) {
-    let payload = req.body;
-    const {orgId} = req
-    payload.orgId = orgId
+  router.post("/", async function (req, res, next) {
+    const payload = req.body;
+    const {orgId} = req;
+    payload.orgId = orgId;
 
-    let user = await UserService.create(payload);
+    const user = await UserService.create(payload);
     return res.sendResponse({ status: 201, data: user });
-  })
+  });
 
   return router;
 };
