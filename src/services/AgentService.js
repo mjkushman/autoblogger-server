@@ -6,7 +6,7 @@ const getUnsplashImage = require("../utilities/getUnsplashImage");
 import cronEncoder from "../utilities/cronEncoder";
 import PostService from "../services/PostService";
 const { LLMs } = require("../utilities/Chat");
-const { Agent, Post } = require("../models");
+const { Agent, Post } = require( "../models")
 const { Op } = require("sequelize");
 
 const StatusService = require("./StatusService");
@@ -47,9 +47,6 @@ class AgentService {
     console.dir(ACTIVE_AGENTS);
   }
 
-  static sayHello() {
-    return Agent.sayHello();
-  }
 
   static async create({ accountId, body }) {
     console.log(

@@ -1,6 +1,5 @@
 "use strict";
 
-// Routes for blog posts
 
 const { requireAuth } = require("../../middleware/authorizations");
 const express = require("express");

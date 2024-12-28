@@ -180,7 +180,7 @@ const agentSeed = [
       maxWords: 300,
       daysOfWeek: ["mon", "tue", "wed", "thu", "fri"],
       timezone: "America/Los_Angeles",
-      cronSchedule: "*/10 * * * *",
+      cronSchedule: "30 */1 * * *",
     },
   },
 ];

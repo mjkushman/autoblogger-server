@@ -5,7 +5,6 @@ import IdGenerator from "../utilities/IdGenerator";
 const cronstrue = require("cronstrue");
 const cron = require("node-cron");
 
-const { cronEncode, cronDecode } = require("../utilities/cronEncoder");
 import config from "../config";
 console.log("AGENT MODEL CONFIG", config);
 // const sequelize = new Sequelize(config.database.options);
@@ -74,29 +73,19 @@ module.exports = (sequelize) => {
           time: "12:00",
           daysOfWeek: ["mon"],
           timezone: "America/Los_Angeles",
-          personality: null,
+          personality: "",
         },
         validate: {
           hasValidPersonality(value) {
             if (value.personality && typeof value.personality !== "string")
               throw new ValidationError(`personality must be a valid string`);
           },
-          hasValidCron(value) {
+          hasValidCronifEnabled(value) {
             console.log("Validating cron of:", value);
-
-            let cronResult = cron.validate(value.cronSchedule);
-            console.log("cron validation result:", cronResult);
-            if (!cron.validate(value.cronSchedule))
-              throw new ValidationError(`Invalid posting schedule.`);
-          },
-          hasScheduleIfEnabled(value) {
-            if (
-              value.isEnabled &&
-              (!value.time || !value.timezone || !value.daysOfWeek)
-            )
-              throw new ValidationError(
-                `Time, days of week, and timezone must be supplied if enabling posting for an agent.`
-              );
+            console.log("cron validation result:", cron.validate(value.cronSchedule));
+            if(value.isEnabled && !cron.validate(value.cronSchedule)) {
+              throw new ValidationError(`Cannot enable without valid cron schedule.`);
+            } 
           },
           maxWordCount(value) {
             if (value && value.maxWords) {
@@ -157,20 +146,6 @@ module.exports = (sequelize) => {
       tableName: "agents",
       hooks: {
         beforeUpdate: async (record) => {
-          // create a valid cron expression from time and days
-
-          console.log("about to encode cron");
-          try {
-            let cronTab = cronEncode({
-              time: record.postSettings.time,
-              daysOfWeek: record.postSettings.daysOfWeek,
-            });
-
-            record.postSettings.cronSchedule = cronTab;
-          } catch (error) {
-            throw new Error(error);
-          }
-
           // set the human readable schedule string
           if (record.postSettings.cronSchedule) {
             record.postSettings.displaySchedule = cronstrue.toString(

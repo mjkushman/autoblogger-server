@@ -12,8 +12,7 @@ import errorHandler from "./middleware/errorHandler";
 import formatResponse from "./middleware/responseHandler";
 import { Config } from "./types/Config.type";
 import routes from "./routes";
-
-const createApp = (config: Config): Express => {
+const createApp = (config): Express => {
   const app: Express = express();
 
   app.use(cors());

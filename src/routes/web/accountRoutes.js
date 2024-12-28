@@ -90,11 +90,5 @@ module.exports = (config) => {
     }
   });
 
-  // DEPRECATE ?
-  // router.get("/protected", validateApiKey, async function (req, res, next) {
-  //   console.log("Developer gained access. Dev:", req.locals.account);
-  //   return res.json({ msg: "This is a protected route", account: req.locals.account });
-  // });
-
   return router;
 };

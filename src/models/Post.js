@@ -24,16 +24,6 @@ module.exports = (sequelize) => {
         },
         allowNull: false,
       },
-      // blogId: {
-      //   type: DataTypes.STRING(14),
-      //   references: {
-      //     // This is a reference to another model
-      //     model: "blogs",
-      //     // This is the column name of the referenced model
-      //     key: "blogId",
-      //   },
-      //   allowNull: false,
-      // },
       title: { type: DataTypes.STRING },
       content: { type: DataTypes.TEXT },
       imageUrl: {

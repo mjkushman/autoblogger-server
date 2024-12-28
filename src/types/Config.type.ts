@@ -1,3 +1,4 @@
+// Need to update the databas 
 export type Config = {
   name: string;
   version: number;
@@ -8,8 +9,10 @@ export type Config = {
       port: string;
       database: string;
       dialect: string;
-      username: string;
+      username?: string;
       password: string;
+      logging?: boolean;
+      user?: string
     };
     client: null;
   };

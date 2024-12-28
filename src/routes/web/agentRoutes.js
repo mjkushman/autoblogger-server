@@ -9,7 +9,8 @@ const router = express.Router({ mergeParams: true });
 
 const { UnauthorizedError } = require("../../utilities/expressError");
 const AgentService = require("../../services/AgentService");
-import PostService from "../../services/PostService";
+import { BadRequestError } from "openai";
+import validatePostSettings from "../../utilities/validatePostSettings";
 
 module.exports = (config) => {
   /** GET returns a list of all agents for an account
@@ -50,26 +51,31 @@ module.exports = (config) => {
     // TODO: Validate the schema
 
     // Upon valid schema, attempt to create the agent
+
     try {
       console.log("trying: agent post route");
+
       const { body } = req;
       const { accountId } = res.locals;
+
+      if (!validatePostSettings(body.postSettings)){
+
+        res.status(400).send(new BadRequestError("Invalid post settings"));
+      }
+
       const agent = await AgentService.create({ body, accountId });
 
       return res.sendResponse({ data: agent, status: 201 });
     } catch (error) {
       console.log("catching error:", error);
-      next(error);
+     return next(error);
     }
 
-    // if newBlogger.active == true
-    // newBlogger.activate() ==> uses node cron to start a task based on the current settings, defined in model
   });
 
   /** Update settings to the agent
    */
 
-  // THIS REPLACES THE PATCH WITH /:agentId
   router.patch("/", async function (req, res, next) {
     console.log("HIT AGENT PATCH '/'");
     try {
@@ -82,7 +88,7 @@ module.exports = (config) => {
 
       // if(!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.")
       const result = await AgentService.update({ accountId, agentId, body });
-      console.log('PATCH result:', result)
+      console.log("PATCH result:", result);
       return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
