@@ -1,9 +1,9 @@
 "use strict";
 
 /** Shared config for application; can be required many places. */
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
 import "colors";
 
@@ -24,6 +24,24 @@ const getDatabaseUri = (): string => {
     : process.env.DATABASE_URL;
 };
 
+const getDialectOptions = () => {
+  if (NODE_ENV === "production") {
+    return {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    };
+  } else {
+    return {
+      ssl: {
+        require: false,
+        rejectUnauthorized: false, // For local development
+      },
+    };
+  }
+};
+
 // Speed up bcrypt during tests, since the algorithm safety isn't being tested
 const BCRYPT_WORK_FACTOR = process.env.NODE_ENV === "test" ? 1 : 12;
 
@@ -39,8 +57,6 @@ console.log("BCRYPT_WORK_FACTOR".yellow, BCRYPT_WORK_FACTOR);
 console.log("Database connection string:".yellow, getDatabaseUri());
 console.log("==============================");
 
-// const configs: { [key: string]: Config } = {
-
 const config = {
   name,
   version,
@@ -52,15 +68,7 @@ const config = {
     options: {
       dialect: "postgres",
       logging: false,
-      dialectOptions:
-        NODE_ENV === "production"
-          ? {
-              ssl: {
-                require: true,
-                rejectUnauthorized: false, // For local development
-              },
-            }
-          : {},
+      dialectOptions: getDialectOptions(),
     },
     client: null,
   },
