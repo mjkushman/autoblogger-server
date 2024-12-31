@@ -8,7 +8,7 @@ const accountSeed = [
     firstName: "Mandor",
     lastName: "Shebang",
     email: "org1@org1.com",
-    apiKey: "01.123456789012345678901234567890",
+    apiKey: "$2b$10$u.pn6aa/nLKqt5jp99wrfO2yjccRZDk7sEJN2/u4vvxdQwgr0FgSq", //  decrypted: "01.123456789012345678901234567890"
     openAiApiKey: config.OPENAI_API_KEY,
     apiKeyIndex: "01.123456",
     password: "hashedpassword",
@@ -18,7 +18,7 @@ const accountSeed = [
     firstName: "Marigold",
     lastName: "Moonbeam",
     email: "org2@org2.com",
-    apiKey: "02.123456789012345678901234567890",
+    apiKey: "$2b$10$PcBRXlgxW0kyiaaNxs/ICerSJYcunyf325WLJou90rv2/MRlJuHyS", //  decrypted: "02.123456789012345678901234567890"
     openAiApiKey: config.OPENAI_API_KEY,
     apiKeyIndex: "02.123456",
     password: "hashedpassword",
@@ -28,9 +28,19 @@ const accountSeed = [
     firstName: "Momo",
     lastName: "Grifter",
     email: "org3@org3.com",
-    apiKey: "03.123456789012345678901234567890",
+    apiKey: "$2b$10$LY6ks8cBLSoopSvzhZR2b.0YpF3lMfhV.BMNlELxezg7eaWrD6Ih2", //  decrypted: "03.123456789012345678901234567890"
     openAiApiKey: config.OPENAI_API_KEY,
     apiKeyIndex: "03.123456",
+    password: "hashedpassword",
+  },
+  {
+    accountId: "act_0000000005",
+    firstName: "Momo",
+    lastName: "Grifter",
+    email: "org5@org5.com",
+    apiKey: "$2b$10$GeHgZeNBacPlZ7y3MsUVhuIYzbRPkgtSnFO7TJ7DudZc2v6UqN2xW", // "hashedApiKey"
+    openAiApiKey: config.OPENAI_API_KEY,
+    apiKeyIndex: "hashedApi", // first 9 char of hashedApiKey
     password: "hashedpassword",
   },
 ];
@@ -226,7 +236,8 @@ const postSeed = [
       Woofs and wags,
 
       Cleo the Corgi`,
-    imageUrl: "https://images.unsplash.com/photo-1664575196851-5318f32c3f43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1Njg0MzB8MHwxfHNlYXJjaHwxfHx3cml0ZXJ8ZW58MHx8fHwxNzA4ODkwNzUzfDA&ixlib=rb-4.0.3&q=80&w=1080",
+    imageUrl:
+      "https://images.unsplash.com/photo-1664575196851-5318f32c3f43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1Njg0MzB8MHwxfHNlYXJjaHwxfHx3cml0ZXJ8ZW58MHx8fHwxNzA4ODkwNzUzfDA&ixlib=rb-4.0.3&q=80&w=1080",
     slug: "post-title-1",
   },
   // made by agent:
@@ -269,7 +280,8 @@ const postSeed = [
     Woofs and wags,
 
     Cleo the Corgi`,
-    imageUrl: "https://images.unsplash.com/photo-1516371535707-512a1e83bb9a?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max",
+    imageUrl:
+      "https://images.unsplash.com/photo-1516371535707-512a1e83bb9a?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max",
     slug: "post-title-2",
   },
 ];

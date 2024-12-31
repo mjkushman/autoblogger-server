@@ -17,7 +17,8 @@ class AccountService {
     const { host, email, firstName, lastName, label, password } = body;
 
     const existingAccount = await Account.findOne({ where: { email } });
-    if (existingAccount) return new ExpressError("That email is already in use", 400);
+    if (existingAccount)
+      return new ExpressError("That email is already in use", 400);
 
     // Generate a unique api key
     const apiKey = crypto.randomBytes(64).toString("hex");
@@ -36,8 +37,7 @@ class AccountService {
       });
       console.log("STORED NEW Account");
       console.dir(newAccount);
-      
-      
+
       // store new account in cache
       const account = {
         accountId: newAccount.accountId,
@@ -55,10 +55,10 @@ class AccountService {
     }
   }
 
-  static async findByApiKeyIndex({ apiKey }) {
+  static async findByApiKeyIndex({ providedApiKey }) {
     console.log("FINDING BY API KEY INDEX");
 
-    const apiKeyIndex = apiKey.substring(0, 9);
+    const apiKeyIndex = String(providedApiKey.substring(0, 9));
     console.log("API KEY INDEX:", apiKeyIndex);
     const result = await Account.findOne({
       where: {
@@ -66,11 +66,20 @@ class AccountService {
       },
       include: [Agent],
     });
+    console.log("result of find:", result);
     if (result) {
-      const { accountId, firstName, lastName, email, label, Agents, openAiApiKey } =
-        result;
+      const {
+        accountId,
+        firstName,
+        lastName,
+        email,
+        label,
+        Agents,
+        apiKey,
+        openAiApiKey,
+      } = result;
       // console.log('RESULT OF APIKEYINDEX LOOKUP:', result)
-        // extract agentid and username
+      // extract agentid and username
       // const agents = result.Agents.map((a) => {
       //   a.agentId, a.username;
       // });
@@ -108,7 +117,7 @@ class AccountService {
       console.log("trying accountService findOne");
       const account = await Account.findOne({
         where: { accountId },
-        include: [Agent]
+        include: [Agent],
       });
       if (!account) throw new NotFoundError("Account not found.");
       return account;
@@ -117,13 +126,13 @@ class AccountService {
       throw new Error(error);
     }
   }
-  
-  static async update({accountId, body}) {
+
+  static async update({ accountId, body }) {
     console.log("account service update");
     try {
       console.log("trying");
       const account = await Account.findOne({
-        where: { accountId }
+        where: { accountId },
       });
       if (!account) throw new NotFoundError("Account not found.");
       console.log("Attempting account update with body: ", body);
@@ -136,15 +145,14 @@ class AccountService {
     }
   }
 
-
   static async destroy(accountId) {
     console.log("deleting account");
     try {
       console.log("trying");
       const rowsDeleted = await Account.destroy({
-        where: { accountId }
+        where: { accountId },
       });
-      
+
       if (!rowsDeleted) throw new Error(`Deleted ${rowsDeleted} rows`);
       return rowsDeleted; // expect: 1
     } catch (error) {

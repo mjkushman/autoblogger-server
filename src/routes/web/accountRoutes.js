@@ -9,7 +9,7 @@ import AuthService from "../../services/AuthService";
 
 
 const { BadRequestError, UnauthorizedError } = require("../../utilities/expressError");
-const { validateApiKey } = require("../../middleware/authorizations");
+
 
 module.exports = (config) => {
 

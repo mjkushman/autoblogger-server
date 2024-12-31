@@ -33,12 +33,7 @@ const getDialectOptions = () => {
       },
     };
   } else {
-    return {
-      ssl: {
-        require: false,
-        rejectUnauthorized: false, // For local development
-      },
-    };
+    return {};
   }
 };
 
@@ -55,6 +50,11 @@ console.log("OPENAI_API_KEY:".red, OPENAI_API_KEY);
 console.log("PORT:".yellow, PORT.toString());
 console.log("BCRYPT_WORK_FACTOR".yellow, BCRYPT_WORK_FACTOR);
 console.log("Database connection string:".yellow, getDatabaseUri());
+console.log(
+  "Database dialect options:".yellow,
+  JSON.stringify(getDialectOptions())
+);
+
 console.log("==============================");
 
 const config = {
@@ -63,7 +63,6 @@ const config = {
   majorVersion,
   NODE_ENV,
   database: {
-    // connectionUrl: process.env.DATABASE_URL,
     connectionUrl: getDatabaseUri(),
     options: {
       dialect: "postgres",

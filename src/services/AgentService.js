@@ -4,7 +4,7 @@ const { ExpressError, NotFoundError } = require("../utilities/expressError");
 
 const getUnsplashImage = require("../utilities/getUnsplashImage");
 import cronEncoder from "../utilities/cronEncoder";
-import PostService from "../services/PostService";
+import PostService from "./PostService";
 const { LLMs } = require("../utilities/Chat");
 const { Agent, Post } = require("../models");
 const { Op } = require("sequelize");

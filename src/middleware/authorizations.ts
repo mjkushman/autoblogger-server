@@ -69,34 +69,31 @@ export function requireAuth(_req: Request, res: Response, next: NextFunction) {
 
 // Validate the API key and attached the retrieved account to the request
 export async function validateApiKey(req, res: Response, next: NextFunction) {
-  const apiKey = req.headers["X-API-KEY"] || req.headers["x-api-key"];
-  const hostname = req.hostname; // host from headers
-  const host = req.headers.host; // host from headers
-
+  const providedApiKey = req.headers["X-API-KEY"] || req.headers["x-api-key"];
 
   // If this is a dev environment, provide a dev account
-  if (process.env.NODE_ENV == "development" && apiKey == "dev") {
+  if (process.env.NODE_ENV === "development" && providedApiKey === "dev") {
     const devAccount = await AccountService.findByApiKeyIndex({
-      apiKey: "01.123456789012345678901234567890",
+      providedApiKey: "01.123456789012345678901234567890",
     });
 
     console.log("continuing in dev environment");
     // console.log(devAccount);
     res.locals.account = devAccount;
     res.locals.isAuthorized = true;
-    cache.set(apiKey, devAccount);
+    cache.set(providedApiKey, devAccount);
     return next();
   }
   try {
     // make sure API exists
-    if (!apiKey || apiKey === "") {
+    if (!providedApiKey || providedApiKey === "") {
       throw new UnauthorizedError(
         "Unauthorized. Please include X-API-KEY in request header."
       );
     }
 
     // Check the cache for this api key. If found, return early.
-    const cachedAccount = cache.get(apiKey);
+    const cachedAccount = cache.get(providedApiKey);
     if (cachedAccount) {
       res.locals.account = cachedAccount;
       res.locals.isAuthorized = true;
@@ -104,29 +101,32 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
     }
 
     // Lookup the user by api key index
-    const account = await AccountService.findByApiKeyIndex({ apiKey });
+    const account = await AccountService.findByApiKeyIndex({ providedApiKey });
     if (!account) {
       throw new NotFoundError("Invalid api key");
     }
-    // Compare the retrieved dev apiKey with provided Key
-    if (account) {
-      bcrypt.compare(apiKey, account.apiKey, (error, result) => {
-        if (error) {
-          throw new ExpressError(error, 401);
-        }
-        if (result) {
-          // Store the retrieved developer
-          cache.set(apiKey, account);
-          //   console.log(`CACHED!:`, developer)
+    console.log("account returned from lookup:", account);
 
-          // This must is a valid developer
-          res.locals.account = account;
-          res.locals.isAuthorized = true;
-        }
-      });
+    // Compare the retrieved dev apiKey with provided Key
+
+    const isValid = await bcrypt.compare(providedApiKey, account.apiKey);
+    console.log("result:", isValid);
+
+    if (isValid) {
+      console.log("passed bcrypt");
+      cache.set(providedApiKey, account);
+      //   console.log(`CACHED!:`, developer)
+
+      // This must is a valid developer
+      res.locals.account = account;
+      res.locals.isAuthorized = true;
+
+      return next();
     }
-    return next();
+    else return next(new UnauthorizedError());
+   
   } catch (error) {
+    console.log("final catch in validateApiKey. error:", error);
     return next(error);
   }
 }

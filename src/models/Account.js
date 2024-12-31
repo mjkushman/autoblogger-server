@@ -55,39 +55,29 @@ module.exports = (sequelize) => {
       hooks: {
         beforeCreate: async (record) => {
           // create Id upon new record
-          console.log("CREATING ACCOUNT: ",record);
+          console.log("CREATING ACCOUNT: ", record);
           record.accountId = IdGenerator.accountId();
 
           // hash password key before saving
-          if (record.password) {
-            bcrypt.hash(
-              record.password,
-              config.BCRYPT_WORK_FACTOR,
-              (err, hashedPassword) => {
-                record.password = hashedPassword;
-              }
-            );
-          }
+          bcrypt.hash(record.password, 10, (err, hashed) => {
+            if (hashed) {
+              record.password = hashed;
+              console.log(hashed);
+            } else if (err) console.log(err);
+          });
+
           // hash api key before saving
-          if (record.apiKey) {
-            bcrypt.hash(
-              record.apiKey,
-              config.BCRYPT_WORK_FACTOR,
-              (err, hashedApiKey) => {
-                record.apiKey = hashedApiKey;
-              }
-            );
-          }
+          bcrypt.hash(record.apiKey, 10, (err, hashed) => {
+            if (hashed) {
+              record.apiKey = hashed;
+            } else if (err) console.log(err);
+          });
         },
         beforeUpdate: async (record) => {
           if (record.changed("password")) {
-            bcrypt.hash(
-              record.password,
-              config.BCRYPT_WORK_FACTOR,
-              (err, hashedPassword) => {
-                record.password = hashedPassword;
-              }
-            );
+            bcrypt.hash(record.password, 10, (err, hashedPassword) => {
+              record.password = hashedPassword;
+            });
           }
         },
       },
