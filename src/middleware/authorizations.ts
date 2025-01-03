@@ -118,13 +118,13 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
       //   console.log(`CACHED!:`, developer)
 
       // This must is a valid developer
+      console.log("storing account in res.locals.account");
+      console.dir(account);
       res.locals.account = account;
       res.locals.isAuthorized = true;
 
       return next();
-    }
-    else return next(new UnauthorizedError());
-   
+    } else return next(new UnauthorizedError());
   } catch (error) {
     console.log("final catch in validateApiKey. error:", error);
     return next(error);

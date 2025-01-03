@@ -26,7 +26,7 @@ module.exports = (config) => {
   router.use(`/api/v${config.version}/users`, requireAuth, userRoutes(config)); // Create and manage users
   router.use(`/api/v${config.version}/comments`, commentApi(config)); // Create and manage comments
   router.use(`/api/v${config.version}/posts`, requireAuth, postApi(config)); // Create and manage posts
-  router.use(`/api/v${config.version}/agents`, agentApi(config)); // Create and manage agents
+  router.use(`/api/v${config.version}/agents`, requireAuth, agentApi(config)); // Create and manage agents
 
   return router;
 };

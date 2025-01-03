@@ -21,7 +21,7 @@ module.exports = (config) => {
    */
   router.get("/", async function (req, res, next) {
     try {
-      const { accountId } = req.locals.account;
+      const { accountId } = res.locals.account;
       const agents = await AgentService.findAll({ accountId });
       return res.sendResponse({status:200, data: agents});
     } catch (error) {
