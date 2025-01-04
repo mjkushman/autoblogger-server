@@ -10,7 +10,7 @@ import "colors";
 const version = 1;
 const majorVersion = 1;
 const name = "Autoblogger";
-const SECRET_KEY = process.env.SECRET_KEY || "secret-dev";
+const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = +process.env.PORT || 3001;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
@@ -44,7 +44,7 @@ console.log("==============================");
 console.log(`${name} Version ${version} Major Version ${majorVersion}`);
 console.log("--Config--".green);
 console.log("NODE_ENV:".yellow, NODE_ENV);
-console.log("SECRET_KEY:".red, SECRET_KEY);
+console.log("JWT_SECRET:".red, JWT_SECRET);
 console.log("UNSPLASH CLIENT ID:".yellow, UNSPLASH_CLIENT_ID);
 console.log("OPENAI_API_KEY:".red, OPENAI_API_KEY);
 console.log("PORT:".yellow, PORT.toString());
@@ -71,7 +71,7 @@ const config = {
     },
     client: null,
   },
-  SECRET_KEY,
+  JWT_SECRET,
   PORT,
   BCRYPT_WORK_FACTOR,
   OPENAI_API_KEY,

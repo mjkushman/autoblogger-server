@@ -34,7 +34,7 @@ export async function verifyJWT(
         .replace(/^[Bb]earer\s+["']?([^"']+)["']?$/, "$1")
         .trim(); // strip "bearer" and any quotes from the token
       // Verify the JWT
-      jwt.verify(token, config.SECRET_KEY, async (err, decoded: JwtPayload) => {
+      jwt.verify(token, config.JWT_SECRET, async (err, decoded: JwtPayload) => {
         if (err) {
           console.log("Error decoding token: ", err);
           return next();

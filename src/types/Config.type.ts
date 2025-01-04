@@ -16,7 +16,7 @@ export type Config = {
     };
     client: null;
   };
-  SECRET_KEY: string;
+  JWT_SECRET: string;
   PORT: number;
   BCRYPT_WORK_FACTOR: number;
   OPENAI_API_KEY: string;

@@ -74,7 +74,7 @@ Your .env file should look like this
 NODE_ENV="development"
 PORT=3001
 
-SECRET_KEY = "__any value such as 'secret key__"
+JWT_SECRET = "__any value such as 'secret key__"
 OPEN_AI_KEY="__your api key__" 
 
 ```

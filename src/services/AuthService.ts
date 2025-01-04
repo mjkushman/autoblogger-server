@@ -4,7 +4,7 @@ const {
   UnauthorizedError,
 } = require("../utilities/expressError");
 import bcrypt from "bcrypt";
-import jwt, { Jwt, JwtPayload } from "jsonwebtoken";
+import jwt, {JwtPayload } from "jsonwebtoken";
 
 import config from "../config";
 
@@ -15,7 +15,7 @@ class AuthService {
     };
     console.log("AuthService.generateToken. payload and accountId:", payload, accountId);
 
-    return jwt.sign(payload, config.SECRET_KEY, {
+    return jwt.sign(payload, config.JWT_SECRET, {
       expiresIn: "1d",
       subject: accountId,
     });
