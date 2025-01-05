@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcrypt");
 const config = require("../config");
+
 import IdGenerator from "../utilities/IdGenerator";
 
 module.exports = (sequelize) => {
@@ -57,21 +58,10 @@ module.exports = (sequelize) => {
           // create Id upon new record
           console.log("CREATING ACCOUNT: ", record);
           record.accountId = IdGenerator.accountId();
+          // hash and save password
+          const hashedPassword = await bcrypt.hash(record.password, 10);
+          record.password = hashedPassword;
 
-          // hash password key before saving
-          bcrypt.hash(record.password, 10, (err, hashed) => {
-            if (hashed) {
-              record.password = hashed;
-              console.log(hashed);
-            } else if (err) console.log(err);
-          });
-
-          // hash api key before saving
-          bcrypt.hash(record.apiKey, 10, (err, hashed) => {
-            if (hashed) {
-              record.apiKey = hashed;
-            } else if (err) console.log(err);
-          });
         },
         beforeUpdate: async (record) => {
           if (record.changed("password")) {

@@ -61,7 +61,7 @@ Object.keys(models).forEach((modelName) => {
 
 // Sync
 async function syncModels() {
-  console.log("SYNCING MODELS");
+  console.log(`SYNCING MODELS. FORCE: ${isDevelopment }`);
   try {
     // Use one of these sync options
     await sequelize.sync({ force: isDevelopment }); // Drops and recreates
@@ -76,7 +76,6 @@ async function syncModels() {
 async function seedData() {
   if (isProduction) {
     console.log("Skipping seed in Production.");
-    
   } else {
     console.log("Begin SEEDING");
     try {
@@ -123,11 +122,11 @@ connectToPostgres()
     (e) => console.log("Error syncing or seeding:", e)
   )
   .then(() =>
-  // Upon server start, schedule all active agent tasks
-  {
-    const AgentService = require("../services/AgentService");
-    AgentService.loadActive();
-  }
+    // Upon server start, schedule all active agent tasks
+    {
+      const AgentService = require("../services/AgentService");
+      AgentService.loadActive();
+    }
   )
   .catch((e) => console.log("Error syncing or seeding:", e));
 
