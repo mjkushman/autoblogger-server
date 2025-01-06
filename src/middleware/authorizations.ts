@@ -107,9 +107,8 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
     }
     console.log("account returned from lookup:", account);
 
-    // Compare the retrieved dev apiKey with provided Key
-
-    const isValid = await bcrypt.compare(providedApiKey, account.apiKey);
+    // Make sure the provided key matches account key
+    const isValid = providedApiKey === account.apiKey;
     console.log("result:", isValid);
 
     if (isValid) {
