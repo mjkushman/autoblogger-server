@@ -167,9 +167,9 @@ const agentSeed = [
       isEnabled: true,
       maxWords: 500,
       timezone: "America/New_York",
-      daysOfWeek: ["mon", "tue", "wed", "thu", "fri"],
+      daysOfWeek: ["tue", "thu"],
       personality: "Bitter and vindictive with every word.",
-      cronSchedule: "0 */1 * * *",
+      cronSchedule: "0 12 * * 2,4", // tue, thur day at noon
     },
   },
   {
@@ -188,9 +188,9 @@ const agentSeed = [
     postSettings: {
       isEnabled: true,
       maxWords: 300,
-      daysOfWeek: ["mon", "tue", "wed", "thu", "fri"],
+      daysOfWeek: ["mon", "wed","fri"],
       timezone: "America/Los_Angeles",
-      cronSchedule: "30 */1 * * *",
+      cronSchedule: "0 13 * * 1,3,5", // mon, wed, fri at 1:30pm
     },
   },
 ];
