@@ -8,7 +8,7 @@ const accountSeed = [
     firstName: "Mandor",
     lastName: "Shebang",
     email: "org1@org1.com",
-    apiKey: "$2b$10$u.pn6aa/nLKqt5jp99wrfO2yjccRZDk7sEJN2/u4vvxdQwgr0FgSq", //  decrypted: "01.123456789012345678901234567890"
+    apiKey: "01.123456789012345678901234567890", //  encrypted: $2b$10$u.pn6aa/nLKqt5jp99wrfO2yjccRZDk7sEJN2/u4vvxdQwgr0FgSq
     openAiApiKey: config.OPENAI_API_KEY,
     apiKeyIndex: "01.123456",
     password: "hashedpassword",
@@ -18,7 +18,7 @@ const accountSeed = [
     firstName: "Marigold",
     lastName: "Moonbeam",
     email: "org2@org2.com",
-    apiKey: "$2b$10$PcBRXlgxW0kyiaaNxs/ICerSJYcunyf325WLJou90rv2/MRlJuHyS", //  decrypted: "02.123456789012345678901234567890"
+    apiKey: "02.123456789012345678901234567890", //  encrypted: $2b$10$PcBRXlgxW0kyiaaNxs/ICerSJYcunyf325WLJou90rv2/MRlJuHyS
     openAiApiKey: config.OPENAI_API_KEY,
     apiKeyIndex: "02.123456",
     password: "hashedpassword",
@@ -28,7 +28,7 @@ const accountSeed = [
     firstName: "Momo",
     lastName: "Grifter",
     email: "org3@org3.com",
-    apiKey: "$2b$10$LY6ks8cBLSoopSvzhZR2b.0YpF3lMfhV.BMNlELxezg7eaWrD6Ih2", //  decrypted: "03.123456789012345678901234567890"
+    apiKey: "03.123456789012345678901234567890", //  encrypted: $2b$10$LY6ks8cBLSoopSvzhZR2b.0YpF3lMfhV.BMNlELxezg7eaWrD6Ih2
     openAiApiKey: config.OPENAI_API_KEY,
     apiKeyIndex: "03.123456",
     password: "hashedpassword",
