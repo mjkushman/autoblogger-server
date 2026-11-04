@@ -40,8 +40,7 @@ class AgentService {
     }
     console.log("Initially loaded ACTIVE AGENTS:");
     ACTIVE_AGENTS.forEach((tasks) => {
-      console.dir(tasks.blogTask.options.name);
-      console.log(tasks?.blogTask?._scheduler.timeMatcher);
+      console.dir(tasks?.blogTask?.name);
     });
 
     console.dir(ACTIVE_AGENTS);
@@ -395,7 +394,7 @@ class AgentService {
             await PostService.create(generatedPost);
             console.log("Completed scheduled blog task");
           },
-          { scheduled: true, timezone, name: agentId }
+          { timezone, name: agentId }
         );
         // store task to actives
         tasks ? tasks.blogTask = blogTask : tasks = { blogTask }; // handles if tasks is undefined

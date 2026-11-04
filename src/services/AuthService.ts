@@ -28,7 +28,7 @@ class AuthService {
     const account = await Account.findOne({ where: { email } });
     if (!account) return new NotFoundError("Account not found");
 
-    const isValidPassword = bcrypt.compare(password, account.password);
+    const isValidPassword = await bcrypt.compare(password, account.password);
     if (!isValidPassword) return new UnauthorizedError("Invalid password");
     console.log("generating token");
     return await this.generateToken(account.accountId);
