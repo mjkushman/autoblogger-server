@@ -29,9 +29,7 @@ module.exports = (config) => {
     try {
       const { email, password } = req.body;
       if (!email || !password) throw new BadRequestError("Request must contain email and password");
-      console.log("continuing with email and pw:", email, password);
-      const token = await AuthService.authenticate({ email, password });
-      console.log("route, token", token);
+            const token = await AuthService.authenticate({ email, password });
       return res.sendResponse({ status: 201, data: token });
     } catch (error) {
       return next(error);
