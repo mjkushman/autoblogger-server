@@ -11,9 +11,6 @@ components:
         options:
           type: object
           properties:
-            llm:
-              type: string
-              example: "chatgpt"
             maxWords:
               type: integer
               example: 500

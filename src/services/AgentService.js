@@ -5,7 +5,7 @@ const { ExpressError, NotFoundError } = require("../utilities/expressError");
 const getUnsplashImage = require("../utilities/getUnsplashImage");
 import cronEncoder from "../utilities/cronEncoder";
 import PostService from "./PostService";
-const { LLMs } = require("../utilities/Chat");
+const { createChat } = require("../utilities/Chat");
 const { Agent, Post } = require("../models");
 const { Op } = require("sequelize");
 
@@ -190,7 +190,6 @@ class AgentService {
     // accept a newly created comment (id, ) and an agent
 
     const defaultOptions = {
-      llm: "chatgpt",
       maxWords: 200,
     };
     const { username, firstName, lastName } = comment.User;
@@ -198,7 +197,7 @@ class AgentService {
     console.log(`comment options ${{ ...options }}`);
 
     // instantiate a chat
-    const chat = new LLMs[options.llm](agent);
+    const chat = createChat(agent);
 
     chat.addMessage(
       "user",
@@ -222,7 +221,6 @@ class AgentService {
 
   /** WRITE BLOG POST
    * @topic An outline of the post to be written, which helps the AI write. Optional. If non is provided, the AI will run a utility function to choose a topic.
-   * @param llm the name of the large language model to use. "chatgpt" | "claude"
    * @param maxWords The maximum wordcount in the returned blog post
    * @returns a blog in string formatted HTML
    */
@@ -236,7 +234,6 @@ class AgentService {
     // agentId, options: providedOptions
 
     const defaultOptions = {
-      llm: "chatgpt",
       maxWords: 1000,
       topic: null,
     };
@@ -253,7 +250,7 @@ class AgentService {
 
     console.log(`${agent.username} started writing a blog post.
       Options: 
-      llm: ${options.llm}
+      model: ${agent.llm?.model}
       maxWords: ${options.maxWords}
       topic: ${options.topic}`);
 
@@ -262,12 +259,12 @@ class AgentService {
     console.log(`${agent.username} is about to create a topic`);
     const topicBlock =
       options.topic ??
-      (await this.#decideBlogTopic({ agent, llm: options.llm }));
+      (await this.#decideBlogTopic({ agent }));
     console.log(`${agent.username}'s Blog topic: ${topicBlock}`);
     console.dir(topicBlock);
 
     // Instantiate a new Chat
-    const chat = new LLMs[options.llm](agent);
+    const chat = createChat(agent);
     // First instruction
     chat.addMessage(
       "user",
@@ -289,9 +286,9 @@ class AgentService {
     );
 
     // Invoke llm
-    console.log(`${agent.username} invoking LLM ${options.llm}.`);
+    console.log(`${agent.username} invoking ${agent.llm?.model}.`);
     const response = await chat.sendPrompt();
-    console.log(`${agent.username} received response from ${options.llm}.`);
+    console.log(`${agent.username} received response from ${agent.llm?.model}.`);
 
     // Parse and format html resposne from llm
 
@@ -326,8 +323,8 @@ class AgentService {
   /** Asks LLM to decide on a new topic to write about, based on the author's bio and recent work.
    * @returns Topic.: An outline of the next article to write when calling writePost
    */
-  static async #decideBlogTopic({ agent, llm }) {
-    console.log("entered #decideBlogTopic. agent, llm:", agent, llm);
+  static async #decideBlogTopic({ agent }) {
+    console.log("entered #decideBlogTopic for agent:", agent.agentId);
     const { agentId } = agent;
     const titles = await PostService.findRecentTitles({
       agentId: agentId,
@@ -338,7 +335,7 @@ class AgentService {
         ...titles.slice(0, 9),
       ].join("\n - ") : "You havent written anything yet.";
     console.log("resolved recentWork:", recentWork);
-    const chat = new LLMs[llm](agent); // Get the appropriate Chat LLM
+    const chat = createChat(agent); // Get the appropriate Chat LLM
     console.log("created chat: ", chat);
     chat.addMessage("user", recentWork);
     chat.addMessage(

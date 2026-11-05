@@ -160,7 +160,7 @@ const agentSeed = [
     username: "agent001",
     isActive: false,
     llm: {
-      model: "chatgpt",
+      model: "gpt-5.4-mini",
       apiKey: config.OPENAI_API_KEY,
     },
     postSettings: {
@@ -182,7 +182,7 @@ const agentSeed = [
     username: "agent002",
     isActive: true,
     llm: {
-      model: "chatgpt",
+      model: "gpt-5.4-mini",
       apiKey: config.OPENAI_API_KEY,
     },
     postSettings: {

@@ -10,7 +10,7 @@ console.log("AGENT MODEL CONFIG", config);
 // const sequelize = new Sequelize(config.database.options);
 // const sequelize = new Sequelize(config.database.options);
 
-const validModels = ["chatgpt", "claude"];
+const { MODELS, DEFAULT_MODEL, isValidModel } = require("../utilities/llmModels");
 
 class Agent extends Model {}
 module.exports = (sequelize) => {
@@ -46,13 +46,13 @@ module.exports = (sequelize) => {
       llm: {
         type: DataTypes.JSONB,
         defaultValue: {
-          model: "chatgpt",
+          model: DEFAULT_MODEL,
           apiKey: null,
         },
         validate: {
           isValidModel(value) {
-            if (value.model && !validModels.includes(value.model)) throw new ValidationError(
-              `Model must be one of: ${validModels.join(", ")}`
+            if (value.model && !isValidModel(value.model)) throw new ValidationError(
+              `Model must be one of: ${MODELS.map((m) => m.model).join(", ")}`
             );
           },
           isValidApiKey(value) {
