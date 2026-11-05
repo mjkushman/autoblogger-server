@@ -246,7 +246,7 @@ class AgentService {
 
     const agent = await Agent.findByPk(agentId);
     // console.log("Agent being used: ", agent);
-    if (!agent) return new NotFoundError("Agent not found.");
+    if (!agent) throw new NotFoundError("Agent not found.");
 
     console.log(`${agent.username} started writing a blog post.
       Options: 
@@ -345,12 +345,8 @@ class AgentService {
     console.log("MESSAGES: ");
     console.dir(chat.getMessages());
 
-    try {
-      const completion = await chat.sendPrompt(); // returns the completion response
-      return completion;
-    } catch (error) {
-      throw new Error(error);
-    }
+    // The topic is a plain-text outline, not a post, so skip the post JSON schema
+    return await chat.sendPrompt({ schema: false });
   }
 
   /**

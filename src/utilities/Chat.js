@@ -1,6 +1,7 @@
 const OpenAI = require("openai");
 const Anthropic = require("@anthropic-ai/sdk");
 const config = require("../config");
+const { BadRequestError } = require("./expressError");
 const { DEFAULT_MODEL, resolveModel, getProvider } = require("./llmModels");
 const completionPostSchema = require("./completionPostSchema.json");
 
@@ -30,9 +31,36 @@ class Chat {
     return this.messages;
   }
 
+  /** Sends the conversation to the model. Pass { schema: false } for a plain-text reply. */
   async sendPrompt(params) {
     // GPT sends the instruction as a system message. Claude sends it as a system parameter.
     throw new Error("sendPrompt must be implemented in sub class");
+  }
+
+  /** Turns a provider failure into a 400 whose message the user can act on */
+  toUserError(error, providerName) {
+    console.error(`${providerName} request failed:`, error);
+    switch (error?.status) {
+      case 401:
+      case 403:
+        return new BadRequestError(
+          `${providerName} rejected this agent's API key. Check that the key is correct and still active.`
+        );
+      case 404:
+        return new BadRequestError(
+          `${providerName} doesn't recognize the model "${this.model}" for this key. Choose a different model.`
+        );
+      case 429:
+        return new BadRequestError(
+          `${providerName} is rate limiting this key, or the account is out of credit. Check your ${providerName} billing and try again.`
+        );
+      default:
+        return new BadRequestError(
+          error?.status
+            ? `${providerName} returned an error: ${error.message}`
+            : `We couldn't read ${providerName}'s response. Please try again.`
+        );
+    }
   }
 }
 
@@ -44,7 +72,7 @@ class ChatGPT extends Chat {
     this.llm = new OpenAI({ apiKey: agent.llm?.apiKey || undefined });
   }
 
-  async sendPrompt() {
+  async sendPrompt({ schema = true } = {}) {
     try {
       const response = await this.llm.chat.completions.create({
         messages: [
@@ -52,12 +80,14 @@ class ChatGPT extends Chat {
           ...this.getMessages(),
         ],
         model: this.model,
-        response_format: {"type":"json_schema", "json_schema": completionPostSchema},
+        ...(schema && {
+          response_format: { type: "json_schema", json_schema: completionPostSchema },
+        }),
       });
-      const completion = JSON.parse(response.choices[0].message.content);
-      return completion;
+      const content = response.choices[0].message.content;
+      return schema ? JSON.parse(content) : content;
     } catch (error) {
-      throw new Error(error);
+      throw this.toUserError(error, "OpenAI");
     }
   }
 }
@@ -72,21 +102,23 @@ class Claude extends Chat {
     });
   }
 
-  async sendPrompt() {
+  async sendPrompt({ schema = true } = {}) {
     try {
       const response = await this.llm.messages.create({
         model: this.model,
         max_tokens: 16000,
         system: this.instruction,
         messages: this.getMessages(),
-        output_config: {
-          format: { type: "json_schema", schema: completionPostSchema.schema },
-        },
+        ...(schema && {
+          output_config: {
+            format: { type: "json_schema", schema: completionPostSchema.schema },
+          },
+        }),
       });
       const text = response.content.find((block) => block.type === "text")?.text;
-      return JSON.parse(text);
+      return schema ? JSON.parse(text) : text;
     } catch (error) {
-      throw new Error(error);
+      throw this.toUserError(error, "Anthropic");
     }
   }
 }
