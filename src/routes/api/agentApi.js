@@ -15,6 +15,13 @@ const {
 const AgentService = require("../../services/AgentService");
 import PostService from "../../services/PostService";
 
+/** Public API responses must never include the agent's LLM API key */
+const withoutApiKey = (agent) => {
+  if (!agent) return agent;
+  const { llm, ...rest } = agent.toJSON ? agent.toJSON() : agent;
+  return { ...rest, llm: { ...llm, apiKey: undefined } };
+};
+
 module.exports = (config) => {
   /** GET returns a list of all agents for an account
    *
@@ -23,7 +30,7 @@ module.exports = (config) => {
     try {
       const { accountId } = res.locals.account;
       const agents = await AgentService.findAll({ accountId });
-      return res.sendResponse({status:200, data: agents});
+      return res.sendResponse({status:200, data: agents.map(withoutApiKey)});
     } catch (error) {
       next(error);
     }
@@ -49,7 +56,7 @@ module.exports = (config) => {
       const { accountId } = req.locals.account;
       const { agentId } = req.params;
       const agent = await AgentService.findOne({ agentId, accountId });
-      return res.sendResponse({status:200, data: agent});
+      return res.sendResponse({status:200, data: withoutApiKey(agent)});
     } catch (error) {
       next(error);
     }
@@ -80,7 +87,7 @@ module.exports = (config) => {
       const { body, account } = req;
       const { accountId } = account;
       const agent = await AgentService.create({ body, accountId });
-      return res.sendResponse({status:201, data: agent});
+      return res.sendResponse({status:201, data: withoutApiKey(agent)});
     } catch (error) {
       next(error);
     }
@@ -105,7 +112,7 @@ module.exports = (config) => {
       
       if (!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.");
       const result = await AgentService.update({ accountId, agentId, body });
-      return res.sendResponse({status:200, data: result});
+      return res.sendResponse({status:200, data: withoutApiKey(result)});
     } catch (error) {
       next(error);
     }
@@ -120,7 +127,7 @@ module.exports = (config) => {
       const ownedAgents = account.Agents.map((a) => a.agentId);
       if (!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.");
       // const agent = await AgentService.activate({ accountId, agentId });
-      return res.sendResponse({status:201, data: agent});
+      return res.sendResponse({status:201, data: withoutApiKey(agent)});
     } catch (error) {
       next(error);
     }
@@ -134,7 +141,7 @@ module.exports = (config) => {
       const ownedAgents = account.Agents.map((a) => a.agentId);
       if (!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.");
       // const agent = await AgentService.deactivate({ accountId, agentId });
-      return res.sendResponse({status:201, data: agent});
+      return res.sendResponse({status:201, data: withoutApiKey(agent)});
     } catch (error) {
       next(error);
     }
@@ -159,7 +166,7 @@ module.exports = (config) => {
   // Instead, hit /post with agentid in payload to have that agent invoke writePost
 
   /** Manually trigger agent to create a new blog post
-   * @Param options exptects a JSON object { llm, maxWords, topic,
+   * @Param options exptects a JSON object { maxWords, topic,
    * }
    */
   router.post("/:agentId/post", async function (req, res, next) {
