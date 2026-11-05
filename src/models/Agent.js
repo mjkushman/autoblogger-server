@@ -11,6 +11,7 @@ console.log("AGENT MODEL CONFIG", config);
 // const sequelize = new Sequelize(config.database.options);
 
 const { MODELS, DEFAULT_MODEL, isValidModel } = require("../utilities/llmModels");
+const { sanitizeAgentInput } = require("../utilities/sanitizePrompt");
 
 class Agent extends Model {}
 module.exports = (sequelize) => {
@@ -72,10 +73,14 @@ module.exports = (sequelize) => {
           daysOfWeek: ["mon"],
           timezone: "America/Los_Angeles",
           personality: "",
+          bannedTopics: [],
         },
         validate: {
           hasValidPersonality(value) {
             if (value.personality && typeof value.personality !== "string") throw new ValidationError("personality must be a valid string");
+          },
+          hasValidBannedTopics(value) {
+            if (value.bannedTopics && !Array.isArray(value.bannedTopics)) throw new ValidationError("bannedTopics must be a list");
           },
           hasValidCronifEnabled(value) {
             console.log("Validating cron of:", value);
@@ -99,8 +104,8 @@ module.exports = (sequelize) => {
       commentSettings: {
         type: DataTypes.JSONB,
         defaultValue: {
-          isEnabled: false,
-          maxWords: 200,
+          isEnabled: true,
+          maxWords: 100,
           personality: null,
         },
         validate: {
@@ -141,6 +146,21 @@ module.exports = (sequelize) => {
       sequelize,
       tableName: "agents",
       hooks: {
+        // Everything below ends up in an AI prompt, so clean it before it is stored
+        beforeValidate: async (record) => {
+          const clean = sanitizeAgentInput({
+            firstName: record.firstName,
+            lastName: record.lastName,
+            authorBio: record.authorBio,
+            postSettings: record.postSettings,
+            commentSettings: record.commentSettings,
+          });
+          if (record.firstName != null) record.firstName = clean.firstName;
+          if (record.lastName != null) record.lastName = clean.lastName;
+          if (record.authorBio != null) record.authorBio = clean.authorBio;
+          if (record.postSettings) record.postSettings = clean.postSettings;
+          if (record.commentSettings) record.commentSettings = clean.commentSettings;
+        },
         beforeUpdate: async (record) => {
           // set the human readable schedule string
           if (record.postSettings.cronSchedule) {
