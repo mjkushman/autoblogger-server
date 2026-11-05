@@ -7,9 +7,8 @@ const router = express.Router({ mergeParams: true });
 // const jsonschema = require("jsonschema");
 // const agentCreateSchema = require("./agentCreateSchema.json");
 
-const { UnauthorizedError } = require("../../utilities/expressError");
+const { UnauthorizedError, BadRequestError } = require("../../utilities/expressError");
 const AgentService = require("../../services/AgentService");
-import { BadRequestError } from "openai";
 import validatePostSettings from "../../utilities/validatePostSettings";
 
 module.exports = (config) => {
@@ -60,7 +59,7 @@ module.exports = (config) => {
 
       if (!validatePostSettings(body.postSettings)) {
 
-        res.status(400).send(new BadRequestError("Invalid post settings"));
+        throw new BadRequestError("Invalid post settings");
       }
 
       const agent = await AgentService.create({ body, accountId });
