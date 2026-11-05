@@ -1,14 +1,25 @@
 "use strict";
 
 
-const { requireAuth } = require("../../middleware/authorizations");
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 
 const router = express.Router({ mergeParams: true });
 const CommentService = require("../../services/CommentService");
 const AgentService = require("../../services/AgentService");
 const StatusService = require("../../services/StatusService");
 const { BadRequestError } = require("../../utilities/expressError");
+const { cleanText, looksLikeInjection } = require("../../utilities/sanitizePrompt");
+
+const MAX_COMMENT_LENGTH = 1000;
+const MAX_NAME_LENGTH = 50;
+
+// Each new comment can trigger a paid AI reply, so limit how fast one visitor can post
+const commentLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 10,
+  message: { status: "Error", message: "You're commenting too quickly. Please wait a few minutes." },
+});
 
 module.exports = (config) => {
   /**
@@ -42,12 +53,11 @@ module.exports = (config) => {
    *         description: Internal server error while handling request
    */
   router.get("/", async function (req, res, next) {
-    const { accountId } = req.locals.account;
+    const { accountId } = res.locals.account;
     const { postId } = req.query;
     try {
       const comments = await CommentService.findAll({ accountId, postId });
-      console.log("COMMENTS", comments);
-      return res.sendResponse({ status: 200, data: comments });
+      return res.sendResponse({ status: 200, data: comments.map(CommentService.toPublic) });
     } catch (error) {
       return next(error);
     }
@@ -83,78 +93,83 @@ module.exports = (config) => {
    */
   router.get("/:commentId", async function (req, res, next) {
     const { commentId } = req.params;
+    const { accountId } = res.locals.account;
     try {
-      const comment = await CommentService.findOne(commentId);
-      return res.sendResponse({ status: 200, data: comment });
+      const comment = await CommentService.findOne({ commentId, accountId });
+      return res.sendResponse({ status: 200, data: CommentService.toPublic(comment) });
     } catch (error) {
       return next(error);
     }
   });
 
-  /** POST /comments
-   * Create a new comment. Trigger reply generation if enabled.
-   *
-   *
+  /**
+   * @openapi
+   * /comments:
+   *   post:
+   *     tags: [Comments]
+   *     summary: Adds a comment to a post
+   *     description: >
+   *       Saves the comment. If the post's author has comment replies turned on, the author writes
+   *       a short reply in the background. The response then includes `reply.statusId`; poll
+   *       `GET /status/{statusId}` until it reports `success`, then fetch the comments again.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [postId, content]
+   *             properties:
+   *               postId:
+   *                 type: string
+   *                 example: pst_0000000001
+   *               authorName:
+   *                 type: string
+   *                 description: Name to show with the comment (up to 50 characters). Defaults to "Guest".
+   *                 example: Sam
+   *               content:
+   *                 type: string
+   *                 description: The comment text (up to 1000 characters).
+   *     security:
+   *       - ApiKeyAuth: []
+   *     responses:
+   *       201:
+   *         description: The saved comment, and the reply status if a reply is being written.
+   *       400:
+   *         description: Missing or invalid comment
+   *       404:
+   *         description: Post not found
+   *       429:
+   *         description: Too many comments from this visitor
    */
-
-  router.post("/", async function (req, res, next) {
+  router.post("/", commentLimiter, async function (req, res, next) {
     try {
-      const { accountId } = req.locals.account;
+      const { accountId } = res.locals.account;
       const { postId } = req.body;
 
-      const response = { comment: null, reply: null }; // Placeholders for comment and agent reply
-      // Create a new comment
-      const comment = await CommentService.create({
-        accountId,
-        ...req.body,
-      });
+      // Visitor text is untrusted: strip markup and hidden characters, and cap its length
+      const content = cleanText(req.body.content, { maxLength: MAX_COMMENT_LENGTH });
+      const authorName = cleanText(req.body.authorName, { maxLength: MAX_NAME_LENGTH }) || "Guest";
+      if (!postId) throw new BadRequestError("postId is required.");
+      if (!content) throw new BadRequestError("Please write a comment first.");
 
-      response.comment = {
-        commentId: comment.commentId,
-        parentId: comment.parentId,
-        userId: comment.userId,
-        postId: comment.postId,
-        content: comment.content,
-        authorFirstName: comment.User.firstName,
-        authorUsername: comment.User.username,
-        createdAt: comment.createdAt,
-      };
+      const comment = await CommentService.create({ accountId, postId, authorName, content });
+      const response = { comment: CommentService.toPublic(comment), reply: null };
 
-      // get the post author id
-      const agent = await AgentService.findOneByPostId({ postId });
+      // Which agent wrote this post? Posts without one simply don't get a reply.
+      const agent = await AgentService.findOneByPostId({ postId }).catch(() => null);
+      // A comment that tries to give the AI orders is kept, but the AI doesn't answer it
+      const isSuspicious = looksLikeInjection(content) || looksLikeInjection(authorName);
+      const wantsReply = agent?.commentSettings?.isEnabled && !isSuspicious;
 
-      if (agent.commentSettings.isEnabled) {
-        // If agent commenting is enabled
+      if (!wantsReply) return res.sendResponse({ status: 201, data: response });
 
-        // Immediately create a status and return the result
-        const status = await StatusService.create("comment");
+      const status = await StatusService.create("comment");
+      response.reply = { statusId: status.statusId, status: status.status };
+      res.sendResponse({ status: 201, data: response });
 
-        response.reply = { status };
-        res.sendResponse({ status: 201, data: response });
-
-        // Proceed to generate the completion async after response is sent
-        const { agentId } = agent;
-        const completion = await AgentService.generateComment({
-          agent,
-          comment,
-          status,
-        });
-        if (completion) {
-          StatusService.updateInstance(status, {
-            status: "success",
-            result: completion,
-          });
-          // save the generated comment
-          await CommentService.create({
-            accountId,
-            content: completion,
-            agentId: agentId,
-            parentId: comment.commentId,
-          });
-        }
-        return;
-      }
-      return res.sendResponse({ status: 201, data: response });
+      // The reply is written after the response is sent, and reports its outcome on the status
+      AgentService.replyToComment({ agent, comment, status });
     } catch (error) {
       return next(error);
     }

@@ -6,11 +6,19 @@ const getUnsplashImage = require("../utilities/getUnsplashImage");
 import cronEncoder from "../utilities/cronEncoder";
 import PostService from "./PostService";
 const { createChat } = require("../utilities/Chat");
+const { cleanText } = require("../utilities/sanitizePrompt");
+const CommentService = require("./CommentService");
 const { Agent, Post } = require("../models");
 const { Op } = require("sequelize");
 
 const StatusService = require("./StatusService");
 const cron = require("node-cron");
+
+// A reply that arrives instantly feels robotic, so the author "reads" the comment first
+const MIN_REPLY_DELAY_MS = 3000;
+const MAX_REPLY_DELAY_MS = 12000;
+const randomReplyDelay = () =>
+  MIN_REPLY_DELAY_MS + Math.random() * (MAX_REPLY_DELAY_MS - MIN_REPLY_DELAY_MS);
 
 // Holds active agent cron tasks
 const ACTIVE_AGENTS = new Map();
@@ -185,38 +193,62 @@ class AgentService {
     
   }
 
-  static async generateComment({ agent, comment }) {
-    console.log("Inside AgentService generateComment");
-    // accept a newly created comment (id, ) and an agent
-
-    const defaultOptions = {
-      maxWords: 200,
-    };
-    const { username, firstName, lastName } = comment.User;
-    const options = { ...defaultOptions, ...agent.commentSettings };
-    console.log(`comment options ${{ ...options }}`);
-
-    // instantiate a chat
+  /** Writes a reply (plain text) to a reader's comment on one of the agent's posts. */
+  static async generateComment({ agent, comment, post }) {
+    const maxWords = agent.commentSettings?.maxWords ?? 100;
     const chat = createChat(agent);
 
+    // Everything a reader typed is fenced in tags and cleaned; the system prompt says to treat it as data
+    const title = cleanText(post.title, { maxLength: 200 });
+    const postText = cleanText(post.content, { maxLength: 8000 });
+    const author = cleanText(comment.authorName, { maxLength: 50 });
+    const commentText = cleanText(comment.content, { maxLength: 1000 });
+
     chat.addMessage(
       "user",
-      `A user has commented on one of your articles. Write a thoughtful response in ${options.maxWords} words or less using the following information as context.`
+      `A reader commented on one of your blog posts. Write a short, thoughtful reply of at most ${maxWords} words, in your own voice and in the first person. Engage with what they actually said. Use plain text with no title or headings, and address them by name only if it feels natural.
+
+<post>
+Title: ${title}
+
+${postText}
+</post>
+
+<comment author="${author}">
+${commentText}
+</comment>`
     );
-    // Next instruction
-    chat.addMessage(
-      "user",
-      `- The user's comment: ${comment.content} \n
-       - The user's info: ${{ ...comment.User }} \n
-       
-       Your original article text: \n
-       "${comment.Post.title}"\n\n
-       "${comment.Post.content}"
-       `
-    );
-    const completion = await chat.sendPrompt();
-    console.log(completion);
-    return completion;
+
+    const reply = await chat.sendPrompt({ schema: false });
+    return String(reply).trim().replace(/^["“]|["”]$/g, "");
+  }
+
+  /** Runs after the comment response is sent: writes the reply, saves it, and records the outcome on the status. */
+  static async replyToComment({ agent, comment, status }) {
+    try {
+      await StatusService.updateInstance(status, { status: "in_progress" });
+      await new Promise((resolve) => setTimeout(resolve, randomReplyDelay()));
+      const post = await Post.findByPk(comment.postId);
+      const content = await this.generateComment({ agent, comment, post });
+      const reply = await CommentService.create({
+        accountId: comment.accountId,
+        postId: comment.postId,
+        parentId: comment.commentId,
+        authorName: cleanText(agent.firstName, { maxLength: 50 }),
+        agentId: agent.agentId,
+        content,
+      });
+      await StatusService.updateInstance(status, {
+        status: "success",
+        result: { commentId: reply.commentId },
+      });
+    } catch (error) {
+      console.error(`${agent.username} couldn't reply to comment ${comment.commentId}:`, error);
+      await StatusService.updateInstance(status, {
+        status: "error",
+        result: { message: error.message },
+      }).catch(() => {});
+    }
   }
 
   /** WRITE BLOG POST
@@ -307,7 +339,7 @@ class AgentService {
     const generatedPost = {
       title: response.title,
       content: response.content,
-      imageUrl: String(imageUrl),
+      imageUrl: imageUrl || null, // no image (e.g. Unsplash unavailable) is fine
       agentId: agent.agentId,
       authorId: agent.agentId,
       accountId: agent.accountId,

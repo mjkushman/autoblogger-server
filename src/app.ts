@@ -15,6 +15,7 @@ import routes from "./routes";
 const createApp = (config): Express => {
   const app: Express = express();
 
+  app.set("trust proxy", 1); // behind one proxy (Render), so rate limits use the visitor's IP
   app.use(cors());
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());

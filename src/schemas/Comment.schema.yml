@@ -4,28 +4,25 @@ components:
       type: object
       properties:
         commentId:
-          type: integer
-          format: int32
-          example: 123
-        authorId:
           type: string
-          example: "user_123"
+          example: "cmt_0000000001"
         postId:
           type: string
           example: "pst_0000000001"
-        accountId:
+        parentId:
           type: string
-          example: "act_00000000-0000-0000-0000-000000000001"
+          nullable: true
+          description: The comment this one replies to
+          example: "cmt_0000000001"
+        authorName:
+          type: string
+          example: "Sam"
+        isAgent:
+          type: boolean
+          description: True when the comment was written by the post's AI author
         content:
           type: string
           example: "This is a comment."
-        parentId:
-          type: integer
-          nullable: true
-          example: 456
-        updatedAt:
-          type: string
-          format: date-time
         createdAt:
           type: string
           format: date-time

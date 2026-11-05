@@ -66,8 +66,7 @@ const blogSeed = [
 const commentSeed = [
   {
     commentId: "cmt_0000000001",
-    authorId: "user_123",
-    agentId: null,
+    authorName: "Sam",
     postId: "pst_0000000001",
     accountId: "act_0000000001",
     content: "This is a comment.",
@@ -75,15 +74,16 @@ const commentSeed = [
   },
   {
     commentId: "cmt_0000000002",
-    authorId: "user_456",
+    authorName: "Cleo",
+    agentId: "agt_0000000001",
     postId: "pst_0000000001",
     accountId: "act_0000000001",
-    content: "This is a child comment.",
+    content: "This is a reply from the author.",
     parentId: "cmt_0000000001",
   },
   {
     commentId: "cmt_0000000003",
-    authorId: "user_123",
+    authorName: "Alex",
     postId: "pst_0000000002",
     accountId: "act_0000000001",
     content: "This is another comment",
