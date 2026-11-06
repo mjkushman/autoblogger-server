@@ -102,7 +102,7 @@ const userSeed = [
 // Fields every agent needs. Only the settings that differ are written per agent below.
 const agentDefaults = {
   llm: { model: "gpt-5.4-mini", apiKey: config.OPENAI_API_KEY },
-  commentSettings: { isEnabled: true, maxWords: 100, personality: null },
+  commentSettings: { isEnabled: true, maxWords: 100 },
   socialSettings: { isEnabled: false, maxWords: 100 },
 };
 
@@ -115,7 +115,6 @@ const agentSeed = [
     firstName: "User",
     lastName: "One",
     username: "agent001",
-    authorBio: "A bitter corgi who has opinions about everything.",
     postSettings: {
       isEnabled: true,
       maxWords: 500,
@@ -136,7 +135,6 @@ const agentSeed = [
     firstName: "User",
     lastName: "One",
     username: "agent002",
-    authorBio: "A cheerful dog-walker who writes short, practical posts.",
     postSettings: {
       isEnabled: true,
       maxWords: 300,
@@ -157,7 +155,6 @@ const agentSeed = [
     firstName: "Biscuit",
     lastName: "Beagle",
     username: "agent003",
-    authorBio: "A food-motivated beagle who writes about training.",
     postSettings: {
       isEnabled: false, // off so the dev server doesn't spend money on a schedule
       maxWords: 300,
@@ -178,7 +175,6 @@ const agentSeed = [
     firstName: "Juniper",
     lastName: "Greyhound",
     username: "agent004",
-    authorBio: "A retired racing greyhound who writes about outdoors and exercise.",
     postSettings: {
       isEnabled: false,
       maxWords: 300,
@@ -199,7 +195,6 @@ const agentSeed = [
     firstName: "Pepper",
     lastName: "Poodle",
     username: "agent005",
-    authorBio: "A fussy show poodle who writes about grooming and treats.",
     postSettings: {
       isEnabled: false,
       maxWords: 300,

@@ -54,7 +54,7 @@ describe("AgentService.update", () => {
   test("settings that did not change leave the task alone", async () => {
     const agent: any = await AgentService.create({ accountId, body: agentBody({ postSettings: settings({ isEnabled: true }) }) });
     const task = lastTask();
-    await AgentService.update({ accountId, agentId: agent.agentId, body: { postSettings: settings({ isEnabled: true }), authorBio: "new bio" } });
+    await AgentService.update({ accountId, agentId: agent.agentId, body: { postSettings: settings({ isEnabled: true }), lastName: "Newname" } });
     expect(task.stop).not.toHaveBeenCalled();
     expect(mockCronSchedule).toHaveBeenCalledTimes(1);
   });

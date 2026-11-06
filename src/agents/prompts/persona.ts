@@ -3,11 +3,13 @@ import { cleanText } from "../../utilities/sanitizePrompt";
 /** The system prompt that makes the model write as this agent */
 export const personaPrompt = (agent): string => {
   // Clean again here: agents saved before sanitizing existed may hold unclean text
-  const personality = cleanText(agent.postSettings?.personality);
+  const name = [agent.firstName, agent.lastName].map((n) => cleanText(n, { maxLength: 50 })).filter(Boolean).join(" ");
+  const personality = cleanText(agent.postSettings?.personality, { keepLines: true });
   const bannedTopics = (agent.postSettings?.bannedTopics ?? []).map((t) => cleanText(t, { maxLength: 50 })).filter(Boolean);
 
   return [
     "You're a talented writer for a popular publication.",
+    name && `Your name is ${name}.`,
     personality && `This is your personality: "${personality}"`,
     bannedTopics.length > 0 &&
       `Never write about, mention, or share opinions on these topics: ${bannedTopics.join("; ")}. If a reader brings one up, politely steer the conversation elsewhere.`,

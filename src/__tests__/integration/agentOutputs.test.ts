@@ -1,4 +1,4 @@
-import { initDb, resetDb, closeDb, createAccount, createAgent, createPost, Comment, Status } from "../helpers/db";
+import { initDb, resetDb, closeDb, createAccount, createAgent, createPost, agentBody, Comment, Status } from "../helpers/db";
 import {
   mockOpenAICreate,
   mockAnthropicCreate,
@@ -99,13 +99,35 @@ describe("writePost: prompts", () => {
     expect(shown.length).toBeLessThanOrEqual(10);
   });
 
-  test("maxWords defaults to 1000 and can be overridden", async () => {
-    const agent = await createAgent(accountId);
-    await writePost({ agentId: agent.agentId, accountId, options: { topic: "x" } });
-    expect(userText(mockOpenAICreate.mock.calls[0])).toContain("reach 1000 words");
+  describe("how long the post is", () => {
+    const withWords = (maxWords: unknown) => createAgent(accountId, { postSettings: { ...agentBody().postSettings, maxWords } });
 
-    await writePost({ agentId: agent.agentId, accountId, options: { topic: "x", maxWords: 250 } });
-    expect(userText(mockOpenAICreate.mock.calls[1])).toContain("reach 250 words");
+    test("follows the agent's own Words per post setting when the request doesn't say", async () => {
+      const agent = await withWords(450);
+      await writePost({ agentId: agent.agentId, accountId, options: { topic: "x" } });
+      expect(userText(mockOpenAICreate.mock.calls[0])).toContain("reach 450 words");
+    });
+
+    test("a scheduled run (no options at all) follows it too", async () => {
+      const agent = await withWords(300);
+      await writePost({ agentId: agent.agentId });
+      expect(userText(mockOpenAICreate.mock.calls.at(-1))).toContain("reach 300 words");
+    });
+
+    test("a length in the request wins over the agent's setting", async () => {
+      const agent = await withWords(450);
+      await writePost({ agentId: agent.agentId, accountId, options: { topic: "x", maxWords: 250 } });
+      expect(userText(mockOpenAICreate.mock.calls[0])).toContain("reach 250 words");
+    });
+
+    test.each([["missing", undefined], ["zero", 0], ["negative", -5], ["not a number", "lots"]])(
+      "falls back to 1000 when the agent's setting is %s",
+      async (_label, maxWords) => {
+        const agent = await withWords(maxWords);
+        await writePost({ agentId: agent.agentId, accountId, options: { topic: "x" } });
+        expect(userText(mockOpenAICreate.mock.calls[0])).toContain("reach 1000 words");
+      }
+    );
   });
 
   test("the agent's personality and banned topics reach the system prompt", async () => {
@@ -207,7 +229,7 @@ describe("writePost: status and failures", () => {
 
 describe("generateComment: the AI's reply text", () => {
   const setup = async (commentSettings = {}) => {
-    const agent: any = await createAgent(accountId, { commentSettings: { isEnabled: true, maxWords: 40, personality: null, ...commentSettings } });
+    const agent: any = await createAgent(accountId, { commentSettings: { isEnabled: true, maxWords: 40, ...commentSettings } });
     const post: any = await createPost(accountId, agent.agentId, { title: "Walks", content: "Dogs love walks." });
     const comment: any = await Comment.create({ accountId, postId: post.postId, authorName: "Sam", content: "Great post!" });
     return { agent, post, comment };
@@ -269,7 +291,7 @@ describe("replyToComment: the background job", () => {
   afterEach(() => timeoutSpy.mockRestore());
 
   const setup = async () => {
-    const agent: any = await createAgent(accountId, { firstName: "Pawla", commentSettings: { isEnabled: true, maxWords: 50, personality: null } });
+    const agent: any = await createAgent(accountId, { firstName: "Pawla", commentSettings: { isEnabled: true, maxWords: 50 } });
     const post: any = await createPost(accountId, agent.agentId);
     const comment: any = await Comment.create({ accountId, postId: post.postId, authorName: "Sam", content: "Nice" });
     const status: any = await StatusService.create("comment");

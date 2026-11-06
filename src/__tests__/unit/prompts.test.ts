@@ -16,6 +16,15 @@ describe("persona (the system prompt)", () => {
     expect(show(personaPrompt({ postSettings: { personality: "cheerful and curious", bannedTopics: ["cats", "politics"] } }))).toMatchSnapshot();
   });
 
+  test("with a name and a written, multi-line personality", () => {
+    const personality = "Warm and funny.\n\nWrites for first-time dog owners.\n- short paragraphs\n- loves puns";
+    expect(show(personaPrompt({ firstName: "Pawla", lastName: "Barker", postSettings: { personality, bannedTopics: ["cats"] } }))).toMatchSnapshot();
+  });
+
+  test("with only a first name", () => {
+    expect(show(personaPrompt({ firstName: "Pawla", postSettings: {} }))).toMatchSnapshot();
+  });
+
   test("with neither", () => {
     expect(show(personaPrompt({ postSettings: {} }))).toMatchSnapshot();
   });
