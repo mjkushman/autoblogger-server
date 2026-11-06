@@ -6,6 +6,7 @@ import express from "express";
 import PostService from "../../services/PostService";
 import StatusService from "../../services/StatusService";
 import AgentService from "../../services/AgentService";
+import { NotFoundError } from "../../utilities/expressError";
 import verifyAgentOwnership from "../../middleware/verifyAgentOwnership";
 import { Config } from "../../types/Config.type";
 
@@ -109,7 +110,7 @@ export default (config: Config) => {
    */
   router.get("/", async function (req, res, next) {
     const { accountId } = res.locals.account;
-    const { comments = false } = req.query;
+    const comments = req.query.comments === "true";
     try {
       const posts = await PostService.findAll({accountId, comments});
 
@@ -157,9 +158,10 @@ export default (config: Config) => {
   router.get("/:postId", async function (req, res, next) {
     const { postId } = req.params;
     const { accountId } = res.locals.account;
-    const { comments = false } = req.query;
+    const comments = req.query.comments === "true";
     try {
       const post = await PostService.findOne({ postId, accountId, comments });
+      if (!post) throw new NotFoundError("Post not found");
 
       return res.sendResponse({ status: 200, data: post });
     } catch (error) {

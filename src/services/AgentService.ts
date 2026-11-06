@@ -2,7 +2,9 @@
 import { Op } from "sequelize";
 import cron, { ScheduledTask } from "node-cron";
 import models from "../models";
-import { NotFoundError } from "../utilities/expressError";
+import { isDeepStrictEqual } from "util";
+import { BadRequestError, ExpressError, NotFoundError } from "../utilities/expressError";
+import validatePostSettings from "../utilities/validatePostSettings";
 import getUnsplashImage from "../utilities/getUnsplashImage";
 import cronEncoder from "../utilities/cronEncoder";
 import { createChat } from "../utilities/Chat";
@@ -60,12 +62,14 @@ class AgentService {
     );
 
     try {
+      if (!validatePostSettings(body.postSettings)) throw new BadRequestError("Invalid post settings");
       const cronSchedule = cronEncoder({
         time: body.postSettings.time,
         daysOfWeek: body.postSettings.daysOfWeek,
       });
-      const newAgent = { ...body, accountId };
-      newAgent.postSettings.cronSchedule = cronSchedule;
+      // The ids are always generated here, never taken from the caller
+      const { agentId: _agentId, accountId: _accountId, ...fields } = body;
+      const newAgent = { ...fields, accountId, postSettings: { ...fields.postSettings, cronSchedule } };
       console.log("CREATING AGENT:");
       console.dir(newAgent);
       const createdAgent = await Agent.create(newAgent);
@@ -135,30 +139,32 @@ class AgentService {
       const oldPostSettings = agent.postSettings;
       const oldSocialSettings = agent.socialSettings;
 
-      const cronSchedule = cronEncoder({
-        time: body.postSettings.time,
-        daysOfWeek: body.postSettings.daysOfWeek,
-      });
-
-      body.postSettings.cronSchedule = cronSchedule;
-      console.log("Attempting update with body: ", body);
-
       // An agent can't be handed to another account or renamed by id
       const { accountId: _accountId, agentId: _agentId, ...changes } = body;
+
+      // New post settings need a fresh schedule. Updates that don't touch them skip this.
+      if (changes.postSettings) {
+        if (!validatePostSettings(changes.postSettings)) throw new BadRequestError("Invalid post settings");
+        changes.postSettings = {
+          ...changes.postSettings,
+          cronSchedule: cronEncoder({
+            time: changes.postSettings.time,
+            daysOfWeek: changes.postSettings.daysOfWeek,
+          }),
+        };
+      }
       await agent.update(changes); // triggers the beforeUpdate hook
 
       const newPostSettings = agent.postSettings;
       const newSocialSettings = agent.socialSettings;
 
       // If post settings have changed, update task
-      if (JSON.stringify(oldPostSettings) !== JSON.stringify(newPostSettings)) {
+      if (!isDeepStrictEqual(oldPostSettings, newPostSettings)) {
         // update blog task
         this.#setBlogTask(agent);
       }
       // If social settings have changed, update task
-      if (
-        JSON.stringify(oldSocialSettings) !== JSON.stringify(newSocialSettings)
-      ) {
+      if (!isDeepStrictEqual(oldSocialSettings, newSocialSettings)) {
         // update social task
         this.#setSocialTask(agent);
       }
@@ -271,6 +277,14 @@ ${commentText}
     };
     // overwrite default options with provided options if provided
     options = { ...defaultOptions, ...options };
+
+    // These come from the API caller and go into the prompt, so check them first
+    const maxWords = Number(options.maxWords);
+    if (!Number.isInteger(maxWords) || maxWords < 1 || maxWords > 10000) {
+      throw new BadRequestError("maxWords must be a whole number between 1 and 10000.");
+    }
+    options.maxWords = maxWords;
+    options.topic = cleanText(options.topic, { maxLength: 2000 }) || null;
     console.log("Options:");
     console.dir(options);
 
@@ -322,7 +336,10 @@ ${commentText}
     const response = await chat.sendPrompt();
     console.log(`${agent.username} received response from ${agent.llm?.model}.`);
 
-    // Parse and format html resposne from llm
+    // The model's JSON is not guaranteed to have what we asked for
+    if (typeof response?.title !== "string" || !response.title.trim() || typeof response?.content !== "string" || !response.content.trim()) {
+      throw new ExpressError("The AI returned an incomplete post. Please try again.", 502);
+    }
 
     // Get a random image based on the post title
     let imageUrl = "";
@@ -411,12 +428,16 @@ ${commentText}
           cronSchedule,
           async () => {
             console.log("Initiated scheduled blog task");
-            const generatedPost = await AgentService.writePost({
-              agentId: agent.agentId,
-            });
-            
-            await PostService.create(generatedPost);
-            console.log("Completed scheduled blog task");
+            // Nothing awaits this callback, so an uncaught error would crash the server
+            try {
+              const generatedPost = await AgentService.writePost({
+                agentId: agent.agentId,
+              });
+              await PostService.create(generatedPost);
+              console.log("Completed scheduled blog task");
+            } catch (error) {
+              console.error(`Scheduled post failed for ${agent.agentId}:`, error);
+            }
           },
           { timezone, name: agentId }
         );

@@ -19,6 +19,8 @@ class AccountService {
   static async create({ body }) {
     const { host, email, firstName, lastName, password } = body;
 
+    if (!email || !password) throw new BadRequestError("Email and password are required");
+
     const existingAccount = await Account.findOne({ where: { email } });
     if (existingAccount)
       throw new BadRequestError("That email is already in use");

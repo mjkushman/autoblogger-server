@@ -38,6 +38,7 @@ export default (config: Config) => {
       const { accountId } = res.locals.account;
       const { agentId } = req.params;
       const agent = await AgentService.findOne({ agentId, accountId });
+      if (!agent) throw new NotFoundError("Agent not found");
       return res.sendResponse({status:200, data: withoutApiKey(agent)});
     } catch (error) {
       next(error);

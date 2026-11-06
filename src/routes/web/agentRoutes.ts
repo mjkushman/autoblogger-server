@@ -5,7 +5,7 @@
 import express from "express";
 import AgentService from "../../services/AgentService";
 import validatePostSettings from "../../utilities/validatePostSettings";
-import { BadRequestError } from "../../utilities/expressError";
+import { BadRequestError, NotFoundError } from "../../utilities/expressError";
 import { Config } from "../../types/Config.type";
 
 const router = express.Router({ mergeParams: true });
@@ -34,6 +34,7 @@ export default (config: Config) => {
       const { accountId } = res.locals;
       const { agentId } = req.params;
       const result = await AgentService.findOne({ agentId, accountId });
+      if (!result) throw new NotFoundError("Agent not found");
       return res.sendResponse({ data: result, status: 200 });
     } catch (error) {
       next(error);
