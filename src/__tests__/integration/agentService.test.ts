@@ -1,6 +1,7 @@
 import { initDb, resetDb, closeDb, createAccount, createAgent, createPost, agentBody, Post } from "../helpers/db";
 import { mockCronSchedule, mockOpenAICreate, providerError } from "../helpers/mocks";
 import AgentService from "../../services/AgentService";
+import AgentScheduler from "../../services/AgentScheduler";
 
 let accountId: string;
 beforeAll(initDb);
@@ -93,13 +94,13 @@ describe("AgentService.delete", () => {
   });
 });
 
-describe("AgentService.loadActive (server start)", () => {
+describe("AgentScheduler.loadActive (server start)", () => {
   test("schedules every enabled agent and skips disabled ones", async () => {
     const on = await createAgent(accountId, { postSettings: settings({ isEnabled: true, cronSchedule: "0 8 * * mon" }) });
     await createAgent(accountId, { postSettings: settings({ isEnabled: false }) });
     await createAgent(accountId, { postSettings: settings({ isEnabled: true, cronSchedule: "0 9 * * tue" }) });
 
-    await AgentService.loadActive();
+    await AgentScheduler.loadActive();
 
     expect(mockCronSchedule).toHaveBeenCalledTimes(2);
     expect(mockCronSchedule.mock.calls.map((c) => c[0]).sort()).toEqual(["0 8 * * mon", "0 9 * * tue"]);

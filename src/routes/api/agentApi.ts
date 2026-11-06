@@ -4,6 +4,7 @@
 
 import express from "express";
 import AgentService from "../../services/AgentService";
+import { writePost } from "../../agents/writePost";
 import PostService from "../../services/PostService";
 import { NotFoundError } from "../../utilities/expressError";
 import { Config } from "../../types/Config.type";
@@ -128,7 +129,7 @@ export default (config: Config) => {
       const { accountId } = account;
       const { agentId } = req.params;
       const { body: options } = req;
-      const post = await AgentService.writePost({ agentId, accountId, options });
+      const post = await writePost({ agentId, accountId, options });
       return res.sendResponse({status:201, data: post});
     } catch (error) {
       next(error);

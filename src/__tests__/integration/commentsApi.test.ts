@@ -1,8 +1,8 @@
 import { initDb, resetDb, closeDb, makeClient, createAccount, createAgent, createPost, Comment } from "../helpers/db";
-import AgentService from "../../services/AgentService";
+import * as agentReplies from "../../agents/replyToComment";
 
 const client = makeClient();
-const replySpy = jest.spyOn(AgentService, "replyToComment").mockResolvedValue(undefined as never);
+const replySpy = jest.spyOn(agentReplies, "replyToComment").mockResolvedValue(undefined as never);
 
 beforeAll(initDb);
 beforeEach(async () => {

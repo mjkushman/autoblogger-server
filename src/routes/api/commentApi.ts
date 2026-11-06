@@ -5,6 +5,7 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import CommentService from "../../services/CommentService";
 import AgentService from "../../services/AgentService";
+import { replyToComment } from "../../agents/replyToComment";
 import StatusService from "../../services/StatusService";
 import { BadRequestError } from "../../utilities/expressError";
 import { cleanText, looksLikeInjection } from "../../utilities/sanitizePrompt";
@@ -170,7 +171,7 @@ export default (config: Config) => {
       res.sendResponse({ status: 201, data: response });
 
       // The reply is written after the response is sent, and reports its outcome on the status
-      AgentService.replyToComment({ agent, comment, status });
+      replyToComment({ agent, comment, status });
     } catch (error) {
       return next(error);
     }

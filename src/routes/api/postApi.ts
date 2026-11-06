@@ -5,7 +5,7 @@
 import express from "express";
 import PostService from "../../services/PostService";
 import StatusService from "../../services/StatusService";
-import AgentService from "../../services/AgentService";
+import { writePost } from "../../agents/writePost";
 import { NotFoundError } from "../../utilities/expressError";
 import verifyAgentOwnership from "../../middleware/verifyAgentOwnership";
 import { Config } from "../../types/Config.type";
@@ -53,7 +53,7 @@ export default (config: Config) => {
     try {
       const { agentId, options } = req.body;
       console.log("about to generate");
-      const generatedPost = await AgentService.writePost({
+      const generatedPost = await writePost({
         agentId,
         accountId: res.locals.account.accountId,
         options,
