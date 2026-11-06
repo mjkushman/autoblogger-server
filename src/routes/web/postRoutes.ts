@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, Router } from "express";
 import PostService from "../../services/PostService";
 import { NotFoundError } from "../../utilities/expressError";
-import AgentService from "../../services/AgentService";
+import { writePost } from "../../agents/writePost";
 import { Post } from "../../types/Post.type";
 
 const router: Router = Router({ mergeParams: true });
@@ -59,7 +59,7 @@ const postRoutes = () => {
       try {
         const { agentId } = req.body;
         const { accountId } = res.locals;
-        const generatedPost = await AgentService.writePost({
+        const generatedPost = await writePost({
           agentId,
           accountId,
         });

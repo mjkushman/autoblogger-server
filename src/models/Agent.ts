@@ -19,7 +19,6 @@ class Agent extends Model {
   declare commentSettings: any;
   declare socialSettings: any;
   declare imageUrl: string;
-  declare authorBio: string;
 
   static associate?: (models: Models) => void;
 }
@@ -112,12 +111,6 @@ export default (sequelize: Sequelize) => {
         defaultValue: {
           isEnabled: true,
           maxWords: 100,
-          personality: null,
-        },
-        validate: {
-          hasValidPersonality(value) {
-            if (value.personality && typeof value.personality !== "string") throw new ValidationError("personality must be a valid string", []);
-          },
         },
       },
       socialSettings: {
@@ -145,7 +138,6 @@ export default (sequelize: Sequelize) => {
         defaultValue:
           "https://res.cloudinary.com/dsvtolrpi/image/upload/v1708534477/wcjwyet2dyaav8nl04ro.jpg",
       },
-      authorBio: { type: DataTypes.TEXT },
     },
     // model options
     {
@@ -157,15 +149,11 @@ export default (sequelize: Sequelize) => {
           const clean = sanitizeAgentInput({
             firstName: record.firstName,
             lastName: record.lastName,
-            authorBio: record.authorBio,
             postSettings: record.postSettings,
-            commentSettings: record.commentSettings,
           });
           if (record.firstName != null) record.firstName = clean.firstName;
           if (record.lastName != null) record.lastName = clean.lastName;
-          if (record.authorBio != null) record.authorBio = clean.authorBio;
           if (record.postSettings) record.postSettings = clean.postSettings;
-          if (record.commentSettings) record.commentSettings = clean.commentSettings;
         },
         beforeUpdate: async (record: any) => {
           // set the human readable schedule string

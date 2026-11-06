@@ -1,8 +1,8 @@
 import { initDb, resetDb, closeDb, makeClient, createAccount, createAgent, createPost, Comment } from "../helpers/db";
-import AgentService from "../../services/AgentService";
+import * as agentReplies from "../../agents/replyToComment";
 
 const client = makeClient();
-const replySpy = jest.spyOn(AgentService, "replyToComment").mockResolvedValue(undefined as never);
+const replySpy = jest.spyOn(agentReplies, "replyToComment").mockResolvedValue(undefined as never);
 
 beforeAll(initDb);
 beforeEach(async () => {
@@ -14,7 +14,7 @@ afterAll(closeDb);
 const base = "/api/v1/comments";
 
 /** An account with one agent and one post. Pass commentSettings to turn replies on. */
-const setup = async (commentSettings = { isEnabled: false, maxWords: 50, personality: null }) => {
+const setup = async (commentSettings = { isEnabled: false, maxWords: 50 }) => {
   const acct = await createAccount();
   const agent = await createAgent(acct.accountId, { commentSettings });
   const post: any = await createPost(acct.accountId, agent.agentId);
@@ -75,7 +75,7 @@ describe("POST /comments", () => {
   });
 
   describe("AI replies", () => {
-    const enabled = { isEnabled: true, maxWords: 50, personality: null };
+    const enabled = { isEnabled: true, maxWords: 50 };
 
     test("an agent with replies on gets a status and starts a reply", async () => {
       const { apiHeaders, post } = await setup(enabled);

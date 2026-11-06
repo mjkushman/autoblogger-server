@@ -167,9 +167,9 @@ describe("PATCH /agents/:id", () => {
     const a = await createAccount();
     const b = await createAccount();
     const agent = await createAgent(b.accountId);
-    const res = await client.patch(`${base}/${agent.agentId}`).set(a.apiHeaders).send({ ...patchBody(), authorBio: "hacked" });
+    const res = await client.patch(`${base}/${agent.agentId}`).set(a.apiHeaders).send({ ...patchBody(), lastName: "Hacked" });
     expect(res.status).toBe(404);
-    expect(((await Agent.findByPk(agent.agentId)) as any).authorBio).not.toBe("hacked");
+    expect(((await Agent.findByPk(agent.agentId)) as any).lastName).not.toBe("Hacked");
   });
 
   test("enabling schedules a task and disabling stops it", async () => {
@@ -184,10 +184,10 @@ describe("PATCH /agents/:id", () => {
     expect(mockCronSchedule).toHaveBeenCalledTimes(1); // no new task when disabled
   });
 
-  test("changing only the bio works", async () => {
+  test("changing only the last name works", async () => {
     const { apiHeaders, accountId } = await createAccount();
     const agent = await createAgent(accountId);
-    const res = await client.patch(`${base}/${agent.agentId}`).set(apiHeaders).send({ authorBio: "New bio" });
+    const res = await client.patch(`${base}/${agent.agentId}`).set(apiHeaders).send({ lastName: "Newname" });
     expect(res.status).toBe(200);
   });
 });

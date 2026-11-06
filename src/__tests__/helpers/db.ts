@@ -59,7 +59,6 @@ export const agentBody = (overrides: Record<string, any> = {}) => ({
   firstName: "Pawla",
   lastName: "Barker",
   email: "pawla@test.com",
-  authorBio: "A dog who loves long walks.",
   llm: { model: "gpt-5.4-mini", apiKey: "sk-agent-secret" },
   postSettings: {
     isEnabled: false,
@@ -70,7 +69,7 @@ export const agentBody = (overrides: Record<string, any> = {}) => ({
     personality: "cheerful and curious",
     bannedTopics: ["cats"],
   },
-  commentSettings: { isEnabled: false, maxWords: 50, personality: null },
+  commentSettings: { isEnabled: false, maxWords: 50 },
   ...overrides,
 });
 

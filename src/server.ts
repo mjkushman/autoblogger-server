@@ -5,7 +5,7 @@ import { Express } from "express";
 import createApp from "./app";
 import config from "./config";
 import { ready } from "./models";
-import AgentService from "./services/AgentService";
+import AgentScheduler from "./services/AgentScheduler";
 
 // CREATE THE APP
 
@@ -17,7 +17,7 @@ app.listen(config.PORT, function () {
 
 // Once the database is ready, schedule all active agent tasks
 ready
-  .then(() => AgentService.loadActive())
+  .then(() => AgentScheduler.loadActive())
   .catch((e) => console.log("Error loading active agents:", e));
 
 export default app;

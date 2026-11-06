@@ -144,9 +144,9 @@ describe("/agents (dashboard)", () => {
     const mine = await createAgent(a.accountId);
     const theirs = await createAgent(b.accountId);
     const { postSettings } = agentBody();
-    const ok = await client.patch("/agents").set(a.bearer).send({ agentId: mine.agentId, authorBio: "Updated", postSettings });
+    const ok = await client.patch("/agents").set(a.bearer).send({ agentId: mine.agentId, lastName: "Updated", postSettings });
     expect(ok.status).toBe(200);
-    const denied = await client.patch("/agents").set(a.bearer).send({ agentId: theirs.agentId, authorBio: "Hacked", postSettings });
+    const denied = await client.patch("/agents").set(a.bearer).send({ agentId: theirs.agentId, lastName: "Hacked", postSettings });
     expect(denied.status).toBe(404);
   });
 

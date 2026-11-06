@@ -1,6 +1,7 @@
-import { initDb, resetDb, closeDb, createAccount, createAgent, createPost, agentBody, Post } from "../helpers/db";
+import { initDb, resetDb, closeDb, createAccount, createAgent, createPost, agentBody, Post, Agent } from "../helpers/db";
 import { mockCronSchedule, mockOpenAICreate, providerError } from "../helpers/mocks";
 import AgentService from "../../services/AgentService";
+import AgentScheduler from "../../services/AgentScheduler";
 
 let accountId: string;
 beforeAll(initDb);
@@ -53,7 +54,7 @@ describe("AgentService.update", () => {
   test("settings that did not change leave the task alone", async () => {
     const agent: any = await AgentService.create({ accountId, body: agentBody({ postSettings: settings({ isEnabled: true }) }) });
     const task = lastTask();
-    await AgentService.update({ accountId, agentId: agent.agentId, body: { postSettings: settings({ isEnabled: true }), authorBio: "new bio" } });
+    await AgentService.update({ accountId, agentId: agent.agentId, body: { postSettings: settings({ isEnabled: true }), lastName: "Newname" } });
     expect(task.stop).not.toHaveBeenCalled();
     expect(mockCronSchedule).toHaveBeenCalledTimes(1);
   });
@@ -93,13 +94,13 @@ describe("AgentService.delete", () => {
   });
 });
 
-describe("AgentService.loadActive (server start)", () => {
+describe("AgentScheduler.loadActive (server start)", () => {
   test("schedules every enabled agent and skips disabled ones", async () => {
     const on = await createAgent(accountId, { postSettings: settings({ isEnabled: true, cronSchedule: "0 8 * * mon" }) });
     await createAgent(accountId, { postSettings: settings({ isEnabled: false }) });
     await createAgent(accountId, { postSettings: settings({ isEnabled: true, cronSchedule: "0 9 * * tue" }) });
 
-    await AgentService.loadActive();
+    await AgentScheduler.loadActive();
 
     expect(mockCronSchedule).toHaveBeenCalledTimes(2);
     expect(mockCronSchedule.mock.calls.map((c) => c[0]).sort()).toEqual(["0 8 * * mon", "0 9 * * tue"]);
@@ -132,6 +133,85 @@ describe("a scheduled run", () => {
     mockOpenAICreate.mockRejectedValue(providerError(429));
     await run().catch(() => {});
     expect(await Post.count()).toBe(0);
+  });
+
+  test("a failed run says which agent failed, and why", async () => {
+    const { agent, run } = await scheduleAndGetCallback();
+    const errors = console.error as jest.Mock;
+    errors.mockClear();
+    mockOpenAICreate.mockRejectedValue(providerError(429));
+    await run();
+    const logged = errors.mock.calls.find((c) => String(c[0]).startsWith("Scheduled post failed"));
+    expect(logged[0]).toContain(agent.username);
+    expect(logged[0]).toContain(agent.agentId);
+  });
+});
+
+describe("bring your own key: agents that would post with no key", () => {
+  const noKey = { model: "gpt-5.4-mini", apiKey: null };
+
+  test("creating an agent with posting on and no key is refused, and saves nothing", async () => {
+    await expect(AgentService.create({ accountId, body: agentBody({ llm: noKey, postSettings: settings({ isEnabled: true }) }) })).rejects.toMatchObject({
+      status: 400,
+      message: expect.stringMatching(/Add an API key/),
+    });
+    expect(await Agent.count()).toBe(0);
+    expect(mockCronSchedule).not.toHaveBeenCalled();
+  });
+
+  test("a blank key counts as no key", async () => {
+    await expect(
+      AgentService.create({ accountId, body: agentBody({ llm: { model: "gpt-5.4-mini", apiKey: "   " }, postSettings: settings({ isEnabled: true }) }) })
+    ).rejects.toMatchObject({ status: 400 });
+  });
+
+  test("an agent with no key can still be created while posting is off", async () => {
+    const agent: any = await AgentService.create({ accountId, body: agentBody({ llm: noKey, postSettings: settings({ isEnabled: false }) }) });
+    expect(agent.agentId).toBeTruthy();
+    expect(mockCronSchedule).not.toHaveBeenCalled();
+  });
+
+  test("turning posting on for an agent with no key is refused, and nothing changes", async () => {
+    const agent: any = await createAgent(accountId, { llm: noKey, postSettings: settings({ isEnabled: false }) });
+    await expect(AgentService.update({ accountId, agentId: agent.agentId, body: { postSettings: settings({ isEnabled: true }) } })).rejects.toMatchObject({ status: 400 });
+    expect(((await Agent.findByPk(agent.agentId)) as any).postSettings.isEnabled).toBe(false);
+    expect(mockCronSchedule).not.toHaveBeenCalled();
+  });
+
+  test("adding a key and turning posting on in the same update works", async () => {
+    const agent: any = await createAgent(accountId, { llm: noKey, postSettings: settings({ isEnabled: false }) });
+    await AgentService.update({
+      accountId,
+      agentId: agent.agentId,
+      body: { llm: { model: "gpt-5.4-mini", apiKey: "sk-new" }, postSettings: settings({ isEnabled: true }) },
+    });
+    expect(mockCronSchedule).toHaveBeenCalledTimes(1);
+  });
+
+  test("removing the key from an agent that is posting is refused", async () => {
+    const agent: any = await AgentService.create({ accountId, body: agentBody({ postSettings: settings({ isEnabled: true }) }) });
+    await expect(AgentService.update({ accountId, agentId: agent.agentId, body: { llm: noKey } })).rejects.toMatchObject({ status: 400 });
+    expect(((await Agent.findByPk(agent.agentId)) as any).llm.apiKey).toBe("sk-agent-secret");
+  });
+
+  test("an unrelated edit to an older agent that is already posting with no key still goes through", async () => {
+    const agent: any = await createAgent(accountId, { llm: noKey, postSettings: settings({ isEnabled: true }) });
+    await AgentService.update({ accountId, agentId: agent.agentId, body: { lastName: "Newname" } });
+    expect(((await Agent.findByPk(agent.agentId)) as any).lastName).toBe("Newname");
+  });
+
+  test("server start warns about each scheduled agent with no key, and still schedules it so adding a key later works", async () => {
+    const keyless = await createAgent(accountId, { llm: noKey, postSettings: settings({ isEnabled: true, cronSchedule: "0 8 * * mon" }) });
+    await createAgent(accountId, { postSettings: settings({ isEnabled: true, cronSchedule: "0 9 * * tue" }) });
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+    await AgentScheduler.loadActive();
+
+    expect(mockCronSchedule).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain(keyless.agentId);
+    expect(warn.mock.calls[0][0]).toMatch(/no API key/);
+    warn.mockRestore();
   });
 });
 
