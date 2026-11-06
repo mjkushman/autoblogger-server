@@ -3,11 +3,11 @@ import { Op } from "sequelize";
 import cron, { ScheduledTask } from "node-cron";
 import models from "../models";
 import { isDeepStrictEqual } from "util";
-import { BadRequestError, ExpressError, NotFoundError } from "../utilities/expressError";
+import { BadRequestError, NotFoundError } from "../utilities/expressError";
 import validatePostSettings from "../utilities/validatePostSettings";
-import getUnsplashImage from "../utilities/getUnsplashImage";
 import cronEncoder from "../utilities/cronEncoder";
-import { generatePost, generateText } from "../agents/generate";
+import { generateText } from "../agents/generate";
+import { postGraph } from "../agents/postGraph";
 import { cleanText } from "../utilities/sanitizePrompt";
 import PostService from "./PostService";
 import CommentService from "./CommentService";
@@ -296,49 +296,15 @@ ${commentText}
       maxWords: ${options.maxWords}
       topic: ${options.topic}`);
 
-    // If no topic is provided, decide one
-
-    console.log(`${agent.username} is about to create a topic`);
-    const topicBlock =
-      options.topic ??
-      (await this.#decideBlogTopic({ agent }));
-    console.log(`${agent.username}'s Blog topic: ${topicBlock}`);
-    console.dir(topicBlock);
-
-    // Invoke llm
+    // The agent decides a topic (unless one was given), writes the post, and finds an image
     console.log(`${agent.username} invoking ${agent.llm?.model}.`);
-    const response = await generatePost(agent, [
-      "Write a new article using the following outline and instructions.",
-      `OUTLINE:
-        ${topicBlock}`,
-      `INSTRUCTIONS:
-        1. Expand upon the topic until you reach ${options.maxWords} words.
-        2. Format your response according to the supplied JSON schema.
-        3. In the "content": field, be sure to write in markdown to make rendering easier later.`,
-    ]);
-    console.log(`${agent.username} received response from ${agent.llm?.model}.`);
-
-    // The model's JSON is not guaranteed to have what we asked for
-    if (typeof response?.title !== "string" || !response.title.trim() || typeof response?.content !== "string" || !response.content.trim()) {
-      throw new ExpressError("The AI returned an incomplete post. Please try again.", 502);
-    }
-
-    // Get a random image based on the post title
-    let imageUrl = "";
-    await getUnsplashImage(response.title).then(
-      (val) => {
-        imageUrl = val;
-      },
-      (err) => {
-        console.log("Error fetching image:", err);
-      }
-    );
+    const { title, content, imageUrl } = await postGraph.invoke({ agent, maxWords: options.maxWords, topic: options.topic });
 
     // Assemble the post for response
     const generatedPost = {
-      title: response.title,
-      content: response.content,
-      imageUrl: imageUrl || null, // no image (e.g. Unsplash unavailable) is fine
+      title,
+      content,
+      imageUrl,
       agentId: agent.agentId,
       authorId: agent.agentId,
       accountId: agent.accountId,
@@ -350,28 +316,6 @@ ${commentText}
   }
 
   // ===PRIVATE HELPER METHODS===
-
-  /** Asks LLM to decide on a new topic to write about, based on the author's bio and recent work.
-   * @returns Topic.: An outline of the next article to write when calling writePost
-   */
-  static async #decideBlogTopic({ agent }) {
-    console.log("entered #decideBlogTopic for agent:", agent.agentId);
-    const { agentId } = agent;
-    const titles = await PostService.findRecentTitles({
-      agentId: agentId,
-    });
-    const recentWork =
-      titles.length > 0 ? [
-        "Here are the titles of some of your recent work:",
-        ...titles.slice(0, 9),
-      ].join("\n - ") : "You havent written anything yet.";
-    console.log("resolved recentWork:", recentWork);
-    // The topic is a plain-text outline, not a post, so skip the post JSON schema
-    return await generateText(agent, [
-      recentWork,
-      "Given your author bio and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still adhere to your bio. For each section of the blog post, write a brief summary of the planned content.",
-    ]);
-  }
 
   /**
    * This function gets invoked when agent.postSettings have changed for any reason.
