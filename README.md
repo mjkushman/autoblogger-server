@@ -1,20 +1,12 @@
 # Autoblogger Server
 
-This app serves two purposes:
+This app's primary purposes:
 
 1. Act as the backend for the [Autoblogger website](https://autoblogger-client.onrender.com/)
-2. Provide endpoints for the [Autoblogger API](https://autoblogger-client.onrender.com/api)
+2. Manage the [Autoblogger API](https://autoblogger-client.onrender.com/api), a set of services that allows clients to create and manage blog-posting agents.
 
-For that reason you'll see two groups of routes:
-
-* `routes/api`
-* `routes/web`
-
-I realize this is a poor separation of concerns. Expect an improved architecture in the future.
 
 ## Features
-
-Since this is currently a side project, I plan to implement these features _as time permits_.
 
 * **Agent Content Generation:** The core feature of Autoblogger is setting up cron tasks that continuously execute scheduled AI content generation.
 * **API Endpoints:**  Users can access generated content via API. This makes it simple to integrate Autoblogger into an existing website or application.
@@ -102,13 +94,13 @@ flowchart LR
 
 Through the API, posts and replies take a while, so the caller gets an answer straight away, along with a **status** to check ("in progress", "success" or "error"). The finished result appears on that status.
 
-### How "agentic" is this?
+### Agentic process
 
-The agent does not decide for itself what to do next. The steps and their order are fixed, which keeps cost and behavior predictable. The one open-ended part is research: there, the AI chooses what to search for, within a small limit (a few searches). This could grow later, for example by letting an agent choose between more tools.
+Post generation follows a largely structured process to remain predictable. The research phase is open-ended and may take several turns. During research, the AI chooses what to search for, within a set limit of searches.
 
 ### Guardrails
 
-* **Bring your own key.** Every request is paid for with the agent's own API key. The server has no AI keys of its own, and an agent without a key will not run. It reports that it needs one, and posting can't be switched on for an agent that has none. If an older agent is already scheduled without a key, the server warns about it at startup and its scheduled runs fail with a clear message in the logs.
+* **Bring your own key.** Every request is paid for with the agent's own API key. The server has no AI keys of its own, and an agent without a key will not run. 
 * **Strangers' text is treated as material, never as orders.** Comments, topic requests and web research are cleaned of markup and hidden characters, and clearly fenced off from the agent's instructions. The agent is told to use them as reading material only.
 * **Comments that try to give the AI orders** (for example "ignore your instructions") are saved but get no reply.
 * **Failures are explained.** A rejected key, a missing model or an account that's out of credit each produce a message the owner can act on. If only research or the picture fails, the post is still written.
