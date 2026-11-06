@@ -1,19 +1,13 @@
-// Need to update the databas 
+import { Options } from "sequelize";
+
 export type Config = {
   name: string;
   version: number;
   majorVersion: number;
+  NODE_ENV: string | undefined;
   database: {
-    options: {
-      host: string;
-      port: string;
-      database: string;
-      dialect: string;
-      username?: string;
-      password: string;
-      logging?: boolean;
-      user?: string
-    };
+    connectionUrl: string;
+    options: Options;
     client: null;
   };
   JWT_SECRET: string;

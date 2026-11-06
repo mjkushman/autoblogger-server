@@ -68,8 +68,8 @@ export function requireAuth(_req: Request, res: Response, next: NextFunction) {
 }
 
 // Validate the API key and attached the retrieved account to the request
-export async function validateApiKey(req, res: Response, next: NextFunction) {
-  const providedApiKey = req.headers["X-API-KEY"] || req.headers["x-api-key"];
+export async function validateApiKey(req: Request, res: Response, next: NextFunction) {
+  const providedApiKey = req.header("x-api-key"); // header names are case-insensitive
 
   // If this is a dev environment, provide a dev account
   if (process.env.NODE_ENV === "development" && providedApiKey === "dev") {

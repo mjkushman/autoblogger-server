@@ -24,12 +24,13 @@ const createApp = (config): Express => {
 
   app.use("/", formatResponse, routes(config)); // All the routes
 
-  // New error handler
-  app.use(errorHandler);
   /** Handle 404 errors -- this matches everything */
-  app.use(function (req: Request, res: Response, next: NextFunction) {
+  app.use(function (_req: Request, _res: Response, next: NextFunction) {
     return next(new NotFoundError());
   });
+
+  // Must come last so it also catches the 404 above
+  app.use(errorHandler);
   return app;
 };
 

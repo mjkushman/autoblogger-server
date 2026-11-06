@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction, Router } from "express";
 import PostService from "../../services/PostService";
 import { NotFoundError } from "../../utilities/expressError";
-import { Post } from "@/types/Post.type";
-const AgentService = require("../../services/AgentService");
+import AgentService from "../../services/AgentService";
+import { Post } from "../../types/Post.type";
 
 const router: Router = Router({ mergeParams: true });
 

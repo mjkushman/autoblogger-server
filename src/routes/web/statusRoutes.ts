@@ -1,12 +1,6 @@
-import {
-  Request,
-  Response,
-  NextFunction,
-  Router,
-  RouterOptions,
-} from "express";
-const StatusService = require("../../services/StatusService");
-const { NotFoundError } = require("../../utilities/expressError");
+import { Request, Response, NextFunction, Router } from "express";
+import StatusService from "../../services/StatusService";
+import { NotFoundError } from "../../utilities/expressError";
 
 const router: Router = Router({ mergeParams: true });
 

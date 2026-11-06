@@ -6,4 +6,4 @@ const rateLimiter = rateLimit({
   message: "Too many requests, please wait a few minutes.",
 });
 
-module.exports = rateLimiter;
+export default rateLimiter;

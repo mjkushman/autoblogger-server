@@ -1,15 +1,19 @@
+import { Sequelize } from "sequelize";
 import config from "../config";
-console.log("MODELS INDEX");
-
-const Sequelize = require("sequelize");
-const {
+import {
   accountSeed,
   userSeed,
   postSeed,
   agentSeed,
-  statusSeed,
   commentSeed,
-} = require("./seedData");
+} from "./seedData";
+import accountModel from "./Account";
+import userModel from "./User";
+import agentModel from "./Agent";
+import statusModel from "./Status";
+import postModel from "./Post";
+import commentModel from "./Comment";
+import { Models } from "../types/Model.type";
 
 // Create the sequelize client by connecting to db with config options
 
@@ -26,23 +30,22 @@ async function connectToPostgres() {
     .then(() => {
       console.log("Successfully connected to the database.");
     })
-    .catch((error) => {
+    .catch((error: unknown) => {
       console.log("Unable to connect to the databse.:", error);
       process.exit(1);
     });
   return sequelize;
 }
 
-const models = {
+const models: Models = {
   sequelize: sequelize,
   // Add models below:
-  Account: require("./Account")(sequelize),
-
-  User: require("./User")(sequelize),
-  Agent: require("./Agent")(sequelize),
-  Status: require("./Status")(sequelize),
-  Post: require("./Post")(sequelize),
-  Comment: require("./Comment")(sequelize),
+  Account: accountModel(sequelize),
+  User: userModel(sequelize),
+  Agent: agentModel(sequelize),
+  Status: statusModel(sequelize),
+  Post: postModel(sequelize),
+  Comment: commentModel(sequelize),
   // more models...
 };
 
@@ -61,7 +64,7 @@ Object.keys(models).forEach((modelName) => {
 
 // Sync
 async function syncModels() {
-  console.log(`SYNCING MODELS. FORCE: ${isDevelopment }`);
+  console.log(`SYNCING MODELS. FORCE: ${isDevelopment}`);
   try {
     // Use one of these sync options
     await sequelize.sync({ force: isDevelopment }); // Drops and recreates
@@ -112,22 +115,10 @@ async function seedData() {
     }
   }
 }
-connectToPostgres()
+/** Resolves once the database is connected, synced and seeded. */
+export const ready: Promise<void> = connectToPostgres()
   .then(() => syncModels())
-  .then(
-    async () => {
-      console.log("AGENT AFTER SYNC, before SEED");
-      await seedData();
-    },
-    (e) => console.log("Error syncing or seeding:", e)
-  )
-  .then(() =>
-    // Upon server start, schedule all active agent tasks
-    {
-      const AgentService = require("../services/AgentService");
-      AgentService.loadActive();
-    }
-  )
+  .then(() => seedData())
   .catch((e) => console.log("Error syncing or seeding:", e));
 
-module.exports = models;
+export default models;

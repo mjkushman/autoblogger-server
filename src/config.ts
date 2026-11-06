@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import "colors";
+import { Config } from "./types/Config.type";
 
 const version = 1;
 const majorVersion = 1;
@@ -57,7 +58,7 @@ console.log(
 
 console.log("==============================");
 
-const config = {
+const config: Config = {
   name,
   version,
   majorVersion,
