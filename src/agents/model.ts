@@ -1,39 +1,40 @@
 import { ChatOpenAI, tools as openAITools } from "@langchain/openai";
 import { ChatAnthropic, tools as anthropicTools } from "@langchain/anthropic";
-import config from "../config";
-import { DEFAULT_MODEL, resolveModel, getProvider } from "../utilities/llmModels";
+import { BadRequestError } from "../utilities/expressError";
+import { resolveModel, getProvider } from "../utilities/llmModels";
 
 // Research should be light: a few searches at most
 const MAX_ANTHROPIC_SEARCHES = 3;
 
-/** Returns the LangChain chat model for this agent's selected model, using the agent's own API key */
+/**
+ * Returns the LangChain chat model for this agent's selected model.
+ * Autoblogger is bring-your-own-key: every call is paid for with the agent's own API key, never a key from the server.
+ */
 export const getChatModel = (agent) => {
   const provider = getProvider(agent.llm?.model);
-  const apiKey = agent.llm?.apiKey || undefined;
+  if (!provider) throw new Error(`Unsupported model: ${agent.llm?.model}`);
 
-  switch (provider) {
-    case "openai": {
-      const name = resolveModel(agent.llm?.model) || DEFAULT_MODEL;
-      // With no key, ChatOpenAI falls back to the OPENAI_API_KEY env var
-      return {
-        model: new ChatOpenAI({ model: name, apiKey }),
-        name,
-        providerName: "OpenAI",
-        strictSchema: true,
-        webSearch: openAITools.webSearch({ search_context_size: "low" }),
-      };
-    }
-    case "anthropic": {
-      const name = resolveModel(agent.llm?.model);
-      return {
-        model: new ChatAnthropic({ model: name, apiKey: apiKey ?? config.ANTHROPIC_KEY, maxTokens: 16000 }),
-        name,
-        providerName: "Anthropic",
-        strictSchema: false, // ChatAnthropic rejects `strict` with the jsonSchema method
-        webSearch: anthropicTools.webSearch_20250305({ maxUses: MAX_ANTHROPIC_SEARCHES }),
-      };
-    }
-    default:
-      throw new Error(`Unsupported model: ${agent.llm?.model}`);
+  const name = resolveModel(agent.llm?.model);
+  const providerName = provider === "openai" ? "OpenAI" : "Anthropic";
+  const apiKey = typeof agent.llm?.apiKey === "string" ? agent.llm.apiKey.trim() : "";
+  if (!apiKey) {
+    throw new BadRequestError(`This agent has no ${providerName} API key, so it can't write yet. Add your ${providerName} key in the agent's settings.`);
   }
+
+  if (provider === "openai") {
+    return {
+      model: new ChatOpenAI({ model: name, apiKey }),
+      name,
+      providerName,
+      strictSchema: true,
+      webSearch: openAITools.webSearch({ search_context_size: "low" }),
+    };
+  }
+  return {
+    model: new ChatAnthropic({ model: name, apiKey, maxTokens: 16000 }),
+    name,
+    providerName,
+    strictSchema: false, // ChatAnthropic rejects `strict` with the jsonSchema method
+    webSearch: anthropicTools.webSearch_20250305({ maxUses: MAX_ANTHROPIC_SEARCHES }),
+  };
 };

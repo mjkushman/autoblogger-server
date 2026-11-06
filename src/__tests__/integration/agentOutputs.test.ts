@@ -3,6 +3,7 @@ import {
   mockOpenAICreate,
   mockAnthropicCreate,
   mockAxiosGet,
+  mockResearch,
   fakePost,
 } from "../helpers/mocks";
 import { writePost } from "../../agents/writePost";
@@ -134,6 +135,17 @@ describe("writePost: who may run it", () => {
 
   test("an unknown agent gives 404", async () => {
     await expect(writePost({ agentId: "agt_nothing", accountId })).rejects.toMatchObject({ status: 404 });
+  });
+
+  test("an agent with no API key gives a 400 that says so, and never calls an LLM, even if the server has keys", async () => {
+    const agent = await createAgent(accountId, { llm: { model: "gpt-5.4-mini", apiKey: null } });
+    await expect(writePost({ agentId: agent.agentId, accountId, options: { topic: "x" } })).rejects.toMatchObject({
+      status: 400,
+      message: expect.stringMatching(/no OpenAI API key/),
+    });
+    expect(mockOpenAICreate).not.toHaveBeenCalled();
+    expect(mockResearch).not.toHaveBeenCalled();
+    expect(mockAxiosGet).not.toHaveBeenCalled();
   });
 
   test("a scheduled run (no accountId) still finds the agent", async () => {
@@ -295,6 +307,18 @@ describe("replyToComment: the background job", () => {
     expect(done.status).toBe("error");
     expect(done.result.message).toMatch(/rate limiting/);
     expect(await Comment.count({ where: { parentId: comment.commentId } })).toBe(0);
+  });
+
+  test("an agent with no API key reports why on the status and calls no LLM", async () => {
+    const { agent, comment, status } = await setup();
+    agent.llm = { model: "gpt-5.4-mini", apiKey: null };
+
+    await replyToComment({ agent, comment, status });
+
+    const done: any = await Status.findByPk(status.statusId);
+    expect(done.status).toBe("error");
+    expect(done.result.message).toMatch(/no OpenAI API key/);
+    expect(mockOpenAICreate).not.toHaveBeenCalled();
   });
 
   test("the reply is never longer than the comment limit allows", async () => {

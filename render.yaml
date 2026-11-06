@@ -14,9 +14,5 @@ services:
         sync: false # set the value in the Render dashboard
       - key: DATABASE_URL
         sync: false
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: ANTHROPIC_KEY
-        sync: false
       - key: UNSPLASH_CLIENT_ID
         sync: false

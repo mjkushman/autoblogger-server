@@ -3,7 +3,6 @@
 process.env.NODE_ENV = "test";
 process.env.JWT_SECRET = "test-jwt-secret";
 process.env.OPENAI_API_KEY = "sk-test-openai";
-process.env.ANTHROPIC_KEY = "sk-ant-test";
 process.env.UNSPLASH_CLIENT_ID = "test-unsplash";
 process.env.TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL || "postgresql://localhost:5432/autoblogger_test";

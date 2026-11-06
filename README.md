@@ -51,7 +51,9 @@ The server is written in TypeScript. `npm run build` compiles `src/` to `dist/`,
 
 ### Environment variables
 
-`NODE_ENV`, `PORT`, `JWT_SECRET`, `DATABASE_URL`, `OPENAI_API_KEY`, `ANTHROPIC_KEY`, `UNSPLASH_CLIENT_ID`.
+`NODE_ENV`, `PORT`, `JWT_SECRET`, `DATABASE_URL`, `UNSPLASH_CLIENT_ID`.
+
+There are no OpenAI or Anthropic keys here on purpose. Autoblogger is bring-your-own-key: each agent carries its own API key, and an agent without one will not run. (In development only, `OPENAI_API_KEY` is copied onto the seeded sample agents.)
 
 In `development` the database is dropped and re-created on every start (`sync({ force: true })`). Never point a development server at data you want to keep.
 

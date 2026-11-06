@@ -14,7 +14,6 @@ const name = "Autoblogger";
 const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = +process.env.PORT || 3001;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY;
 const UNSPLASH_CLIENT_ID = process.env.UNSPLASH_CLIENT_ID;
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -75,7 +74,6 @@ const config: Config = {
   PORT,
   BCRYPT_WORK_FACTOR,
   OPENAI_API_KEY,
-  ANTHROPIC_KEY,
   UNSPLASH_CLIENT_ID,
 };
 

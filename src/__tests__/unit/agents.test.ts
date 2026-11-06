@@ -30,11 +30,40 @@ describe("getChatModel: choosing a provider", () => {
     expect(mockOpenAIConstructor).not.toHaveBeenCalled();
   });
 
-  test("an agent with no key falls back to the server's key", () => {
-    getChatModel(claudeAgent(null, "claude-haiku-5-5"));
-    expect(mockAnthropicConstructor).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "sk-ant-test" }));
-    getChatModel(makeAgent({ llm: { model: "gpt-5.4", apiKey: "" } }));
-    expect(mockOpenAIConstructor).toHaveBeenCalledWith({ model: "gpt-5.4", apiKey: undefined }); // ChatOpenAI reads OPENAI_API_KEY itself
+  describe("bring your own key: an agent with no key does not run", () => {
+    const noKeys: [string, any][] = [
+      ["null", null],
+      ["empty", ""],
+      ["blank", "   "],
+      ["missing", undefined],
+    ];
+
+    test.each(noKeys)("OpenAI agent, key is %s", (_label, apiKey) => {
+      // OPENAI_API_KEY is set in the test environment, and must not be used
+      expect(process.env.OPENAI_API_KEY).toBeTruthy();
+      expect(() => getChatModel(makeAgent({ llm: { model: "gpt-5.4", apiKey } }))).toThrow(
+        expect.objectContaining({ status: 400, message: expect.stringMatching(/no OpenAI API key.*agent's settings/) })
+      );
+      expect(mockOpenAIConstructor).not.toHaveBeenCalled();
+    });
+
+    test.each(noKeys)("Anthropic agent, key is %s", (_label, apiKey) => {
+      expect(() => getChatModel(makeAgent({ llm: { model: "claude-haiku-5-5", apiKey } }))).toThrow(
+        expect.objectContaining({ status: 400, message: expect.stringMatching(/no Anthropic API key/) })
+      );
+      expect(mockAnthropicConstructor).not.toHaveBeenCalled();
+    });
+
+    test("an agent with no llm settings at all does not run", () => {
+      expect(() => getChatModel({ llm: undefined })).toThrow(/Unsupported model/);
+    });
+
+    test("a request for an agent with no key never reaches the provider", async () => {
+      await expect(generatePost(makeAgent({ llm: { model: "gpt-5.4", apiKey: null } }), ["x"])).rejects.toMatchObject({ status: 400 });
+      await expect(generateText(claudeAgent(null), ["x"])).rejects.toMatchObject({ status: 400 });
+      expect(mockOpenAICreate).not.toHaveBeenCalled();
+      expect(mockAnthropicCreate).not.toHaveBeenCalled();
+    });
   });
 
   test("legacy model names still work", () => {
