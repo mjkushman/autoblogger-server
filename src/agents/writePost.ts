@@ -28,7 +28,11 @@ export const writePost = async ({
 }) => {
   console.log(`${agentId} is starting writePost`);
   if (status) {
-    StatusService.updateInstance(status, { status: "in_progress" });
+    // Awaited, so this write lands before anything below can fail and the caller records an error on the same status.
+    // A status that can't be updated is not a reason to skip the post.
+    await StatusService.updateInstance(status, { status: "in_progress" }).catch((error) =>
+      console.error(`Couldn't mark status ${status.statusId} in_progress:`, error)
+    );
   }
 
   const { maxWords: requestedMaxWords, topic: requestedTopic = null } = options ?? {};

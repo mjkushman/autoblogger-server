@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import cron, { ScheduledTask } from "node-cron";
 import models from "../models";
 import { writePost } from "../agents/writePost";
+import { hasApiKey } from "../agents/model";
 import PostService from "./PostService";
 
 const { Agent } = models;
@@ -20,7 +21,13 @@ class AgentScheduler {
       },
     });
     for (const agent of agents) {
-      if (agent.postSettings.isEnabled) this.setBlogTask(agent);
+      if (agent.postSettings.isEnabled) {
+        this.setBlogTask(agent);
+        // Agents can't borrow the server's keys, so one with no key of its own fails every scheduled run. Say so at startup.
+        if (!hasApiKey(agent)) {
+          console.warn(`WARNING: ${agent.username} (${agent.agentId}) is scheduled to post but has no API key, so every scheduled run will fail until one is added.`);
+        }
+      }
       if (agent.socialSettings.isEnabled) this.setSocialTask(agent);
       console.log(`LOADED ACTIVE AGENT: ${agent.username}`);
     }
@@ -53,7 +60,7 @@ class AgentScheduler {
           await PostService.create(generatedPost);
           console.log("Completed scheduled blog task");
         } catch (error) {
-          console.error(`Scheduled post failed for ${agentId}:`, error);
+          console.error(`Scheduled post failed for ${agent.username} (${agentId}):`, error);
         }
       },
       { timezone, name: agentId }

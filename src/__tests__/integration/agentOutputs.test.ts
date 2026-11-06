@@ -177,12 +177,56 @@ describe("writePost: who may run it", () => {
 });
 
 describe("writePost: status and failures", () => {
-  test("marks the status in_progress when it starts", async () => {
+  test("marks the status in_progress when it starts, and the write has finished by the time writePost returns", async () => {
     const agent = await createAgent(accountId);
     const status: any = await StatusService.create("post");
+    await StatusService.updateInstance(status, { status: "new_request" });
     await writePost({ agentId: agent.agentId, accountId, options: { topic: "x" }, status });
-    await new Promise((r) => setTimeout(r, 50));
     expect(((await Status.findByPk(status.statusId)) as any).status).toBe("in_progress");
+  });
+
+  test("an early failure can't be overwritten by a late in_progress write", async () => {
+    const agent = await createAgent(accountId);
+    const status: any = await StatusService.create("post");
+    await StatusService.updateInstance(status, { status: "new_request" });
+
+    // Make the in_progress write slow, the way a busy database would. Every later write is instant.
+    const save = StatusService.updateInstance.bind(StatusService);
+    let isFirst = true;
+    const spy = jest.spyOn(StatusService, "updateInstance").mockImplementation(async (instance, data) => {
+      if (isFirst) {
+        isFirst = false;
+        await new Promise((r) => setTimeout(r, 40));
+      }
+      return save(instance, data);
+    });
+
+    try {
+      // Fails on the maxWords check, straight after the in_progress write
+      await expect(writePost({ agentId: agent.agentId, accountId, options: { maxWords: 0 }, status })).rejects.toMatchObject({ status: 400 });
+      // The caller then records the failure, as the routes do
+      await StatusService.updateInstance(status, { status: "error", result: "Unable to generate" });
+      await new Promise((r) => setTimeout(r, 80)); // time for any stray write to land
+      expect(((await Status.findByPk(status.statusId)) as any).status).toBe("error");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  test("a status that can't be updated does not stop the post, or crash with an unhandled rejection", async () => {
+    const agent = await createAgent(accountId);
+    const status: any = await StatusService.create("post");
+    const spy = jest.spyOn(StatusService, "updateInstance").mockRejectedValueOnce(new Error("db down"));
+    const unhandled = jest.fn();
+    process.on("unhandledRejection", unhandled);
+    try {
+      await expect(writePost({ agentId: agent.agentId, accountId, options: { topic: "x" }, status })).resolves.toMatchObject({ title: fakePost.title });
+      await new Promise((r) => setTimeout(r, 50));
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off("unhandledRejection", unhandled);
+      spy.mockRestore();
+    }
   });
 
   test("an LLM failure surfaces as a 400 with a useful message", async () => {

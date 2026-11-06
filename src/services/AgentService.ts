@@ -5,15 +5,19 @@ import models from "../models";
 import { BadRequestError, NotFoundError } from "../utilities/expressError";
 import validatePostSettings from "../utilities/validatePostSettings";
 import cronEncoder from "../utilities/cronEncoder";
+import { hasApiKey } from "../agents/model";
 import AgentScheduler from "./AgentScheduler";
 
 const { Agent, Post } = models;
+
+const NO_KEY_TO_POST = "Add an API key for this agent before turning on posting. Autoblogger uses your own key to write posts.";
 
 class AgentService {
   static async create({ accountId, body }) {
     console.log(`AgentService: CREATE agent for accountId: ${accountId}`);
 
     if (!validatePostSettings(body.postSettings)) throw new BadRequestError("Invalid post settings");
+    if (body.postSettings.isEnabled && !hasApiKey(body)) throw new BadRequestError(NO_KEY_TO_POST);
     const cronSchedule = cronEncoder({
       time: body.postSettings.time,
       daysOfWeek: body.postSettings.daysOfWeek,
@@ -61,6 +65,13 @@ class AgentService {
 
     // An agent can't be handed to another account or renamed by id
     const { accountId: _accountId, agentId: _agentId, ...changes } = body;
+
+    // Autoblogger is bring-your-own-key, so a scheduled agent with no key would fail on every run, out of sight.
+    // Only checked when the update touches the schedule or the key, so unrelated edits to an older agent still go through.
+    if (changes.postSettings || changes.llm) {
+      const willPost = changes.postSettings ? changes.postSettings.isEnabled : agent.postSettings?.isEnabled;
+      if (willPost && !hasApiKey({ llm: changes.llm ?? agent.llm })) throw new BadRequestError(NO_KEY_TO_POST);
+    }
 
     // New post settings need a fresh schedule. Updates that don't touch them skip this.
     if (changes.postSettings) {
