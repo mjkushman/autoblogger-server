@@ -122,7 +122,7 @@ Agent behavior is built with [LangChain](https://docs.langchain.com/oss/javascri
 | Start a post, with checks on the request | `src/agents/writePost.ts` |
 | Reply to a comment | `src/agents/replyToComment.ts` |
 | Choose OpenAI or Anthropic, and apply the agent's key | `src/agents/model.ts` |
-| The agent's voice and rules (the "system prompt") | `src/agents/persona.ts` |
+| Everything the agents say to the AI: the voice and rules (the "system prompt"), and the wording for each step. [Read this first if you want to change what an agent says.](src/agents/prompts/README.md) | `src/agents/prompts/` |
 | Turn provider errors into plain messages | `src/agents/errors.ts` |
 | Create, edit and delete agents | `src/services/AgentService.ts` |
 | The schedule that triggers posts | `src/services/AgentScheduler.ts` |

@@ -4,7 +4,7 @@
 //  1. strip what is used to hide or fake structure (invisible characters, tags, role headers)
 //  2. cap lengths
 //  3. reject wording that is plainly an attempt to override the AI's instructions
-// Prompts also wrap user text in labelled tags and tell the model to treat it as data (see agents/persona.ts).
+// Prompts also wrap user text in labelled tags and tell the model to treat it as data (see agents/prompts/).
 import { BadRequestError } from "./expressError";
 
 // Control, zero-width and bidi characters: used to smuggle text a human reviewer can't see

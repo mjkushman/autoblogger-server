@@ -3,6 +3,7 @@ import { cleanText } from "../utilities/sanitizePrompt";
 import CommentService from "../services/CommentService";
 import StatusService from "../services/StatusService";
 import { generateText } from "./generate";
+import { replyToCommentPrompts } from "./prompts/replyToComment";
 
 const { Post } = models;
 
@@ -21,19 +22,7 @@ export const generateComment = async ({ agent, comment, post }) => {
   const author = cleanText(comment.authorName, { maxLength: 50 });
   const commentText = cleanText(comment.content, { maxLength: 1000 });
 
-  const prompt = `A reader commented on one of your blog posts. Write a short, thoughtful reply of at most ${maxWords} words, in your own voice and in the first person. Engage with what they actually said. Use plain text with no title or headings, and address them by name only if it feels natural.
-
-<post>
-Title: ${title}
-
-${postText}
-</post>
-
-<comment author="${author}">
-${commentText}
-</comment>`;
-
-  const reply = await generateText(agent, [prompt]);
+  const reply = await generateText(agent, replyToCommentPrompts({ maxWords, title, postText, author, commentText }));
   return String(reply).trim().replace(/^["“]|["”]$/g, "");
 };
 

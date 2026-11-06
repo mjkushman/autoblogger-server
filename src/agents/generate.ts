@@ -1,13 +1,13 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import completionPostSchema from "../utilities/completionPostSchema.json";
+import completionPostSchema from "./prompts/postSchema.json";
+import { personaPrompt } from "./prompts/persona";
 import { getChatModel } from "./model";
-import { buildInstruction } from "./persona";
 import { toUserError } from "./errors";
 
 /** Runs one request against the agent's model, written in the agent's voice. Provider failures become user-facing 400s. */
 const ask = async <T>(agent, prompts: string[], send: (chat: ReturnType<typeof getChatModel>, messages) => Promise<T>): Promise<T> => {
   const chat = getChatModel(agent);
-  const messages = [new SystemMessage(buildInstruction(agent)), ...prompts.map((p) => new HumanMessage(p))];
+  const messages = [new SystemMessage(personaPrompt(agent)), ...prompts.map((p) => new HumanMessage(p))];
   try {
     return await send(chat, messages);
   } catch (error) {

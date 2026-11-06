@@ -1,7 +1,7 @@
-import { cleanText } from "../utilities/sanitizePrompt";
+import { cleanText } from "../../utilities/sanitizePrompt";
 
 /** The system prompt that makes the model write as this agent */
-export const buildInstruction = (agent): string => {
+export const personaPrompt = (agent): string => {
   // Clean again here: agents saved before sanitizing existed may hold unclean text
   const personality = cleanText(agent.postSettings?.personality);
   const bannedTopics = (agent.postSettings?.bannedTopics ?? []).map((t) => cleanText(t, { maxLength: 50 })).filter(Boolean);
