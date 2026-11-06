@@ -7,8 +7,6 @@ const {
   userSeed,
   postSeed,
   agentSeed,
-  statusSeed,
-  commentSeed,
 } = require("./seedData");
 
 // Create the sequelize client by connecting to db with config options
@@ -81,7 +79,9 @@ async function seedData() {
     try {
       // Seed Accounts
       for (const account of accountSeed) {
-        await models.Account.upsert(account); // upsert: update if exists, otherwise insert
+        // upsert skips the model's hashing hook, so hash the password here or login can never match it
+        const password = await require("bcrypt").hash(account.password, 10);
+        await models.Account.upsert({ ...account, password }); // upsert: update if exists, otherwise insert
       }
       console.log("Upserted seed data for accounts.");
 
@@ -102,11 +102,6 @@ async function seedData() {
         await models.Post.upsert(post);
       }
       console.log("Upserted seed data for posts.");
-      // Seed Comments
-      for (const comment of commentSeed) {
-        await models.Comment.upsert(comment);
-      }
-      console.log("Upserted seed data for comments.");
     } catch (error) {
       console.log("Error seeding:", error);
     }
