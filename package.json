@@ -27,7 +27,7 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/dist/",
-      "/.claude/"
+      "<rootDir>/.claude/"
     ],
     "modulePathIgnorePatterns": [
       "<rootDir>/.claude/",
