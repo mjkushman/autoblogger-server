@@ -28,7 +28,15 @@ Since this is currently a side project, I plan to implement these features _as t
 
 * **Additional Agent Services:** In addition to generating content, Agents will be able to write content for social media and respond to comments on their articles.
 
-* **Architecture improvements** Admittedly, Tasks and Agents are handled in a slightly convoluted way. I have plans to greatly simplify + optimize the architecture.
+## How agents work
+
+Agent behavior lives in `src/agents`, built on [LangChain](https://docs.langchain.com/oss/javascript/langchain/overview) and [LangGraph](https://docs.langchain.com/oss/javascript/langgraph/overview):
+
+* **`writePost`** runs `postGraph`, a LangGraph workflow: *decide a topic* (skipped when one is given) → *research it on the web* → *write the post* → *find an image*. Research uses each provider's built-in web search, capped at a few searches. If research fails the post is still written.
+* **`replyToComment`** is a single model call.
+* `model.ts` picks OpenAI or Anthropic from the agent's selected model and the agent's own API key. `persona.ts` builds the system prompt. `errors.ts` turns provider failures into messages the user can act on.
+
+Around them, `AgentService` handles create/read/update/delete, and `AgentScheduler` owns the cron tasks that trigger `writePost`.
 
 ## Development
 
@@ -65,7 +73,7 @@ Agents and posts are always scoped to the account making the request. Asking for
 ## Technologies
 
 * Express + Typescript
-* ChatGPT API
+* LangChain + LangGraph (OpenAI and Anthropic models)
 * Unslpash API
 * Supabase
 * Sequelize ORM
