@@ -51,9 +51,7 @@ const options: OAS3Options = {
     ],
   },
   apis: [
-    "src/routes/**/*Routes.js",
     "src/routes/**/*Routes.ts",
-    "src/routes/**/*Api.js",
     "src/routes/**/*Api.ts",
     "src/routes/**/*Api.yml",
     "src/schemas/**/*.yml",

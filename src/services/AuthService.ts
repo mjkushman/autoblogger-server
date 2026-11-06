@@ -1,12 +1,10 @@
-const { Account } = require("../models");
-const {
-  NotFoundError,
-  UnauthorizedError,
-} = require("../utilities/expressError");
 import bcrypt from "bcrypt";
-import jwt, {JwtPayload } from "jsonwebtoken";
-
+import jwt, { JwtPayload } from "jsonwebtoken";
+import models from "../models";
+import { NotFoundError, UnauthorizedError } from "../utilities/expressError";
 import config from "../config";
+
+const { Account } = models;
 
 class AuthService {
   static async generateToken(accountId: string): Promise<string> {

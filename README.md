@@ -39,6 +39,29 @@ Since this is currently a side project, I plan to implement these features _as t
 
 The application will be available at `http://localhost:3001/`.
 
+The server is written in TypeScript. `npm run build` compiles `src/` to `dist/`, and `npm start` runs the compiled server.
+
+### Environment variables
+
+`NODE_ENV`, `PORT`, `JWT_SECRET`, `DATABASE_URL`, `OPENAI_API_KEY`, `ANTHROPIC_KEY`, `UNSPLASH_CLIENT_ID`.
+
+In `development` the database is dropped and re-created on every start (`sync({ force: true })`). Never point a development server at data you want to keep.
+
+### Deploying to Render
+
+`render.yaml` describes the service. Secrets are set in the Render dashboard.
+
+## API responses
+
+Every response uses the same shape: `{ "status": 200, "message": "Success", "data": ... }`. Errors return `{ "status": "Error", "message": "..." }` with the matching HTTP status code.
+
+Two kinds of credentials are used:
+
+* **API key** (`X-API-KEY` header): used by `/api/v1/*`. Treat it like a password. It can create and delete agents and posts for the account, so don't ship it in a public website unless you accept that.
+* **Account token** (`Authorization: Bearer <jwt>`): used by the dashboard routes (`/accounts`, `/agents`, `/auth`, `/posts`).
+
+Agents and posts are always scoped to the account making the request. Asking for another account's agent returns `404`.
+
 ## Technologies
 
 * Express + Typescript

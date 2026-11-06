@@ -8,14 +8,14 @@ export type DefaultResponseBody = {
 
 declare global {
   namespace Express {
-    interface Request {
-      locals?: {
-        account?: any; // TODO: Update this to the Account model
-      };
-    }
-
     interface Response<ResBody = DefaultResponseBody> {
       send: (body: ResBody) => this;
+      /** Added by the responseHandler middleware. Sends { status, message, data } as JSON. */
+      sendResponse: (response: {
+        data: any;
+        status?: number;
+        message?: string;
+      }) => void;
     }
   }
 }

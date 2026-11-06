@@ -68,8 +68,8 @@ export function requireAuth(_req: Request, res: Response, next: NextFunction) {
 }
 
 // Validate the API key and attached the retrieved account to the request
-export async function validateApiKey(req, res: Response, next: NextFunction) {
-  const providedApiKey = req.headers["X-API-KEY"] || req.headers["x-api-key"];
+export async function validateApiKey(req: Request, res: Response, next: NextFunction) {
+  const providedApiKey = req.header("x-api-key"); // header names are case-insensitive
 
   // If this is a dev environment, provide a dev account
   if (process.env.NODE_ENV === "development" && providedApiKey === "dev") {
@@ -105,7 +105,6 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
     if (!account) {
       throw new NotFoundError("Invalid api key");
     }
-    console.log("account returned from lookup:", account);
 
     // Make sure the provided key matches account key
     const isValid = providedApiKey === account.apiKey;
@@ -117,8 +116,6 @@ export async function validateApiKey(req, res: Response, next: NextFunction) {
       //   console.log(`CACHED!:`, developer)
 
       // This must is a valid developer
-      console.log("storing account in res.locals.account");
-      console.dir(account);
       res.locals.account = account;
       res.locals.isAuthorized = true;
 

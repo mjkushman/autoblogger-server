@@ -1,0 +1,141 @@
+"use strict";
+
+// Routes for creating and utilizing AI authors
+
+import express from "express";
+import AgentService from "../../services/AgentService";
+import PostService from "../../services/PostService";
+import { NotFoundError } from "../../utilities/expressError";
+import { Config } from "../../types/Config.type";
+
+const router = express.Router({ mergeParams: true });
+
+/** Public API responses must never include the agent's LLM API key */
+const withoutApiKey = (agent) => {
+  if (!agent) return agent;
+  const { llm, ...rest } = agent.toJSON ? agent.toJSON() : agent;
+  return { ...rest, llm: { ...llm, apiKey: undefined } };
+};
+
+export default (config: Config) => {
+  /** GET returns a list of all agents for an account
+   *
+   */
+  router.get("/", async function (req, res, next) {
+    try {
+      const { accountId } = res.locals.account;
+      const agents = await AgentService.findAll({ accountId });
+      return res.sendResponse({status:200, data: agents.map(withoutApiKey)});
+    } catch (error) {
+      next(error);
+    }
+  });
+  /** GET returns one agent for an account
+   *
+   */
+  router.get("/:agentId", async function (req, res, next) {
+    try {
+      const { accountId } = res.locals.account;
+      const { agentId } = req.params;
+      const agent = await AgentService.findOne({ agentId, accountId });
+      return res.sendResponse({status:200, data: withoutApiKey(agent)});
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Mostly just used to test the service for getting titles.
+  router.get("/:agentId/titles", async function (req, res, next) {
+    try {
+      const { accountId } = res.locals.account;
+      const { agentId } = req.params;
+      const agent = await AgentService.findOne({ accountId, agentId });
+      if (!agent) throw new NotFoundError("Unable to find agent");
+      const titles = await PostService.findRecentTitles({
+        agentId: agent.agentId,
+      });
+      return res.sendResponse({status:200, data: titles});
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  /** Creates a new AI Agent.
+   *
+   * Expects the request to have necessary information to create a new author
+   */
+  router.post("/", async function (req, res, next) {
+    try {
+      const { body } = req;
+      const { account } = res.locals;
+      const { accountId } = account;
+      const agent = await AgentService.create({ body, accountId });
+      return res.sendResponse({status:201, data: withoutApiKey(agent)});
+    } catch (error) {
+      next(error);
+    }
+
+    // if newBlogger.active == true
+    // newBlogger.activate() ==> uses node cron to start a task based on the current settings, defined in model
+  });
+
+  /** Update settings to the agent
+   * @param :agentId determines which agent they want to update
+   * Middleware should verify that orgId in the user's token matches the orgId of the agent they want to update.
+   *
+   *
+   */
+  router.patch("/:agentId", async function (req, res, next) {
+    try {
+      // Verify that the agent being updated belongs to the same org as the user making the update
+      const { body } = req;
+      const { account } = res.locals;
+      const { accountId } = account;
+      const { agentId } = req.params;
+      const result = await AgentService.update({ accountId, agentId, body });
+      return res.sendResponse({status:200, data: withoutApiKey(result)});
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // convenience method for easy activation / deactivation
+  /** Delete this agent entirely */
+  router.delete("/:agentId", async function (req, res, next) {
+    try {
+      const { account } = res.locals;
+      const { accountId } = account;
+      const { agentId } = req.params;
+      const result = await AgentService.delete({ accountId, agentId });
+      return res.sendResponse({status:200, data: result});
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // DEPRECATE THIS METHOD
+  // Instead, hit /post with agentid in payload to have that agent invoke writePost
+
+  /** Manually trigger agent to create a new blog post
+   * @Param options exptects a JSON object { maxWords, topic,
+   * }
+   */
+  router.post("/:agentId/post", async function (req, res, next) {
+    console.log("AGENT POST request received");
+    try {
+      const { account } = res.locals;
+      const { accountId } = account;
+      const { agentId } = req.params;
+      const { body: options } = req;
+      const post = await AgentService.writePost({ agentId, accountId, options });
+      return res.sendResponse({status:201, data: post});
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  /** Manually create a new social post */
+  // router.post("/:agentId/social", async function (req, res, next) {});
+
+  return router;
+};
