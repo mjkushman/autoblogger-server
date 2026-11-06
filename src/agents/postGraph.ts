@@ -2,13 +2,17 @@ import { Annotation, StateGraph, START, END } from "@langchain/langgraph";
 import PostService from "../services/PostService";
 import getUnsplashImage from "../utilities/getUnsplashImage";
 import { ExpressError } from "../utilities/expressError";
-import { generatePost, generateText } from "./generate";
+import { cleanText } from "../utilities/sanitizePrompt";
+import { generatePost, generateText, generateWithWebSearch } from "./generate";
+
+const MAX_NOTES_LENGTH = 6000;
 
 // What the graph passes from step to step
 const PostState = Annotation.Root({
   agent: Annotation<any>,
   maxWords: Annotation<number>,
   topic: Annotation<string | null>, // an outline: given by the caller, or chosen by decideTopic
+  notes: Annotation<string>, // what research found; empty if it found nothing
   title: Annotation<string>,
   content: Annotation<string>,
   imageUrl: Annotation<string | null>,
@@ -31,12 +35,41 @@ const decideTopic = async ({ agent }: State) => {
   return { topic };
 };
 
-/** The agent writes the post from the outline */
-const writePost = async ({ agent, topic, maxWords }: State) => {
+/**
+ * The agent lightly researches the outline on the web. The provider runs the searches itself, capped at a few.
+ * Research only improves the post, so if it fails the post is written without notes.
+ */
+const research = async ({ agent, topic }: State) => {
+  try {
+    const notes = await generateWithWebSearch(agent, [
+      `You're about to write a blog post from this outline:
+
+${topic}
+
+Do some light research first: a few searches at most. Then reply with brief notes in plain text: 3 to 5 accurate, current facts, figures or quotes worth using, each with the name of its source. No introduction and no draft of the post.`,
+    ]);
+    // Web pages are untrusted text, so clean the notes like anything else a stranger wrote
+    return { notes: cleanText(notes, { maxLength: MAX_NOTES_LENGTH }) };
+  } catch (error) {
+    console.error(`${agent.username} couldn't research its topic:`, error);
+    return { notes: "" };
+  }
+};
+
+/** The agent writes the post from the outline, and the research notes if it has any */
+const writePost = async ({ agent, topic, notes, maxWords }: State) => {
   const post = await generatePost(agent, [
     "Write a new article using the following outline and instructions.",
     `OUTLINE:
         ${topic}`,
+    ...(notes
+      ? [
+          `RESEARCH NOTES (background from the web: use what helps, in your own words):
+<research>
+${notes}
+</research>`,
+        ]
+      : []),
     `INSTRUCTIONS:
         1. Expand upon the topic until you reach ${maxWords} words.
         2. Format your response according to the supplied JSON schema.
@@ -60,13 +93,15 @@ const fetchImage = async ({ title }: State) => {
   }
 };
 
-/** decideTopic (skipped when a topic is given) → writePost → fetchImage */
+/** decideTopic (skipped when a topic is given) → research → writePost → fetchImage */
 export const postGraph = new StateGraph(PostState)
   .addNode("decideTopic", decideTopic)
+  .addNode("research", research)
   .addNode("writePost", writePost)
   .addNode("fetchImage", fetchImage)
-  .addConditionalEdges(START, ({ topic }) => (topic ? "writePost" : "decideTopic"), ["decideTopic", "writePost"])
-  .addEdge("decideTopic", "writePost")
+  .addConditionalEdges(START, ({ topic }) => (topic ? "research" : "decideTopic"), ["decideTopic", "research"])
+  .addEdge("decideTopic", "research")
+  .addEdge("research", "writePost")
   .addEdge("writePost", "fetchImage")
   .addEdge("fetchImage", END)
   .compile();

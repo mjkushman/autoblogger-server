@@ -17,7 +17,12 @@ const fakeChatModel = (jest: any, name: string, send: (opts, messages, structure
       require("./mocks")[`mock${name}Constructor`](opts);
       this.opts = opts;
     }
-    async invoke(messages) {
+    async invoke(messages, options?) {
+      // A call that lets the provider search the web is research: it goes to its own fake
+      if (options?.tools) {
+        const m = require("./mocks");
+        return { text: await m.mockResearch({ provider: name, model: this.opts.model, messages: messages.map((x) => ({ role: asRole(x), content: x.content })), tools: options.tools }) };
+      }
       return { text: await send(this.opts, messages, false) };
     }
     withStructuredOutput(schema, options) {
@@ -30,6 +35,7 @@ const fakeChatModel = (jest: any, name: string, send: (opts, messages, structure
 const asRole = (message) => (message.type === "human" ? "user" : message.type === "ai" ? "assistant" : message.type);
 
 jest.mock("@langchain/openai", () => ({
+  tools: { webSearch: (options) => ({ type: "web_search", ...options }) },
   ChatOpenAI: fakeChatModel(jest, "OpenAI", async (opts, messages, structured) => {
     const reply = await require("./mocks").mockOpenAICreate({
       model: opts.model,
@@ -41,6 +47,7 @@ jest.mock("@langchain/openai", () => ({
 }));
 
 jest.mock("@langchain/anthropic", () => ({
+  tools: { webSearch_20250305: (options) => ({ type: "web_search_20250305", ...options }) },
   ChatAnthropic: fakeChatModel(jest, "Anthropic", async (opts, messages, structured) => {
     const reply = await require("./mocks").mockAnthropicCreate({
       model: opts.model,
