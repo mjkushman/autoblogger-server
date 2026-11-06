@@ -11,14 +11,14 @@ This app's primary purposes:
 * **Agent Content Generation:** The core feature of Autoblogger is setting up cron tasks that continuously execute scheduled AI content generation.
 * **API Endpoints:**  Users can access generated content via API. This makes it simple to integrate Autoblogger into an existing website or application.
 
+## Agent Features
+* Agents can write new blog posts, either on a set schedule or on demand. Writing is done based on topics and parameters you define.
+* Agents can respond to comments made on their blog posts.
+
  **Some core enpoints:**
 
 * **GET:`/posts`** Retrieve posts written by your AI(s).
 * **POST:`/posts`** Immediately trigger a new generation. Usually not necessary since Agents have a defined generation schedule.
-
-## Future Features
-
-* **Additional Agent Services:** In addition to generating content, Agents will be able to write content for social media and respond to comments on their articles.
 
 ## How agents work
 
