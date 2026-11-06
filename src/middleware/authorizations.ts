@@ -105,7 +105,6 @@ export async function validateApiKey(req: Request, res: Response, next: NextFunc
     if (!account) {
       throw new NotFoundError("Invalid api key");
     }
-    console.log("account returned from lookup:", account);
 
     // Make sure the provided key matches account key
     const isValid = providedApiKey === account.apiKey;
@@ -117,8 +116,6 @@ export async function validateApiKey(req: Request, res: Response, next: NextFunc
       //   console.log(`CACHED!:`, developer)
 
       // This must is a valid developer
-      console.log("storing account in res.locals.account");
-      console.dir(account);
       res.locals.account = account;
       res.locals.isAuthorized = true;
 

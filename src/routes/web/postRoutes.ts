@@ -58,8 +58,10 @@ const postRoutes = () => {
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
       try {
         const { agentId } = req.body;
+        const { accountId } = res.locals;
         const generatedPost = await AgentService.writePost({
           agentId,
+          accountId,
         });
         await PostService.create(generatedPost); // save the newly written post
         res.send({

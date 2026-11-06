@@ -143,8 +143,9 @@ class AgentService {
       body.postSettings.cronSchedule = cronSchedule;
       console.log("Attempting update with body: ", body);
 
-      await agent.update(body);
-      await agent.save(); // trigger the beforeUpdate hook
+      // An agent can't be handed to another account or renamed by id
+      const { accountId: _accountId, agentId: _agentId, ...changes } = body;
+      await agent.update(changes); // triggers the beforeUpdate hook
 
       const newPostSettings = agent.postSettings;
       const newSocialSettings = agent.socialSettings;
@@ -255,7 +256,7 @@ ${commentText}
    * @param maxWords The maximum wordcount in the returned blog post
    * @returns a blog in string formatted HTML
    */
-  static async writePost({ agentId, options, status }: { agentId: string; options?: { maxWords?: number; topic?: string | null }; status?: any }) {
+  static async writePost({ agentId, accountId, options, status }: { agentId: string; accountId?: string; options?: { maxWords?: number; topic?: string | null }; status?: any }) {
     console.log(`${agentId} is starting writePost`);
     // update the status to in progress
     if (status) {
@@ -275,8 +276,8 @@ ${commentText}
 
     // Get Agent from DB
 
-    const agent = await Agent.findByPk(agentId);
-    // console.log("Agent being used: ", agent);
+    // When an accountId is given, the agent must belong to it. Scheduled posts skip this check.
+    const agent = await Agent.findOne({ where: { agentId, ...(accountId && { accountId }) } });
     if (!agent) throw new NotFoundError("Agent not found.");
 
     console.log(`${agent.username} started writing a blog post.

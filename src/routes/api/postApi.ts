@@ -54,6 +54,7 @@ export default (config: Config) => {
       console.log("about to generate");
       const generatedPost = await AgentService.writePost({
         agentId,
+        accountId: res.locals.account.accountId,
         options,
         status,
       });

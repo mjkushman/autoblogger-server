@@ -5,7 +5,7 @@
 import express from "express";
 import AgentService from "../../services/AgentService";
 import PostService from "../../services/PostService";
-import { NotFoundError, UnauthorizedError } from "../../utilities/expressError";
+import { NotFoundError } from "../../utilities/expressError";
 import { Config } from "../../types/Config.type";
 
 const router = express.Router({ mergeParams: true });
@@ -92,9 +92,6 @@ export default (config: Config) => {
       const { account } = res.locals;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId);
-      
-      if (!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.");
       const result = await AgentService.update({ accountId, agentId, body });
       return res.sendResponse({status:200, data: withoutApiKey(result)});
     } catch (error) {
@@ -109,8 +106,6 @@ export default (config: Config) => {
       const { account } = res.locals;
       const { accountId } = account;
       const { agentId } = req.params;
-      const ownedAgents = account.Agents.map((a) => a.agentId);
-      if (!ownedAgents.includes(agentId)) throw new UnauthorizedError("You may only modify agents that belong to your account.");
       const result = await AgentService.delete({ accountId, agentId });
       return res.sendResponse({status:200, data: result});
     } catch (error) {
@@ -132,7 +127,7 @@ export default (config: Config) => {
       const { accountId } = account;
       const { agentId } = req.params;
       const { body: options } = req;
-      const post = await AgentService.writePost({ agentId, options });
+      const post = await AgentService.writePost({ agentId, accountId, options });
       return res.sendResponse({status:201, data: post});
     } catch (error) {
       next(error);

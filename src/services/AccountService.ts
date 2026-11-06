@@ -1,5 +1,3 @@
-// import the org model
-
 import crypto from "crypto";
 import models from "../models";
 import { BadRequestError, ExpressError, NotFoundError } from "../utilities/expressError";
@@ -7,16 +5,19 @@ import { cache } from "../cache";
 
 const { Account, Agent } = models;
 
+// The only fields an account owner may change. Never accountId or the API key.
+const UPDATABLE_FIELDS = ["email", "firstName", "lastName", "password", "imageUrl", "openAiApiKey"];
+
 class AccountService {
-  /** POST creates a new developer account, and first user */
+  /** The shape sent to the account owner. Never includes the password hash. */
+  static toPublic(account) {
+    const { password, ...rest } = account.toJSON();
+    return rest;
+  }
 
+  /** POST creates a new developer account */
   static async create({ body }) {
-    console.log(
-      "account service: creating a new developer account from body:",
-      body
-    );
-
-    const { host, email, firstName, lastName, label, password } = body;
+    const { host, email, firstName, lastName, password } = body;
 
     const existingAccount = await Account.findOne({ where: { email } });
     if (existingAccount)
@@ -26,7 +27,6 @@ class AccountService {
     const apiKey = crypto.randomBytes(64).toString("hex");
     const apiKeyIndex = apiKey.substring(0, 9);
 
-    // create the new account
     try {
       const newAccount = await Account.create({
         email,
@@ -37,8 +37,6 @@ class AccountService {
         apiKeyIndex,
         password,
       });
-      console.log("STORED NEW Account");
-      console.dir(newAccount);
 
       // store new account in cache
       const account = {
@@ -57,83 +55,44 @@ class AccountService {
     }
   }
 
+  /** Finds the account an API key belongs to. Callers must still compare the full key. */
   static async findByApiKeyIndex({ providedApiKey }) {
-    console.log("FINDING BY API KEY INDEX");
-
     const apiKeyIndex = String(providedApiKey.substring(0, 9));
-    console.log("API KEY INDEX:", apiKeyIndex);
-    const result = await Account.findOne({
-      where: {
-        apiKeyIndex,
-      },
-      include: [Agent],
-    });
-    console.log("result of find:", result);
-    if (result) {
-      const {
-        accountId,
-        firstName,
-        lastName,
-        email,
-        label,
-        Agents,
-        apiKey,
-        openAiApiKey,
-      } = result;
-      // console.log('RESULT OF APIKEYINDEX LOOKUP:', result)
-      // extract agentid and username
-      // const agents = result.Agents.map((a) => {
-      //   a.agentId, a.username;
-      // });
-      const account = {
-        accountId,
-        firstName,
-        lastName,
-        email,
-        label,
-        apiKey,
-        openAiApiKey,
-        Agents,
-      };
+    const result = await Account.findOne({ where: { apiKeyIndex } });
+    if (!result) return result;
 
-      // console.log("CONSTRUNCTED ACCOUNT RESPONSE:", account)
-      return account;
-    }
-    return result;
+    // Deliberately no agents: this object is cached, and agents change without the cache knowing
+    const { accountId, firstName, lastName, email, apiKey, openAiApiKey } = result;
+    return { accountId, firstName, lastName, email, apiKey, openAiApiKey };
   }
 
-  static async findAll() {
-    console.log("account service findall");
-    return await Account.findAll();
-  }
   static async findOne(accountId) {
-    console.log("account service findOne");
     const account = await Account.findOne({
       where: { accountId },
       include: [Agent],
     });
     if (!account) throw new NotFoundError("Account not found.");
-    return account;
+    return AccountService.toPublic(account);
   }
 
   static async update({ accountId, body }) {
-    console.log("account service update");
-    const account = await Account.findOne({
-      where: { accountId },
-    });
+    const account = await Account.findOne({ where: { accountId } });
     if (!account) throw new NotFoundError("Account not found.");
-    await account.update(body); // triggers hooks
-    return account;
+
+    const changes = Object.fromEntries(
+      UPDATABLE_FIELDS.filter((field) => field in body).map((field) => [field, body[field]])
+    );
+    await account.update(changes); // triggers hooks
+    return AccountService.toPublic(account);
   }
 
   static async destroy(accountId) {
-    console.log("deleting account");
-    const rowsDeleted = await Account.destroy({
-      where: { accountId },
-    });
+    const account = await Account.findOne({ where: { accountId } });
+    if (!account) throw new NotFoundError("Account not found.");
 
-    if (!rowsDeleted) throw new NotFoundError("Account not found.");
-    return rowsDeleted; // expect: 1
+    await account.destroy();
+    cache.delete(account.apiKey); // the key must stop working immediately
+    return 1;
   }
 }
 
