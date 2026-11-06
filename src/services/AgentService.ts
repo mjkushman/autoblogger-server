@@ -7,7 +7,7 @@ import { BadRequestError, ExpressError, NotFoundError } from "../utilities/expre
 import validatePostSettings from "../utilities/validatePostSettings";
 import getUnsplashImage from "../utilities/getUnsplashImage";
 import cronEncoder from "../utilities/cronEncoder";
-import { createChat } from "../utilities/Chat";
+import { generatePost, generateText } from "../agents/generate";
 import { cleanText } from "../utilities/sanitizePrompt";
 import PostService from "./PostService";
 import CommentService from "./CommentService";
@@ -202,7 +202,6 @@ class AgentService {
   /** Writes a reply (plain text) to a reader's comment on one of the agent's posts. */
   static async generateComment({ agent, comment, post }) {
     const maxWords = agent.commentSettings?.maxWords ?? 100;
-    const chat = createChat(agent);
 
     // Everything a reader typed is fenced in tags and cleaned; the system prompt says to treat it as data
     const title = cleanText(post.title, { maxLength: 200 });
@@ -210,9 +209,7 @@ class AgentService {
     const author = cleanText(comment.authorName, { maxLength: 50 });
     const commentText = cleanText(comment.content, { maxLength: 1000 });
 
-    chat.addMessage(
-      "user",
-      `A reader commented on one of your blog posts. Write a short, thoughtful reply of at most ${maxWords} words, in your own voice and in the first person. Engage with what they actually said. Use plain text with no title or headings, and address them by name only if it feels natural.
+    const prompt = `A reader commented on one of your blog posts. Write a short, thoughtful reply of at most ${maxWords} words, in your own voice and in the first person. Engage with what they actually said. Use plain text with no title or headings, and address them by name only if it feels natural.
 
 <post>
 Title: ${title}
@@ -222,10 +219,9 @@ ${postText}
 
 <comment author="${author}">
 ${commentText}
-</comment>`
-    );
+</comment>`;
 
-    const reply = await chat.sendPrompt({ schema: false });
+    const reply = await generateText(agent, [prompt]);
     return String(reply).trim().replace(/^["“]|["”]$/g, "");
   }
 
@@ -309,31 +305,17 @@ ${commentText}
     console.log(`${agent.username}'s Blog topic: ${topicBlock}`);
     console.dir(topicBlock);
 
-    // Instantiate a new Chat
-    const chat = createChat(agent);
-    // First instruction
-    chat.addMessage(
-      "user",
-      "Write a new article using the following outline and instructions."
-    );
-    // Next instruction
-    chat.addMessage(
-      "user",
+    // Invoke llm
+    console.log(`${agent.username} invoking ${agent.llm?.model}.`);
+    const response = await generatePost(agent, [
+      "Write a new article using the following outline and instructions.",
       `OUTLINE:
-        ${topicBlock}`
-    );
-    // Next instruction
-    chat.addMessage(
-      "user",
+        ${topicBlock}`,
       `INSTRUCTIONS:
         1. Expand upon the topic until you reach ${options.maxWords} words.
         2. Format your response according to the supplied JSON schema.
-        3. In the "content": field, be sure to write in markdown to make rendering easier later.`
-    );
-
-    // Invoke llm
-    console.log(`${agent.username} invoking ${agent.llm?.model}.`);
-    const response = await chat.sendPrompt();
+        3. In the "content": field, be sure to write in markdown to make rendering easier later.`,
+    ]);
     console.log(`${agent.username} received response from ${agent.llm?.model}.`);
 
     // The model's JSON is not guaranteed to have what we asked for
@@ -384,18 +366,11 @@ ${commentText}
         ...titles.slice(0, 9),
       ].join("\n - ") : "You havent written anything yet.";
     console.log("resolved recentWork:", recentWork);
-    const chat = createChat(agent); // Get the appropriate Chat LLM
-    console.log("created chat: ", chat);
-    chat.addMessage("user", recentWork);
-    chat.addMessage(
-      "user",
-      "Given your author bio and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still adhere to your bio. For each section of the blog post, write a brief summary of the planned content."
-    );
-    console.log("MESSAGES: ");
-    console.dir(chat.getMessages());
-
     // The topic is a plain-text outline, not a post, so skip the post JSON schema
-    return await chat.sendPrompt({ schema: false });
+    return await generateText(agent, [
+      recentWork,
+      "Given your author bio and recent works, choose a topic for your next blog post. The new post should be different from other things you've written, but still adhere to your bio. For each section of the blog post, write a brief summary of the planned content.",
+    ]);
   }
 
   /**
