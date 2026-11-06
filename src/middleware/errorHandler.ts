@@ -34,7 +34,7 @@ const errorHandler = (err, req: Request, res: Response, _next: NextFunction) => 
   }
   if (err instanceof ValidationError) {
     // Handle Sequelize validation error
-    return res.status(401).json({
+    return res.status(400).json({
       status: "Error",
       message: err.message,
     });

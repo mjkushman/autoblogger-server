@@ -6,6 +6,7 @@ import agentRoutes from "./agentRoutes";
 import statusRoutes from "./statusRoutes";
 import authRoutes from "./authRoutes";
 import postRoutes from "./postRoutes";
+import { requireAuth } from "../../middleware/authorizations";
 import { spec } from "../../utilities/api_docs/swagger";
 import { Config } from "../../types/Config.type";
 
@@ -26,7 +27,7 @@ export default (config: Config) => {
   /** Create and manage developer accounts */
   router.use("/accounts", accountRoutes(config));
   /** Create and manage agents */
-  router.use("/agents", agentRoutes(config)); 
+  router.use("/agents", requireAuth, agentRoutes(config)); 
 
   /** Handle authentication */
   router.use("/auth", authRoutes(config));
@@ -36,7 +37,7 @@ export default (config: Config) => {
   
   
   /** retrieve posts for agent tasks */
-  router.use("/posts", postRoutes());
+  router.use("/posts", requireAuth, postRoutes());
 
   return router;
 };

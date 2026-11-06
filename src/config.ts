@@ -21,7 +21,7 @@ const NODE_ENV = process.env.NODE_ENV;
 // Use dev database, testing database, or via env var, production database
 const getDatabaseUri = (): string => {
   return process.env.NODE_ENV === "test"
-    ? "autoblogger_test"
+    ? process.env.TEST_DATABASE_URL || "postgresql://localhost:5432/autoblogger_test"
     : process.env.DATABASE_URL;
 };
 

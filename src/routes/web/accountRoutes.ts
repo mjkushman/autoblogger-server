@@ -5,6 +5,7 @@
 import express from "express";
 import AccountService from "../../services/AccountService";
 import AuthService from "../../services/AuthService";
+import { requireAuth } from "../../middleware/authorizations";
 import { BadRequestError } from "../../utilities/expressError";
 import { Config } from "../../types/Config.type";
 
@@ -16,7 +17,7 @@ export default (config: Config) => {
   /** Gets one account specified in request.user
    *
    */
-  router.get("/", async function (req, res, next) {
+  router.get("/", requireAuth, async function (req, res, next) {
     try {
       const { accountId } = res.locals;
       const result = await AccountService.findOne(accountId);
@@ -39,7 +40,7 @@ export default (config: Config) => {
   });
 
   // Update an account
-  router.patch("/", async function (req, res, next) {
+  router.patch("/", requireAuth, async function (req, res, next) {
     const { body } = req;
     const { accountId } = res.locals;
     // make sure the account being updated is also the one sending the request
@@ -54,7 +55,7 @@ export default (config: Config) => {
   });
 
   // Handle delete account
-  router.delete("/", async function (req, res, next) {
+  router.delete("/", requireAuth, async function (req, res, next) {
     try {
       const result = await AccountService.destroy(res.locals.accountId);
 

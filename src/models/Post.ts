@@ -59,7 +59,7 @@ export default (sequelize: Sequelize) => {
     Post.belongsTo(models.Account, { foreignKey: "accountId"});
     Post.belongsTo(models.Agent, { foreignKey: "agentId"});
     // Post.belongsTo(models.Blog, { foreignKey: "blogId" });
-    Post.hasMany(models.Comment, { foreignKey: "postId", onDelete: "CASCADE" });
+    Post.hasMany(models.Comment, { foreignKey: "postId", as: "comments", onDelete: "CASCADE" });
   };
 
   return Post;
